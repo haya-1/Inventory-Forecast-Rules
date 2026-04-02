@@ -1334,48 +1334,35 @@
                 </label>
               </div>
               <div class="coeff-section-body" id="coeff-body-season">
+              <div style="font-size: 13px; color: #606266; margin-bottom: 8px;">增长/衰减系数</div>
               <div class="table-container">
                 <table class="data-table" id="season-coeff-table">
                   <thead>
                     <tr>
-                      <th style="width: 50px;">序号</th>
-                      <th>时间段</th>
-                      <th style="width: 120px;">增长/衰减</th>
-                      <th style="width: 140px;">系数值</th>
-                      <th style="width: 200px;">说明</th>
-                      <th style="width: 72px;">操作</th>
+                      <th>1月份</th><th>2月份</th><th>3月份</th><th>4月份</th><th>5月份</th><th>6月份</th>
+                      <th>7月份</th><th>8月份</th><th>9月份</th><th>10月份</th><th>11月份</th><th>12月份</th>
                     </tr>
                   </thead>
-                  <tbody id="season-coeff-tbody">
+                  <tbody>
                     <tr>
-                      <td>1</td>
-                      <td>
-                        <div style="display:flex;align-items:center;gap:6px;justify-content:center;">
-                          <input type="date" class="form-control" style="width:130px;" />
-                          <span>至</span>
-                          <input type="date" class="form-control" style="width:130px;" />
-                        </div>
-                      </td>
-                      <td>
-                        <select class="form-control">
-                          <option value="up" selected>增长 ↑</option>
-                          <option value="down">衰减 ↓</option>
-                        </select>
-                      </td>
-                      <td>
-                        <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
-                          <input type="number" class="form-control" value="1.1" min="0" step="0.01" style="width:80px;text-align:center;" />
-                        </div>
-                      </td>
-                      <td><input type="text" class="form-control" placeholder="如：夏季旺季" style="width:100%;" /></td>
-                      <td><button class="btn-delete" onclick="deleteCoeffRow(this)">🗑️</button></td>
+                      <td><input type="number" class="form-control season-month-coeff" id="season-m1"  value="1"    min="0" step="0.01" style="width:70px;text-align:center;" /></td>
+                      <td><input type="number" class="form-control season-month-coeff" id="season-m2"  value="1"    min="0" step="0.01" style="width:70px;text-align:center;" /></td>
+                      <td><input type="number" class="form-control season-month-coeff" id="season-m3"  value="1.2"  min="0" step="0.01" style="width:70px;text-align:center;" /></td>
+                      <td><input type="number" class="form-control season-month-coeff" id="season-m4"  value="1.3"  min="0" step="0.01" style="width:70px;text-align:center;" /></td>
+                      <td><input type="number" class="form-control season-month-coeff" id="season-m5"  value="1.2"  min="0" step="0.01" style="width:70px;text-align:center;" /></td>
+                      <td><input type="number" class="form-control season-month-coeff" id="season-m6"  value="1"    min="0" step="0.01" style="width:70px;text-align:center;" /></td>
+                      <td><input type="number" class="form-control season-month-coeff" id="season-m7"  value="1.05" min="0" step="0.01" style="width:70px;text-align:center;" /></td>
+                      <td><input type="number" class="form-control season-month-coeff" id="season-m8"  value="1.2"  min="0" step="0.01" style="width:70px;text-align:center;" /></td>
+                      <td><input type="number" class="form-control season-month-coeff" id="season-m9"  value="1.3"  min="0" step="0.01" style="width:70px;text-align:center;" /></td>
+                      <td><input type="number" class="form-control season-month-coeff" id="season-m10" value="1.1"  min="0" step="0.01" style="width:70px;text-align:center;" /></td>
+                      <td><input type="number" class="form-control season-month-coeff" id="season-m11" value="1.1"  min="0" step="0.01" style="width:70px;text-align:center;" /></td>
+                      <td><input type="number" class="form-control season-month-coeff" id="season-m12" value="1"    min="0" step="0.01" style="width:70px;text-align:center;" /></td>
                     </tr>
                   </tbody>
                 </table>
               </div>
-              <button class="btn btn-secondary btn-add" style="margin-top: 8px;" onclick="addCoeffRow('season-coeff-tbody')"><span>+</span> 添加</button>
               <div style="font-size: 12px; color: #909399; margin-top: 4px;">
-                根据季节性或市场大盘趋势调整预测值。例如泳衣夏季系数1.3，冬季系数0.5
+                按月维护季节性系数，1 表示无调整，&gt;1 表示旺季增长，&lt;1 表示淡季衰减。例如泳衣夏季（7~8月）可填 1.3，冬季填 0.5
               </div>
               </div>
             </div>
@@ -2987,7 +2974,7 @@
           safetyColor: document.getElementById('coeff-enable-safety-color')?.checked,
           safetyTraffic: document.getElementById('coeff-enable-safety-traffic')?.checked
         },
-        seasonCoeffs: collectTableRows('season-coeff-tbody', ['startDate','endDate','direction','value','note']),
+        seasonCoeffs: Array.from({ length: 12 }, (_, i) => parseFloat(document.getElementById('season-m' + (i + 1))?.value) || 1),
         promoCoeffs: collectTableRows('promo-coeff-tbody', ['name','startDate','endDate','value']),
         yoyCoeffs: collectTableRows('yoy-coeff-tbody', ['startDate','endDate','direction','value','note']),
         lifecycleCoeffs: collectTableRows('lifecycle-coeff-tbody', ['type','startDate','endDate','direction','value']),
