@@ -1,0 +1,3063 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>预测规则配置</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Microsoft YaHei", sans-serif;
+    }
+    
+    body {
+      background-color: #f5f7fa;
+      color: #303133;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 20px auto;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+    
+    /* 头部样式 */
+    .header {
+      padding: 20px 24px;
+      background: linear-gradient(135deg, #409eff 0%, #66b1ff 100%);
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .header h1 {
+      font-size: 20px;
+      font-weight: 500;
+    }
+    
+    .close-btn {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 20px;
+      opacity: 0.8;
+    }
+    
+    .close-btn:hover {
+      opacity: 1;
+    }
+    
+    /* 步骤条 */
+    .steps {
+      display: flex;
+      padding: 20px 24px;
+      border-bottom: 1px solid #ebeef5;
+      background: #fafafa;
+    }
+    
+    .step {
+      display: flex;
+      align-items: center;
+      position: relative;
+      padding-right: 40px;
+    }
+    
+    .step:last-child {
+      padding-right: 0;
+    }
+    
+    .step:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 30px;
+      height: 1px;
+      background: #dcdfe6;
+    }
+    
+    .step-number {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #dcdfe6;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      margin-right: 8px;
+    }
+    
+    .step.active .step-number {
+      background: #409eff;
+    }
+    
+    .step-label {
+      font-size: 14px;
+      color: #909399;
+    }
+    
+    .step.active .step-label {
+      color: #409eff;
+      font-weight: 500;
+    }
+    
+    /* 标签页 */
+    .tabs {
+      display: flex;
+      background: #f5f7fa;
+      padding: 0 24px;
+      border-bottom: 1px solid #ebeef5;
+    }
+    
+    .tab {
+      padding: 12px 20px;
+      cursor: pointer;
+      font-size: 14px;
+      color: #606266;
+      position: relative;
+      transition: all 0.3s;
+    }
+    
+    .tab:hover {
+      color: #409eff;
+    }
+    
+    .tab.active {
+      color: #409eff;
+      background: white;
+      border: 1px solid #ebeef5;
+      border-bottom-color: white;
+      border-radius: 4px 4px 0 0;
+      margin-bottom: -1px;
+    }
+    
+    /* 主要内容区域 */
+    .content {
+      padding: 24px;
+    }
+    
+    /* 表单卡片 */
+    .form-card {
+      margin-bottom: 24px;
+      border: 1px solid #ebeef5;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    
+    .card-header {
+      padding: 12px 20px;
+      background: #f5f7fa;
+      border-bottom: 1px solid #ebeef5;
+      display: flex;
+      align-items: center;
+    }
+    
+    .card-icon {
+      margin-right: 8px;
+      font-size: 16px;
+    }
+    
+    .card-title {
+      font-size: 16px;
+      font-weight: 500;
+      color: #303133;
+    }
+    
+    .card-body {
+      padding: 20px;
+    }
+    
+    /* 表单样式 */
+    .form-row {
+      display: flex;
+      flex-wrap: wrap;
+      margin: 0 -10px 20px;
+    }
+    
+    .form-group {
+      flex: 1;
+      min-width: 250px;
+      padding: 0 10px;
+      margin-bottom: 15px;
+    }
+    
+    .form-label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: #606266;
+    }
+    
+    .form-label.required::before {
+      content: '*';
+      color: #f56c6c;
+      margin-right: 4px;
+    }
+    
+    .form-control {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      font-size: 14px;
+      color: #606266;
+      transition: border-color 0.3s;
+    }
+    
+    .form-control:focus {
+      outline: none;
+      border-color: #409eff;
+    }
+
+    /* 日销量规则：权重设置百分比（需完整显示三位数 100） */
+    .form-control.daily-weight {
+      width: 80px;
+      min-width: 80px;
+      text-align: center;
+      box-sizing: border-box;
+    }
+    
+    /* 表格样式 */
+    .table-container {
+      overflow-x: auto;
+      margin-bottom: 15px;
+    }
+    
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    .data-table th,
+    .data-table td {
+      border: 1px solid #ebeef5;
+      padding: 12px 8px;
+      text-align: center;
+      font-size: 14px;
+    }
+    
+    .data-table th {
+      background: #f5f7fa;
+      font-weight: 500;
+      color: #303133;
+    }
+
+    /* 头程直发：运输方式列收窄，物流时效列加宽 */
+    .logistics-direct-table th.col-ship-method,
+    .logistics-direct-table td.col-ship-method {
+      width: 88px;
+      max-width: 100px;
+      box-sizing: border-box;
+    }
+    .logistics-direct-table .col-ship-method .form-control {
+      width: 100%;
+      min-width: 0;
+      padding: 6px 4px;
+      font-size: 13px;
+    }
+    .logistics-direct-table th.col-lead-time,
+    .logistics-direct-table td.col-lead-time {
+      min-width: 200px;
+      width: 28%;
+    }
+    .logistics-direct-table .col-lead-time .form-control {
+      width: 120px;
+      max-width: 100%;
+    }
+
+    /* 海外仓中转：运输方式列收窄，时效/频率列加宽 */
+    .logistics-transit-table th.col-transit-method,
+    .logistics-transit-table td.col-transit-method {
+      width: 88px;
+      max-width: 110px;
+      box-sizing: border-box;
+    }
+    .logistics-transit-table .col-transit-method .form-control {
+      width: 100%;
+      min-width: 0;
+      padding: 6px 4px;
+      font-size: 13px;
+    }
+    .logistics-transit-table th.col-transit-days,
+    .logistics-transit-table td.col-transit-days {
+      min-width: 160px;
+      width: 22%;
+    }
+    .logistics-transit-table .col-transit-days .form-control {
+      width: 120px;
+      max-width: 100%;
+    }
+
+    /* 区块标题 + 右侧开关 */
+    .section-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+    .section-title-row .section-title-text {
+      font-size: 15px;
+      font-weight: 500;
+      padding-left: 8px;
+      border-left: 3px solid #409eff;
+      margin: 0;
+    }
+    /* 胶囊拨动开关：关=灰+球左+「停用」；开=绿+球右+「启用」 */
+    .section-title-toggle {
+      display: inline-flex;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+      position: relative;
+    }
+    .section-title-toggle input[type="checkbox"] {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 64px;
+      height: 28px;
+      margin: 0;
+      opacity: 0;
+      cursor: pointer;
+      z-index: 4;
+    }
+    .section-title-toggle:focus-within .pill-switch-ui {
+      box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.35);
+    }
+    .pill-switch-ui {
+      position: relative;
+      display: inline-block;
+      width: 64px;
+      height: 28px;
+      border-radius: 999px;
+      background: #c0c4cc;
+      transition: background 0.22s ease;
+      flex-shrink: 0;
+      vertical-align: middle;
+    }
+    .section-title-toggle input:checked + .pill-switch-ui {
+      background: #52c41a;
+    }
+    .pill-switch-knob {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+      transition: transform 0.22s ease;
+      z-index: 2;
+    }
+    .section-title-toggle input:checked + .pill-switch-ui .pill-switch-knob {
+      transform: translateX(36px);
+    }
+    .pill-switch-label {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1;
+      pointer-events: none;
+      z-index: 1;
+      letter-spacing: 0.02em;
+    }
+    .pill-switch-label--on {
+      left: 10px;
+      opacity: 0;
+      transition: opacity 0.15s ease;
+    }
+    .pill-switch-label--off {
+      right: 8px;
+      opacity: 1;
+      transition: opacity 0.15s ease;
+    }
+    .section-title-toggle input:checked + .pill-switch-ui .pill-switch-label--on {
+      opacity: 1;
+    }
+    .section-title-toggle input:checked + .pill-switch-ui .pill-switch-label--off {
+      opacity: 0;
+    }
+    .section-disabled {
+      opacity: 0.45;
+      pointer-events: none;
+    }
+
+    /* 去噪页：仅隐藏区块标题行右侧开关；表格内状态开关保留 */
+    #denoise-tab .section-title-row .section-title-toggle {
+      display: none !important;
+    }
+    /* 自动去噪表：行内状态开关略缩小 */
+    .auto-denoise-status-toggle .pill-switch-ui {
+      width: 56px;
+      height: 26px;
+    }
+    .auto-denoise-status-toggle .pill-switch-knob {
+      width: 20px;
+      height: 20px;
+      top: 3px;
+      left: 3px;
+    }
+    .auto-denoise-status-toggle input:checked + .pill-switch-ui .pill-switch-knob {
+      transform: translateX(30px);
+    }
+    .auto-denoise-status-toggle .pill-switch-label {
+      font-size: 11px;
+    }
+    .auto-denoise-status-toggle input[type="checkbox"] {
+      width: 56px;
+      height: 26px;
+    }
+    .denoise-auto-table tr.auto-denoise-row-off .auto-denoise-rule-cell {
+      opacity: 0.45;
+      pointer-events: none;
+    }
+
+    /* 页面内标题层级（与影响系数页一致） */
+    /* 二级：整段分区，底部分割线 */
+    .page-section-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #303133;
+      margin: 0 0 16px 0;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #409eff;
+    }
+    .page-section-title--blue {
+      border-bottom-color: #409eff;
+    }
+    .page-section-title--orange {
+      border-bottom-color: #e6a23c;
+    }
+    .page-section-title--green {
+      border-bottom-color: #67c23a;
+    }
+    .page-section-title--gray {
+      border-bottom-color: #909399;
+    }
+    /* 三级：区块标题，左侧色条（无开关时单独使用） */
+    .block-heading {
+      display: block;
+      font-size: 15px;
+      font-weight: 500;
+      color: #303133;
+      padding-left: 8px;
+      border-left: 3px solid #409eff;
+      margin: 0 0 12px 0;
+      line-height: 1.4;
+    }
+    .block-heading--orange { border-left-color: #e6a23c; }
+    .block-heading--green { border-left-color: #67c23a; }
+    .block-heading--red { border-left-color: #f56c6c; }
+    .block-heading--gray { border-left-color: #909399; }
+    .block-heading--purple { border-left-color: #b37feb; }
+    /* 备货规则内站点/子区域 */
+    .site-subheading {
+      font-weight: 500;
+      font-size: 14px;
+      margin-bottom: 8px;
+      color: #303133;
+      padding-left: 8px;
+      border-left: 3px solid #409eff;
+    }
+    .site-subheading--eu {
+      border-left-color: #e6a23c;
+    }
+    /* 影响系数：小节标题色条修饰（与 block-heading 色值对齐） */
+    .section-title-text.section-accent--blue { border-left-color: #409eff; }
+    .section-title-text.section-accent--orange { border-left-color: #e6a23c; }
+    .section-title-text.section-accent--green { border-left-color: #67c23a; }
+    .section-title-text.section-accent--red { border-left-color: #f56c6c; }
+    .section-title-text.section-accent--gray { border-left-color: #909399; }
+    .section-title-text.section-accent--purple { border-left-color: #b37feb; }
+    
+    /* 按钮样式 */
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.3s;
+    }
+    
+    .btn-primary {
+      background: #409eff;
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: #66b1ff;
+    }
+    
+    .btn-secondary {
+      background: white;
+      border: 1px solid #dcdfe6;
+      color: #606266;
+    }
+    
+    .btn-secondary:hover {
+      border-color: #409eff;
+      color: #409eff;
+    }
+
+    /* 日销量规则：生命周期权重模板按钮选中态 */
+    .btn-secondary.lifecycle-template-btn {
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+    }
+    .btn-secondary.lifecycle-template-btn.is-selected {
+      background: #409eff;
+      color: #fff;
+      border-color: #409eff;
+    }
+    .btn-secondary.lifecycle-template-btn.is-selected:hover {
+      background: #66b1ff;
+      border-color: #66b1ff;
+      color: #fff;
+    }
+    
+    .btn-add {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 10px;
+    }
+    
+    .btn-delete {
+      background: none;
+      border: none;
+      color: #f56c6c;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    
+    /* 可视化区域 */
+    .visualization {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    
+    .chart-section {
+      background: white;
+      border: 1px solid #ebeef5;
+      border-radius: 4px;
+      padding: 20px;
+    }
+    
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    
+    .chart-title {
+      font-size: 16px;
+      font-weight: 500;
+    }
+    
+    .date-picker {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .date-input {
+      padding: 6px 12px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    
+    .chart-placeholder {
+      height: 300px;
+      background: #fafafa;
+      border: 1px dashed #dcdfe6;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #909399;
+    }
+    
+    /* 底部按钮 */
+    .footer {
+      padding: 20px 24px;
+      border-top: 1px solid #ebeef5;
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      background: white;
+    }
+    
+    /* 响应式调整 */
+    @media (max-width: 768px) {
+      .container {
+        margin: 0;
+        border-radius: 0;
+      }
+      
+      .form-group {
+        min-width: 100%;
+      }
+      
+      .tabs {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+      }
+      
+      .tab {
+        white-space: nowrap;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- 头部 -->
+    <div class="header">
+      <h1>预测规则配置</h1>
+      <div class="close-btn" onclick="window.close()">×</div>
+    </div>
+    
+    <!-- 步骤条 -->
+    <div class="steps" style="display: none;">
+      <div class="step active">
+        <div class="step-number">1</div>
+        <div class="step-label">创建预测范围</div>
+      </div>
+      <div class="step">
+        <div class="step-number">2</div>
+        <div class="step-label">设置预测规则</div>
+      </div>
+    </div>
+    
+    <!-- 标签页 -->
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('basic')">基础预测</div>
+      <div class="tab" onclick="switchTab('inventory')">备货规则</div>
+      <div class="tab" onclick="switchTab('sales')">日销量规则</div>
+      <div class="tab" onclick="switchTab('coefficient')">影响系数</div>
+      <div class="tab" onclick="switchTab('denoise')">销量修正/去噪</div>
+    </div>
+    
+    <!-- 主要内容区域 -->
+    <div class="content">
+      <!-- 基础预测 -->
+      <div id="basic-tab" class="tab-content">
+        <div class="form-card">
+          <div class="card-header">
+            <span class="card-icon">📊</span>
+            <span class="card-title">基础预测（基础预测为默认方案，默认所有时间段）</span>
+          </div>
+          <div class="card-body">
+            <div class="page-section-title">预测模型与参数</div>
+            <!-- 预测类型选择 -->
+            <div class="form-row">
+              <div class="form-group" style="flex: 0 0 280px;">
+                <label class="form-label required">预测类型</label>
+                <select class="form-control" id="prediction-type" onchange="onPredictionTypeChange(this.value)">
+                  <option value="weighted" selected>移动加权</option>
+                  <option value="simple">简单平均</option>
+                  <option value="exponential">指数平滑</option>
+                </select>
+                <div style="font-size: 12px; color: #909399; margin-top: 4px;" id="prediction-type-hint">
+                  自定义各时间段权重，所有权重之和必须等于1
+                </div>
+              </div>
+
+              <!-- 指数平滑参数区域（仅指数平滑时显示） -->
+              <div class="form-group" id="exponential-params" style="flex: 0 0 420px; display: none;">
+                <label class="form-label required">平滑系数 α</label>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <input type="range" id="alpha-slider" min="0" max="100" value="30" style="flex: 1;" oninput="onAlphaChange(this.value)" />
+                  <input type="number" id="alpha-input" class="form-control" value="0.30" min="0.01" max="0.99" step="0.01" style="width: 80px;" oninput="onAlphaInputChange(this.value)" />
+                </div>
+                <div style="font-size: 12px; color: #909399; margin-top: 4px;">
+                  α 越接近1，对近期数据越敏感；越接近0，预测越平稳。推荐范围 0.1~0.5
+                </div>
+              </div>
+            </div>
+
+            <div class="page-section-title page-section-title--green" style="margin-top: 8px;">历史周权重配置</div>
+
+            <!-- 历史周权重配置 -->
+            <div class="form-group" style="width: 100%;" id="weight-config-section">
+              <div class="table-container">
+                <table class="data-table" id="weight-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 60px;">序号</th>
+                      <th>时间范围</th>
+                      <th id="weight-col-header">周均销量的权重</th>
+                      <th style="width: 80px;">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="weight-tbody">
+                    <tr>
+                      <td>1</td>
+                      <td>
+                        <select class="form-control weight-time-select" onchange="checkDuplicateTimeRange()">
+                          <option value="">请在下拉中选择</option>
+                          <option value="1">近1周</option>
+                          <option value="2">近2周</option>
+                          <option value="4" selected>近4周</option>
+                          <option value="8">近8周</option>
+                          <option value="12">近12周</option>
+                          <option value="26">近26周（半年）</option>
+                          <option value="52">近52周（一年）</option>
+                        </select>
+                      </td>
+                      <td>
+                        <input type="number" class="form-control weight-input" placeholder="如 0.6" min="0" max="1" step="0.01" value="0.60" oninput="updateWeightSum()" />
+                      </td>
+                      <td>
+                        <button class="btn-delete" onclick="deleteWeightRow(this)">🗑️</button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>2</td>
+                      <td>
+                        <select class="form-control weight-time-select" onchange="checkDuplicateTimeRange()">
+                          <option value="">请在下拉中选择</option>
+                          <option value="1">近1周</option>
+                          <option value="2">近2周</option>
+                          <option value="4">近4周</option>
+                          <option value="8">近8周</option>
+                          <option value="12" selected>近12周</option>
+                          <option value="26">近26周（半年）</option>
+                          <option value="52">近52周（一年）</option>
+                        </select>
+                      </td>
+                      <td>
+                        <input type="number" class="form-control weight-input" placeholder="如 0.4" min="0" max="1" step="0.01" value="0.40" oninput="updateWeightSum()" />
+                      </td>
+                      <td>
+                        <button class="btn-delete" onclick="deleteWeightRow(this)">🗑️</button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!-- 权重状态栏 -->
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                <div style="display: flex; align-items: center; gap: 16px;">
+                  <span style="font-size: 14px;" id="weight-row-count">共2条</span>
+                  <span style="font-size: 14px;" id="weight-sum-display">
+                    权重合计：<strong id="weight-sum-value" style="color: #67c23a;">1.00</strong>
+                  </span>
+                  <span id="weight-sum-status" style="font-size: 12px; color: #67c23a;">✓ 权重分配完成</span>
+                  <span id="weight-duplicate-warn" style="font-size: 12px; color: #e6a23c; display: none;">⚠ 存在重复的时间范围</span>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                  <button class="btn btn-secondary" onclick="autoDistributeWeights()" title="将权重在所有行中均匀分配" id="auto-distribute-btn">
+                    ⚖ 均匀分配
+                  </button>
+                  <button class="btn btn-secondary btn-add" onclick="addWeightRow()">
+                    <span>+</span> 增加
+                  </button>
+                </div>
+              </div>
+              <div style="font-size: 12px; color: #909399; margin-top: 4px;">
+                最多可增加10条项目。时间范围不可重复选择。
+              </div>
+            </div>
+
+            <!-- 指数平滑权重预览（仅指数平滑时显示） -->
+            <div class="form-group" style="width: 100%; display: none;" id="exponential-preview">
+              <span class="block-heading block-heading--orange">自动计算的权重分布</span>
+              <div id="exponential-weight-bars" style="padding: 12px 16px; background: #f5f7fa; border-radius: 4px;"></div>
+              <div style="font-size: 12px; color: #909399; margin-top: 4px;">
+                权重按公式 w(i) = α × (1−α)^i 自动衰减，越近的时间段权重越高
+              </div>
+            </div>
+
+            <!-- 预测置信度提示 -->
+            <div style="margin-top: 16px; padding: 12px 16px; background: #ecf5ff; border-radius: 4px; border-left: 3px solid #409eff;">
+              <div style="font-size: 13px; color: #409eff; font-weight: 500; margin-bottom: 4px;">预测质量提示</div>
+              <div style="font-size: 12px; color: #606266;" id="prediction-quality-hint">
+                当前配置：移动加权，使用2个历史时间段。建议至少配置3个不同跨度的时间段以提高预测稳定性。
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 备货规则 -->
+      <div id="inventory-tab" class="tab-content" style="display: none;">
+        <div class="form-card">
+          <div class="card-header">
+            <span class="card-icon">📦</span>
+            <span class="card-title">备货规则（备货时长）</span>
+          </div>
+          <div class="card-body">
+            <!-- 采购时效 -->
+            <div class="form-group" style="width: 100%;">
+              <div class="page-section-title page-section-title--blue">采购时效</div>
+              <div class="table-container">
+                <table class="data-table" id="procurement-table">
+                  <thead>
+                    <tr>
+                      <th>采购频率</th>
+                      <th>采购交期</th>
+                      <th>质检</th>
+                      <th>提货准备</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 4px;">
+                          <input type="number" class="form-control" id="proc-frequency" value="15" style="width: 70px; text-align: center;" oninput="updateStockFormula()" />
+                          <span>天</span>
+                        </div>
+                      </td>
+                      <td>
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 4px;">
+                          <input type="number" class="form-control" id="proc-leadtime" value="30" style="width: 70px; text-align: center;" oninput="updateStockFormula()" />
+                          <span>天</span>
+                        </div>
+                      </td>
+                      <td>
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 4px;">
+                          <input type="number" class="form-control" id="proc-qc" value="2" style="width: 70px; text-align: center;" oninput="updateStockFormula()" />
+                          <span>天</span>
+                        </div>
+                      </td>
+                      <td>
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 4px;">
+                          <input type="number" class="form-control" id="proc-pickup" value="7" style="width: 70px; text-align: center;" oninput="updateStockFormula()" />
+                          <span>天</span>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div style="font-size: 12px; color: #909399; margin-top: 4px;">
+                采购到货可发周期 = 采购交期 + 质检 + 提货准备 = <strong id="proc-cycle-sum" style="color: #409eff;">39</strong> 天
+              </div>
+            </div>
+
+            <!-- FBA仓 -->
+            <div class="form-group" style="width: 100%;">
+              <div class="page-section-title page-section-title--orange">FBA仓</div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span>安全天数</span>
+                <input type="number" class="form-control" id="fba-safety-days" value="28" style="width: 80px; text-align: center;" oninput="updateStockFormula()" />
+                <span>天</span>
+                <span style="font-size: 12px; color: #909399; margin-left: 12px;">FBA端需保持的最低库存缓冲天数，防止销量波动或物流延误导致断货</span>
+              </div>
+            </div>
+
+            <!-- 头程物流时效 -->
+            <div class="form-group" style="width: 100%;">
+              <div class="page-section-title page-section-title--green">头程物流时效</div>
+
+              <!-- 模式切换 -->
+              <div style="margin-bottom: 15px;">
+                <button class="btn btn-primary" id="btn-direct-mode" onclick="switchShipMode('direct')">本地/海外仓直发模式</button>
+                <button class="btn btn-secondary" id="btn-transit-mode" style="margin-left: 10px;" onclick="switchShipMode('transit')">海外仓中转模式</button>
+              </div>
+
+              <!-- 直发模式 -->
+              <div id="direct-mode-section">
+                <!-- 站点区域：北美站 -->
+                <div style="margin-bottom: 20px;">
+                  <div class="site-subheading">北美站</div>
+                  <div class="table-container">
+                    <table class="data-table logistics-direct-table">
+                      <thead>
+                        <tr>
+                          <th style="width: 120px;">本地仓发货频率</th>
+                          <th class="col-ship-method">本地仓发FBA运输方式</th>
+                          <th class="col-lead-time">物流时效</th>
+                          <th style="width: 72px;">操作</th>
+                        </tr>
+                      </thead>
+                      <tbody id="direct-na-tbody">
+                        <tr>
+                          <td rowspan="2">
+                            <div style="display: flex; align-items: center; justify-content: center; gap: 4px;">
+                              <input type="number" class="form-control ship-freq" value="7" style="width: 60px; text-align: center;" oninput="updateStockFormula()" />
+                              <span>天</span>
+                            </div>
+                          </td>
+                          <td class="col-ship-method">
+                            <select class="form-control ship-method-select" onchange="updateStockFormula()">
+                              <option selected>快船</option>
+                              <option>慢船</option>
+                              <option>空派</option>
+                              <option>卡派</option>
+                              <option>铁路</option>
+                            </select>
+                          </td>
+                          <td class="col-lead-time">
+                            <div style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+                              <input type="number" class="form-control" value="35" style="text-align: center;" oninput="updateStockFormula()" />
+                              <span>天</span>
+                            </div>
+                          </td>
+                          <td><button class="btn-delete" onclick="deleteShipRow(this)">🗑️</button></td>
+                        </tr>
+                        <tr>
+                          <td class="col-ship-method">
+                            <select class="form-control ship-method-select" onchange="updateStockFormula()">
+                              <option>快船</option>
+                              <option selected>慢船</option>
+                              <option>空派</option>
+                              <option>卡派</option>
+                              <option>铁路</option>
+                            </select>
+                          </td>
+                          <td class="col-lead-time">
+                            <div style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+                              <input type="number" class="form-control" value="55" style="text-align: center;" oninput="updateStockFormula()" />
+                              <span>天</span>
+                            </div>
+                          </td>
+                          <td><button class="btn-delete" onclick="deleteShipRow(this)">🗑️</button></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <button class="btn btn-secondary btn-add" style="margin-top: 8px;" onclick="addShipRow('direct-na-tbody')"><span>+</span> 增加运输方式</button>
+                </div>
+
+                <!-- 站点区域：欧洲站 -->
+                <div style="margin-bottom: 20px;">
+                  <div class="site-subheading site-subheading--eu">欧洲站</div>
+                  <div class="table-container">
+                    <table class="data-table logistics-direct-table">
+                      <thead>
+                        <tr>
+                          <th style="width: 120px;">本地仓发货频率</th>
+                          <th class="col-ship-method">本地仓发FBA运输方式</th>
+                          <th class="col-lead-time">物流时效</th>
+                          <th style="width: 72px;">操作</th>
+                        </tr>
+                      </thead>
+                      <tbody id="direct-eu-tbody">
+                        <tr>
+                          <td rowspan="2">
+                            <div style="display: flex; align-items: center; justify-content: center; gap: 4px;">
+                              <input type="number" class="form-control ship-freq" value="7" style="width: 60px; text-align: center;" oninput="updateStockFormula()" />
+                              <span>天</span>
+                            </div>
+                          </td>
+                          <td class="col-ship-method">
+                            <select class="form-control ship-method-select" onchange="updateStockFormula()">
+                              <option selected>快船</option>
+                              <option>慢船</option>
+                              <option>空派</option>
+                              <option>卡派</option>
+                              <option>铁路</option>
+                            </select>
+                          </td>
+                          <td class="col-lead-time">
+                            <div style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+                              <input type="number" class="form-control" value="40" style="text-align: center;" oninput="updateStockFormula()" />
+                              <span>天</span>
+                            </div>
+                          </td>
+                          <td><button class="btn-delete" onclick="deleteShipRow(this)">🗑️</button></td>
+                        </tr>
+                        <tr>
+                          <td class="col-ship-method">
+                            <select class="form-control ship-method-select" onchange="updateStockFormula()">
+                              <option>快船</option>
+                              <option selected>慢船</option>
+                              <option>空派</option>
+                              <option>卡派</option>
+                              <option>铁路</option>
+                            </select>
+                          </td>
+                          <td class="col-lead-time">
+                            <div style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+                              <input type="number" class="form-control" value="60" style="text-align: center;" oninput="updateStockFormula()" />
+                              <span>天</span>
+                            </div>
+                          </td>
+                          <td><button class="btn-delete" onclick="deleteShipRow(this)">🗑️</button></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <button class="btn btn-secondary btn-add" style="margin-top: 8px;" onclick="addShipRow('direct-eu-tbody')"><span>+</span> 增加运输方式</button>
+                </div>
+              </div>
+
+              <!-- 中转模式 -->
+              <div id="transit-mode-section" style="display: none;">
+                <div style="padding: 16px; background: #fdf6ec; border-radius: 4px; border-left: 3px solid #e6a23c; margin-bottom: 16px;">
+                  <div style="font-size: 13px; color: #e6a23c; font-weight: 500; margin-bottom: 4px;">中转链路</div>
+                  <div style="font-size: 12px; color: #606266;">CN本地仓 → 海外仓 → FBA仓，适用于通过海外仓中转补货到FBA的场景</div>
+                </div>
+                <div class="table-container">
+                  <table class="data-table logistics-transit-table">
+                    <thead>
+                      <tr>
+                        <th class="col-transit-method">CN仓至海外仓运输方式</th>
+                        <th class="col-transit-days">CN至海外仓时效</th>
+                        <th class="col-transit-days">海外仓发货频率</th>
+                        <th class="col-transit-days">海外仓至FBA时效</th>
+                        <th style="width: 72px;">操作</th>
+                      </tr>
+                    </thead>
+                    <tbody id="transit-tbody">
+                      <tr>
+                        <td class="col-transit-method">
+                          <select class="form-control">
+                            <option selected>海运</option>
+                            <option>空运</option>
+                            <option>铁路</option>
+                          </select>
+                        </td>
+                        <td class="col-transit-days">
+                          <div style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+                            <input type="number" class="form-control" value="35" style="text-align: center;" />
+                            <span>天</span>
+                          </div>
+                        </td>
+                        <td class="col-transit-days">
+                          <div style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+                            <input type="number" class="form-control" value="7" style="text-align: center;" />
+                            <span>天</span>
+                          </div>
+                        </td>
+                        <td class="col-transit-days">
+                          <div style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+                            <input type="number" class="form-control" value="5" style="text-align: center;" />
+                            <span>天</span>
+                          </div>
+                        </td>
+                        <td><button class="btn-delete" onclick="deleteRow(this)">🗑️</button></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <button class="btn btn-secondary btn-add" style="margin-top: 8px;" onclick="addTransitRow()"><span>+</span> 增加</button>
+              </div>
+            </div>
+
+            <!-- 设置开关 -->
+            <div class="form-group" style="width: 100%;">
+              <div class="page-section-title page-section-title--gray">设置</div>
+              <div style="display: flex; flex-direction: column; gap: 10px; padding: 12px 16px; background: #f5f7fa; border-radius: 4px;">
+                <label style="display: flex; align-items: center; cursor: pointer; font-size: 14px;">
+                  <input type="checkbox" id="deduct-stock" checked style="margin-right: 8px;" />
+                  建议量扣除必断货量
+                  <span style="font-size: 12px; color: #909399; margin-left: 6px;" title="扣除在补货到达前不可避免的断货期间的销量">ⓘ</span>
+                </label>
+                <label style="display: flex; align-items: center; cursor: pointer; font-size: 14px;">
+                  <input type="checkbox" id="exclude-outage" checked style="margin-right: 8px;" />
+                  历史销量排除断货数据
+                  <span style="font-size: 12px; color: #909399; margin-left: 6px;" title="计算历史日均销量时，剔除缺货期间的零销量数据，避免拉低均值">ⓘ</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- 公式参考 -->
+            <div style="margin-top: 8px; padding: 16px; background: #ecf5ff; border-radius: 4px; border-left: 3px solid #409eff;">
+              <div style="font-size: 14px; color: #409eff; font-weight: 500; margin-bottom: 10px;">备货公式参考</div>
+
+              <div style="margin-bottom: 12px;">
+                <div style="font-size: 13px; font-weight: 500; color: #303133; margin-bottom: 6px;">直发模式（CN仓/海外仓 → FBA仓）</div>
+                <div style="font-size: 12px; color: #606266; line-height: 1.8; padding-left: 12px; border-left: 2px solid #d9ecff;">
+                  <div><strong>本地仓建议备货量</strong> = （CN仓至FBA时效 + 安全天数 + CN仓发货频率）× 日销量(动态) − （FBA库存 + FBA在途 + 海外仓可用）</div>
+                  <div><strong>海外仓至FBA建议量</strong> = （海外仓至FBA时效 + 安全天数 + 海外仓发货频率）× 日销量(动态) − （FBA库存 + FBA在途）</div>
+                </div>
+              </div>
+
+              <div>
+                <div style="font-size: 13px; font-weight: 500; color: #303133; margin-bottom: 6px;">中转模式（CN仓 → 海外仓 → FBA仓）</div>
+                <div style="font-size: 12px; color: #606266; line-height: 1.8; padding-left: 12px; border-left: 2px solid #d9ecff;">
+                  <div><strong>CN仓建议采购量</strong> = （采购交期 + 质检 + 提货准备 + CN至海外仓时效 + 海外仓至FBA时效 + 安全天数 + 采购频率）× 日销量(动态) − （FBA库存 + FBA在途 + 海外仓可用 + 海外仓在途 + CN仓可用）</div>
+                  <div><strong>海外仓至FBA建议量</strong> = （海外仓至FBA时效 + 安全天数 + 海外仓发货频率）× 日销量(动态) − （FBA库存 + FBA在途）</div>
+                </div>
+              </div>
+
+              <div id="formula-calc-preview" style="margin-top: 12px; padding: 10px 12px; background: white; border-radius: 4px; font-size: 12px; color: #606266;"></div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+      
+      <!-- 日销量规则 -->
+      <div id="sales-tab" class="tab-content" style="display: none;">
+        <div class="form-card">
+          <div class="card-header">
+            <span class="card-icon">📅</span>
+            <span class="card-title">日销量规则</span>
+          </div>
+          <div class="card-body">
+
+            <div class="page-section-title">默认日销量与促销</div>
+
+            <!-- 公式展示 -->
+            <div style="padding: 14px 16px; background: #ecf5ff; border-radius: 4px; border-left: 3px solid #409eff; margin-bottom: 24px;">
+              <div style="font-size: 14px; color: #409eff; font-weight: 500; margin-bottom: 8px;">预测日销量计算公式</div>
+              <div style="font-size: 13px; color: #303133; font-family: 'Courier New', monospace; line-height: 1.8;">
+                预测日销量 = 3天日均 × 权重 + 7天日均 × 权重 + 14天日均 × 权重 + 30天日均 × 权重 + 60天日均 × 权重 + 90天日均 × 权重
+              </div>
+              <div style="font-size: 12px; color: #909399; margin-top: 6px;">
+                此为基础日销量，后续还会乘以影响系数（季节/市场、促销、同比、生命周期、竞对价格等）得到最终动态日销量
+              </div>
+            </div>
+
+            <!-- 默认日销量 -->
+            <div class="form-group" style="width: 100%;">
+              <div class="table-container">
+                <table class="data-table" id="daily-sales-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 100px;"></th>
+                      <th>3天</th>
+                      <th>7天</th>
+                      <th>14天</th>
+                      <th>30天</th>
+                      <th>60天</th>
+                      <th>90天</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td style="font-weight: 500; background: #f5f7fa;">日均销量</td>
+                      <td><input type="number" class="form-control daily-avg" id="avg-3d" value="25" step="0.01" style="text-align: center;" oninput="calcDailySalesPreview()" /></td>
+                      <td><input type="number" class="form-control daily-avg" id="avg-7d" value="27" step="0.01" style="text-align: center;" oninput="calcDailySalesPreview()" /></td>
+                      <td><input type="number" class="form-control daily-avg" id="avg-14d" value="23" step="0.01" style="text-align: center;" oninput="calcDailySalesPreview()" /></td>
+                      <td><input type="number" class="form-control daily-avg" id="avg-30d" value="20" step="0.01" style="text-align: center;" oninput="calcDailySalesPreview()" /></td>
+                      <td><input type="number" class="form-control daily-avg" id="avg-60d" value="18" step="0.01" style="text-align: center;" oninput="calcDailySalesPreview()" /></td>
+                      <td><input type="number" class="form-control daily-avg" id="avg-90d" value="16" step="0.01" style="text-align: center;" oninput="calcDailySalesPreview()" /></td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight: 500; background: #f5f7fa;">权重设置</td>
+                      <td><div style="display:flex;align-items:center;justify-content:center;gap:2px;"><input type="number" class="form-control daily-weight" id="wt-3d" value="0" min="0" max="100" step="1" oninput="onDailyWeightChange()" /><span>%</span></div></td>
+                      <td><div style="display:flex;align-items:center;justify-content:center;gap:2px;"><input type="number" class="form-control daily-weight" id="wt-7d" value="40" min="0" max="100" step="1" oninput="onDailyWeightChange()" /><span>%</span></div></td>
+                      <td><div style="display:flex;align-items:center;justify-content:center;gap:2px;"><input type="number" class="form-control daily-weight" id="wt-14d" value="30" min="0" max="100" step="1" oninput="onDailyWeightChange()" /><span>%</span></div></td>
+                      <td><div style="display:flex;align-items:center;justify-content:center;gap:2px;"><input type="number" class="form-control daily-weight" id="wt-30d" value="20" min="0" max="100" step="1" oninput="onDailyWeightChange()" /><span>%</span></div></td>
+                      <td><div style="display:flex;align-items:center;justify-content:center;gap:2px;"><input type="number" class="form-control daily-weight" id="wt-60d" value="10" min="0" max="100" step="1" oninput="onDailyWeightChange()" /><span>%</span></div></td>
+                      <td><div style="display:flex;align-items:center;justify-content:center;gap:2px;"><input type="number" class="form-control daily-weight" id="wt-90d" value="0" min="0" max="100" step="1" oninput="onDailyWeightChange()" /><span>%</span></div></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- 权重校验 + 试算结果 -->
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 12px; flex-wrap: wrap; gap: 12px;">
+                <div style="display: flex; align-items: center; gap: 16px;">
+                  <span style="font-size: 14px;">
+                    权重合计：<strong id="daily-weight-sum" style="color: #67c23a;">100%</strong>
+                  </span>
+                  <span id="daily-weight-status" style="font-size: 12px; color: #67c23a;">✓ 权重分配完成</span>
+                </div>
+                <div style="padding: 10px 16px; background: #f0f9eb; border-radius: 4px; border: 1px solid #e1f3d8;">
+                  <span style="font-size: 13px; color: #606266;">试算：预测日销量 = </span>
+                  <strong id="daily-sales-preview" style="font-size: 16px; color: #67c23a;">23.50</strong>
+                  <span style="font-size: 13px; color: #606266;"> 件/天</span>
+                </div>
+              </div>
+              <div style="font-size: 12px; color: #909399; margin-top: 6px;">
+                日均销量由系统根据历史订单数据自动计算，权重由用户配置，合计必须等于 100%
+              </div>
+            </div>
+
+            <!-- 生命周期权重模板 -->
+            <div class="form-group" style="width: 100%;">
+              <span class="block-heading block-heading--green">生命周期权重模板</span>
+              <div style="font-size: 12px; color: #909399; margin-bottom: 12px;">
+                不同产品阶段使用不同的权重分配策略，选择模板可快速填充上方权重
+              </div>
+              <div class="lifecycle-template-btns" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button type="button" class="btn btn-secondary lifecycle-template-btn" onclick="applyLifecycleTemplate('new-early', this)" title="7≤上架天数<14天：仅看近7天">
+                  新品期（极早期）
+                </button>
+                <button type="button" class="btn btn-secondary lifecycle-template-btn" onclick="applyLifecycleTemplate('new-mid', this)" title="14≤上架天数<30天：7天70%+14天30%">
+                  新品期（中期）
+                </button>
+                <button type="button" class="btn btn-secondary lifecycle-template-btn" onclick="applyLifecycleTemplate('new-late', this)" title="30≤上架天数<90天：7天60%+14天30%+30天10%">
+                  新品期（后期）
+                </button>
+                <button type="button" class="btn btn-secondary lifecycle-template-btn" onclick="applyLifecycleTemplate('growth', this)" title="季节款：7天60%+14天30%+30天10%">
+                  成长期（季节款）
+                </button>
+                <button type="button" class="btn btn-secondary lifecycle-template-btn" onclick="applyLifecycleTemplate('mature', this)" title="均衡分布，拉长参考周期">
+                  成熟期
+                </button>
+              </div>
+
+              <div class="table-container" style="margin-top: 12px;">
+                <table class="data-table" style="font-size: 12px;">
+                  <thead>
+                    <tr style="background: #f5f7fa;">
+                      <th style="width: 140px;">模板</th>
+                      <th>3天</th>
+                      <th>7天</th>
+                      <th>14天</th>
+                      <th>30天</th>
+                      <th>60天</th>
+                      <th>90天</th>
+                      <th style="width: 180px;">适用说明</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td style="font-weight:500;">新品（极早期）</td>
+                      <td>0%</td><td>100%</td><td>0%</td><td>0%</td><td>0%</td><td>0%</td>
+                      <td style="font-size:11px;color:#909399;text-align:left;">上架7~14天，仅有极短期数据</td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight:500;">新品（中期）</td>
+                      <td>0%</td><td>70%</td><td>30%</td><td>0%</td><td>0%</td><td>0%</td>
+                      <td style="font-size:11px;color:#909399;text-align:left;">上架14~30天，引入14天数据</td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight:500;">新品（后期）</td>
+                      <td>0%</td><td>60%</td><td>30%</td><td>10%</td><td>0%</td><td>0%</td>
+                      <td style="font-size:11px;color:#909399;text-align:left;">上架30~90天，逐步拉长窗口</td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight:500;">成长期（季节款）</td>
+                      <td>0%</td><td>60%</td><td>30%</td><td>10%</td><td>0%</td><td>0%</td>
+                      <td style="font-size:11px;color:#909399;text-align:left;">重点看近期，快速响应趋势</td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight:500;">成熟期</td>
+                      <td>0%</td><td>10%</td><td>20%</td><td>30%</td><td>25%</td><td>15%</td>
+                      <td style="font-size:11px;color:#909399;text-align:left;">均衡分布，消除短期噪音</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- 促销销量 -->
+            <div class="form-group" style="width: 100%;">
+              <div class="page-section-title page-section-title--orange" style="margin-top: 32px;">促销销量</div>
+              <div style="padding: 10px 14px; background: #fdf6ec; border-radius: 4px; border-left: 3px solid #e6a23c; margin-bottom: 12px; font-size: 12px; color: #606266; line-height: 1.6;">
+                促销期间的日销量将<strong>覆盖</strong>上方的默认加权计算值。适用于 Prime Day、Black Friday 等大促场景，由运营人工预估。
+              </div>
+              <div class="table-container">
+                <table class="data-table" id="promo-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 50px;">序号</th>
+                      <th>促销名称</th>
+                      <th>时间段</th>
+                      <th style="width: 140px;">预测日销量</th>
+                      <th style="width: 140px;">预测总销量</th>
+                      <th style="width: 72px;">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="promo-tbody">
+                  </tbody>
+                </table>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+                <span style="font-size: 14px;" id="promo-row-count">共0条</span>
+                <button class="btn btn-secondary btn-add" onclick="addPromoRow()">
+                  <span>+</span> 添加促销
+                </button>
+              </div>
+            </div>
+
+            <!-- 公式链路提示 -->
+            <div style="margin-top: 16px; padding: 14px 16px; background: #f5f7fa; border-radius: 4px;">
+              <div style="font-size: 13px; font-weight: 600; color: #303133; margin-bottom: 8px; padding-left: 0; border: none;">完整日销量计算链路</div>
+              <div style="font-size: 12px; color: #606266; line-height: 2;">
+                <div>① <strong>去噪处理</strong>（销量修正/去噪规则页面配置）→ 清洗历史异常数据</div>
+                <div>② <strong>基础日销量</strong>（本页配置）→ 6时段加权得到预测日销量</div>
+                <div>③ <strong>促销覆盖</strong>（本页配置）→ 促销期间用人工预估值替代</div>
+                <div>④ <strong>影响系数</strong>（影响系数页面配置）→ × 季节/市场 × 促销 × 同比 × 生命周期 × 竞对价格</div>
+                <div>⑤ <strong>最终动态日销量</strong> → 输入到备货公式中计算建议补货量</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+      
+      <!-- 影响系数 -->
+      <div id="coefficient-tab" class="tab-content" style="display: none;">
+        <div class="form-card">
+          <div class="card-header">
+            <span class="card-icon">🎛️</span>
+            <span class="card-title">影响系数规则</span>
+          </div>
+          <div class="card-body">
+
+            <!-- 公式说明 -->
+            <div style="padding: 14px 16px; background: #ecf5ff; border-radius: 4px; border-left: 3px solid #409eff; margin-bottom: 24px;">
+              <div style="font-size: 14px; color: #409eff; font-weight: 500; margin-bottom: 8px;">最终动态日销量公式</div>
+              <div style="font-size: 13px; color: #303133; font-family: 'Courier New', monospace; line-height: 1.8;">
+                动态日销量 = 基础日销量 × 季节/市场系数 × 促销系数 × 同比销售系数 × 次新品/老品系数 × 竞对价格系数
+              </div>
+              <div style="font-size: 12px; color: #909399; margin-top: 6px;">
+                各系数默认值为 1（不影响），大于1为增量调整，小于1为减量调整
+              </div>
+            </div>
+
+            <!-- === 第一部分：日销量影响系数 === -->
+            <div class="page-section-title">日销量影响系数</div>
+
+            <!-- 1. 季节/市场系数 -->
+            <div class="form-group coeff-section-wrap" id="coeff-wrap-season" style="width: 100%; margin-bottom: 24px;">
+              <div class="section-title-row">
+                <span class="section-title-text section-accent--blue">季节/市场系数</span>
+                <label class="section-title-toggle">
+                  <input type="checkbox" id="coeff-enable-season" checked onchange="toggleSectionDisabled('coeff-body-season', this.checked)" />
+                  <span class="pill-switch-ui" aria-hidden="true">
+                    <span class="pill-switch-label pill-switch-label--on">启用</span>
+                    <span class="pill-switch-label pill-switch-label--off">停用</span>
+                    <span class="pill-switch-knob"></span>
+                  </span>
+                </label>
+              </div>
+              <div class="coeff-section-body" id="coeff-body-season">
+              <div class="table-container">
+                <table class="data-table" id="season-coeff-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 50px;">序号</th>
+                      <th>时间段</th>
+                      <th style="width: 120px;">增长/衰减</th>
+                      <th style="width: 140px;">系数值</th>
+                      <th style="width: 200px;">说明</th>
+                      <th style="width: 72px;">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="season-coeff-tbody">
+                    <tr>
+                      <td>1</td>
+                      <td>
+                        <div style="display:flex;align-items:center;gap:6px;justify-content:center;">
+                          <input type="date" class="form-control" style="width:130px;" />
+                          <span>至</span>
+                          <input type="date" class="form-control" style="width:130px;" />
+                        </div>
+                      </td>
+                      <td>
+                        <select class="form-control">
+                          <option value="up" selected>增长 ↑</option>
+                          <option value="down">衰减 ↓</option>
+                        </select>
+                      </td>
+                      <td>
+                        <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
+                          <input type="number" class="form-control" value="1.1" min="0" step="0.01" style="width:80px;text-align:center;" />
+                        </div>
+                      </td>
+                      <td><input type="text" class="form-control" placeholder="如：夏季旺季" style="width:100%;" /></td>
+                      <td><button class="btn-delete" onclick="deleteCoeffRow(this)">🗑️</button></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <button class="btn btn-secondary btn-add" style="margin-top: 8px;" onclick="addCoeffRow('season-coeff-tbody')"><span>+</span> 添加</button>
+              <div style="font-size: 12px; color: #909399; margin-top: 4px;">
+                根据季节性或市场大盘趋势调整预测值。例如泳衣夏季系数1.3，冬季系数0.5
+              </div>
+              </div>
+            </div>
+            <!-- 2. 同比销售系数 -->
+            <div class="form-group coeff-section-wrap" id="coeff-wrap-yoy" style="width: 100%; margin-bottom: 24px;">
+              <div class="section-title-row">
+                <span class="section-title-text section-accent--green">同比销售系数</span>
+                <label class="section-title-toggle">
+                  <input type="checkbox" id="coeff-enable-yoy" checked onchange="toggleSectionDisabled('coeff-body-yoy', this.checked)" />
+                  <span class="pill-switch-ui" aria-hidden="true">
+                    <span class="pill-switch-label pill-switch-label--on">启用</span>
+                    <span class="pill-switch-label pill-switch-label--off">停用</span>
+                    <span class="pill-switch-knob"></span>
+                  </span>
+                </label>
+              </div>
+              <div class="coeff-section-body" id="coeff-body-yoy">
+              <div class="table-container">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 50px;">序号</th>
+                      <th>时间段</th>
+                      <th style="width: 120px;">增长/衰减</th>
+                      <th style="width: 140px;">系数值</th>
+                      <th style="width: 200px;">说明</th>
+                      <th style="width: 72px;">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="yoy-coeff-tbody">
+                    <tr>
+                      <td>1</td>
+                      <td>
+                        <div style="display:flex;align-items:center;gap:6px;justify-content:center;">
+                          <input type="date" class="form-control" style="width:130px;" />
+                          <span>至</span>
+                          <input type="date" class="form-control" style="width:130px;" />
+                        </div>
+                      </td>
+                      <td>
+                        <select class="form-control">
+                          <option value="up" selected>增长 ↑</option>
+                          <option value="down">衰减 ↓</option>
+                        </select>
+                      </td>
+                      <td>
+                        <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
+                          <input type="number" class="form-control" value="1.0" min="0" step="0.01" style="width:80px;text-align:center;" />
+                        </div>
+                      </td>
+                      <td><input type="text" class="form-control" placeholder="如：同比增长20%" style="width:100%;" /></td>
+                      <td><button class="btn-delete" onclick="deleteCoeffRow(this)">🗑️</button></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <button class="btn btn-secondary btn-add" style="margin-top: 8px;" onclick="addCoeffRow('yoy-coeff-tbody')"><span>+</span> 添加</button>
+              <div style="font-size: 12px; color: #909399; margin-top: 4px;">
+                参考去年同期的销量趋势，确认增长是否健康且符合预期
+              </div>
+              </div>
+            </div>
+
+            <!-- 3. 次新品/老品系数（生命周期） -->
+            <div class="form-group coeff-section-wrap" id="coeff-wrap-lifecycle" style="width: 100%; margin-bottom: 24px;">
+              <div class="section-title-row">
+                <span class="section-title-text section-accent--red">产品生命周期系数（次新品/老品）</span>
+                <label class="section-title-toggle">
+                  <input type="checkbox" id="coeff-enable-lifecycle" checked onchange="toggleSectionDisabled('coeff-body-lifecycle', this.checked)" />
+                  <span class="pill-switch-ui" aria-hidden="true">
+                    <span class="pill-switch-label pill-switch-label--on">启用</span>
+                    <span class="pill-switch-label pill-switch-label--off">停用</span>
+                    <span class="pill-switch-knob"></span>
+                  </span>
+                </label>
+              </div>
+              <div class="coeff-section-body" id="coeff-body-lifecycle">
+              <div class="table-container">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 50px;">序号</th>
+                      <th style="width: 120px;">生命周期类型</th>
+                      <th>时间段</th>
+                      <th style="width: 120px;">增长/衰减</th>
+                      <th style="width: 140px;">比例系数</th>
+                      <th style="width: 72px;">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="lifecycle-coeff-tbody">
+                    <tr>
+                      <td>1</td>
+                      <td>
+                        <select class="form-control">
+                          <option selected>次新品</option>
+                          <option>老品</option>
+                        </select>
+                      </td>
+                      <td>
+                        <div style="display:flex;align-items:center;gap:6px;justify-content:center;">
+                          <input type="date" class="form-control" style="width:130px;" />
+                          <span>至</span>
+                          <input type="date" class="form-control" style="width:130px;" />
+                        </div>
+                      </td>
+                      <td>
+                        <select class="form-control">
+                          <option value="up" selected>同比增长</option>
+                          <option value="down">同比衰减</option>
+                        </select>
+                      </td>
+                      <td>
+                        <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
+                          <input type="number" class="form-control" value="1.0" min="0" step="0.01" style="width:80px;text-align:center;" />
+                        </div>
+                      </td>
+                      <td><button class="btn-delete" onclick="deleteCoeffRow(this)">🗑️</button></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <button class="btn btn-secondary btn-add" style="margin-top: 8px;" onclick="addCoeffRow('lifecycle-coeff-tbody', 'lifecycle')"><span>+</span> 添加</button>
+              <div style="font-size: 12px; color: #909399; margin-top: 4px;">
+                次新品处于增长期，系数 > 1；老品处于衰减期，系数 < 1
+              </div>
+              </div>
+            </div>
+
+            <!-- 4. 竞对价格系数 -->
+            <div class="form-group coeff-section-wrap" id="coeff-wrap-competitor" style="width: 100%; margin-bottom: 24px;">
+              <div class="section-title-row">
+                <span class="section-title-text section-accent--gray">竞对价格系数</span>
+                <label class="section-title-toggle">
+                  <input type="checkbox" id="coeff-enable-competitor" checked onchange="toggleSectionDisabled('coeff-body-competitor', this.checked)" />
+                  <span class="pill-switch-ui" aria-hidden="true">
+                    <span class="pill-switch-label pill-switch-label--on">启用</span>
+                    <span class="pill-switch-label pill-switch-label--off">停用</span>
+                    <span class="pill-switch-knob"></span>
+                  </span>
+                </label>
+              </div>
+              <div class="coeff-section-body" id="coeff-body-competitor">
+              <div class="table-container">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 50px;">序号</th>
+                      <th>时间段</th>
+                      <th style="width: 120px;">增长/衰减</th>
+                      <th style="width: 140px;">系数值</th>
+                      <th style="width: 200px;">说明</th>
+                      <th style="width: 72px;">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="competitor-coeff-tbody">
+                    <tr>
+                      <td>1</td>
+                      <td>
+                        <div style="display:flex;align-items:center;gap:6px;justify-content:center;">
+                          <input type="date" class="form-control" style="width:130px;" />
+                          <span>至</span>
+                          <input type="date" class="form-control" style="width:130px;" />
+                        </div>
+                      </td>
+                      <td>
+                        <select class="form-control">
+                          <option value="up">增长 ↑</option>
+                          <option value="down" selected>衰减 ↓</option>
+                        </select>
+                      </td>
+                      <td>
+                        <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
+                          <input type="number" class="form-control" value="1.0" min="0" step="0.01" style="width:80px;text-align:center;" />
+                        </div>
+                      </td>
+                      <td><input type="text" class="form-control" placeholder="如：竞对降价分流" style="width:100%;" /></td>
+                      <td><button class="btn-delete" onclick="deleteCoeffRow(this)">🗑️</button></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <button class="btn btn-secondary btn-add" style="margin-top: 8px;" onclick="addCoeffRow('competitor-coeff-tbody')"><span>+</span> 添加</button>
+              <div style="font-size: 12px; color: #909399; margin-top: 4px;">
+                竞对降价时 &lt; 1（需求被分流），竞对涨价时 &gt; 1（需求流入）
+              </div>
+              </div>
+            </div>
+
+            <!-- 5. 目标系数/目标置信率系数 -->
+            <div class="form-group coeff-section-wrap" id="coeff-wrap-target" style="width: 100%; margin-bottom: 24px;">
+              <div class="section-title-row">
+                <span class="section-title-text section-accent--purple">目标系数 / 目标置信率系数</span>
+                <label class="section-title-toggle">
+                  <input type="checkbox" id="coeff-enable-target" checked onchange="toggleSectionDisabled('coeff-body-target', this.checked)" />
+                  <span class="pill-switch-ui" aria-hidden="true">
+                    <span class="pill-switch-label pill-switch-label--on">启用</span>
+                    <span class="pill-switch-label pill-switch-label--off">停用</span>
+                    <span class="pill-switch-knob"></span>
+                  </span>
+                </label>
+              </div>
+              <div class="coeff-section-body" id="coeff-body-target">
+              <div class="table-container">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 50px;">序号</th>
+                      <th>时间段</th>
+                      <th style="width: 120px;">增长/衰减</th>
+                      <th style="width: 140px;">系数值</th>
+                      <th style="width: 200px;">说明</th>
+                      <th style="width: 72px;">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="target-coeff-tbody">
+                    <tr>
+                      <td>1</td>
+                      <td>
+                        <div style="display:flex;align-items:center;gap:6px;justify-content:center;">
+                          <input type="date" class="form-control" style="width:130px;" />
+                          <span>至</span>
+                          <input type="date" class="form-control" style="width:130px;" />
+                        </div>
+                      </td>
+                      <td>
+                        <select class="form-control">
+                          <option value="up" selected>增长 ↑</option>
+                          <option value="down">衰减 ↓</option>
+                        </select>
+                      </td>
+                      <td>
+                        <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
+                          <input type="number" class="form-control" value="1.0" min="0" step="0.01" style="width:80px;text-align:center;" />
+                        </div>
+                      </td>
+                      <td><input type="text" class="form-control" placeholder="如：目标完成率调高" style="width:100%;" /></td>
+                      <td><button class="btn-delete" onclick="deleteCoeffRow(this)">🗑️</button></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <button class="btn btn-secondary btn-add" style="margin-top: 8px;" onclick="addCoeffRow('target-coeff-tbody')"><span>+</span> 添加</button>
+              <div style="font-size: 12px; color: #909399; margin-top: 4px;">
+                反映公司销售目标与完成率的牵引力度，目标完成率高时可适当调高
+              </div>
+              </div>
+            </div>
+
+            <!-- === 第二部分：安全库存天数调整 === -->
+            <div class="page-section-title page-section-title--orange" style="margin-top: 32px;">安全库存天数调整系数</div>
+            <div style="font-size: 12px; color: #909399; margin-bottom: 16px;">
+              以下维度可覆盖备货规则中的默认安全天数（28天），不同维度取最高优先级的值
+            </div>
+
+            <!-- 销售层级系数 -->
+            <div class="form-group coeff-section-wrap" id="coeff-wrap-safety-level" style="width: 100%; margin-bottom: 20px;">
+              <div class="section-title-row">
+                <span class="section-title-text section-accent--blue">销售层级 → 安全库存天数</span>
+                <label class="section-title-toggle">
+                  <input type="checkbox" id="coeff-enable-safety-level" checked onchange="toggleSectionDisabled('coeff-body-safety-level', this.checked)" />
+                  <span class="pill-switch-ui" aria-hidden="true">
+                    <span class="pill-switch-label pill-switch-label--on">启用</span>
+                    <span class="pill-switch-label pill-switch-label--off">停用</span>
+                    <span class="pill-switch-knob"></span>
+                  </span>
+                </label>
+              </div>
+              <div class="coeff-section-body" id="coeff-body-safety-level">
+              <div class="table-container">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>销售层级</th>
+                      <th>补货策略</th>
+                      <th style="width: 160px;">安全库存天数</th>
+                      <th>说明</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td style="font-weight:500;">A - 爆款</td>
+                      <td>补货激进，系数高</td>
+                      <td>
+                        <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
+                          <input type="number" class="form-control" id="safety-a" value="45" style="width:70px;text-align:center;" />
+                          <span>天</span>
+                        </div>
+                      </td>
+                      <td style="font-size:12px;color:#909399;">高销量核心品，绝不能断货</td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight:500;">B - 旺款</td>
+                      <td>补货稳健，系数中</td>
+                      <td>
+                        <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
+                          <input type="number" class="form-control" id="safety-b" value="28" style="width:70px;text-align:center;" />
+                          <span>天</span>
+                        </div>
+                      </td>
+                      <td style="font-size:12px;color:#909399;">销量稳定的常规品</td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight:500;">C - 利润款</td>
+                      <td>补货保守，系数低</td>
+                      <td>
+                        <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
+                          <input type="number" class="form-control" id="safety-c" value="20" style="width:70px;text-align:center;" />
+                          <span>天</span>
+                        </div>
+                      </td>
+                      <td style="font-size:12px;color:#909399;">低销量长尾品，控制库存成本</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              </div>
+            </div>
+
+            <!-- 新品系数 -->
+            <div class="form-group coeff-section-wrap" id="coeff-wrap-safety-new" style="width: 100%; margin-bottom: 20px;">
+              <div class="section-title-row">
+                <span class="section-title-text section-accent--green">新品 → 安全库存天数</span>
+                <label class="section-title-toggle">
+                  <input type="checkbox" id="coeff-enable-safety-new" checked onchange="toggleSectionDisabled('coeff-body-safety-new', this.checked)" />
+                  <span class="pill-switch-ui" aria-hidden="true">
+                    <span class="pill-switch-label pill-switch-label--on">启用</span>
+                    <span class="pill-switch-label pill-switch-label--off">停用</span>
+                    <span class="pill-switch-knob"></span>
+                  </span>
+                </label>
+              </div>
+              <div class="coeff-section-body" id="coeff-body-safety-new">
+              <div style="display: flex; align-items: center; gap: 16px; padding: 12px 16px; background: #f5f7fa; border-radius: 4px;">
+                <span style="font-size: 14px;">新品安全库存天数：</span>
+                <input type="number" class="form-control" id="safety-new" value="45" style="width:70px;text-align:center;" />
+                <span>天</span>
+                <span style="font-size: 12px; color: #909399;">新品期近期销售影响值更大，安全库存需要更高缓冲</span>
+              </div>
+              </div>
+            </div>
+
+            <!-- 颜色系数 -->
+            <div class="form-group coeff-section-wrap" id="coeff-wrap-safety-color" style="width: 100%; margin-bottom: 20px;">
+              <div class="section-title-row">
+                <span class="section-title-text section-accent--orange">颜色维度 → 安全库存天数</span>
+                <label class="section-title-toggle">
+                  <input type="checkbox" id="coeff-enable-safety-color" checked onchange="toggleSectionDisabled('coeff-body-safety-color', this.checked)" />
+                  <span class="pill-switch-ui" aria-hidden="true">
+                    <span class="pill-switch-label pill-switch-label--on">启用</span>
+                    <span class="pill-switch-label pill-switch-label--off">停用</span>
+                    <span class="pill-switch-knob"></span>
+                  </span>
+                </label>
+              </div>
+              <div class="coeff-section-body" id="coeff-body-safety-color">
+              <div class="table-container">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>颜色类型</th>
+                      <th style="width: 160px;">安全库存天数</th>
+                      <th>说明</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td style="font-weight:500;">主颜色</td>
+                      <td>
+                        <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
+                          <input type="number" class="form-control" id="safety-main-color" value="45" style="width:70px;text-align:center;" />
+                          <span>天</span>
+                        </div>
+                      </td>
+                      <td style="font-size:12px;color:#909399;">销量占比高的主力颜色，需要更高安全库存</td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight:500;">次颜色</td>
+                      <td>
+                        <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
+                          <input type="number" class="form-control" id="safety-sub-color" value="28" style="width:70px;text-align:center;" />
+                          <span>天</span>
+                        </div>
+                      </td>
+                      <td style="font-size:12px;color:#909399;">销量占比低的辅助颜色，默认安全天数即可</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              </div>
+            </div>
+
+            <!-- 流量系数 -->
+            <div class="form-group coeff-section-wrap" id="coeff-wrap-safety-traffic" style="width: 100%; margin-bottom: 20px;">
+              <div class="section-title-row">
+                <span class="section-title-text section-accent--red">流量维度 → 安全库存天数</span>
+                <label class="section-title-toggle">
+                  <input type="checkbox" id="coeff-enable-safety-traffic" checked onchange="toggleSectionDisabled('coeff-body-safety-traffic', this.checked)" />
+                  <span class="pill-switch-ui" aria-hidden="true">
+                    <span class="pill-switch-label pill-switch-label--on">启用</span>
+                    <span class="pill-switch-label pill-switch-label--off">停用</span>
+                    <span class="pill-switch-knob"></span>
+                  </span>
+                </label>
+              </div>
+              <div class="coeff-section-body" id="coeff-body-safety-traffic">
+              <div class="table-container">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>流量类型</th>
+                      <th style="width: 160px;">安全库存天数</th>
+                      <th>说明</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td style="font-weight:500;">OR（自然流量 ASIN）</td>
+                      <td>
+                        <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
+                          <input type="number" class="form-control" id="safety-or" value="45" style="width:70px;text-align:center;" />
+                          <span>天</span>
+                        </div>
+                      </td>
+                      <td style="font-size:12px;color:#909399;">自然搜索流量为主的ASIN，断货损失大</td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight:500;">AD（广告流量 ASIN）</td>
+                      <td>
+                        <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
+                          <input type="number" class="form-control" id="safety-ad" value="28" style="width:70px;text-align:center;" />
+                          <span>天</span>
+                        </div>
+                      </td>
+                      <td style="font-size:12px;color:#909399;">广告流量为主的ASIN，可通过暂停广告缓冲</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- 销量修正/去噪 -->
+      <div id="denoise-tab" class="tab-content" style="display: none;">
+        <div class="form-card">
+          <div class="card-header">
+            <span class="card-icon">🔧</span>
+            <span class="card-title">销量修正 / 去噪规则</span>
+          </div>
+          <div class="card-body">
+            <div class="page-section-title page-section-title--blue">去噪规则与执行顺序</div>
+
+            <!-- 执行顺序说明 -->
+            <div style="padding: 14px 16px; background: #ecf5ff; border-radius: 4px; border-left: 3px solid #409eff; margin-bottom: 24px;">
+              <div style="font-size: 14px; color: #409eff; font-weight: 500; margin-bottom: 8px;">去噪执行顺序</div>
+              <div style="font-size: 13px; color: #303133; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <span style="padding: 4px 12px; background: #409eff; color: white; border-radius: 12px; font-size: 12px;">① 自动去噪</span>
+                <span style="color: #909399;">→</span>
+                <span style="padding: 4px 12px; background: #67c23a; color: white; border-radius: 12px; font-size: 12px;">② 指定日期去噪</span>
+                <span style="color: #909399;">→</span>
+                <span style="padding: 4px 12px; background: #e6a23c; color: white; border-radius: 12px; font-size: 12px;">③ 断货去噪</span>
+                <span style="color: #909399;">→</span>
+                <span style="padding: 4px 12px; background: #f56c6c; color: white; border-radius: 12px; font-size: 12px;">④ 退货量去噪</span>
+              </div>
+              <div style="font-size: 12px; color: #909399; margin-top: 8px;">
+                各规则支持同时设置，按上述顺序依次执行。相同时间段内重复设置时，以最后一条为准。
+              </div>
+            </div>
+
+            <!-- 1. 日销量自动去噪 -->
+            <div class="form-group denoise-section-wrap" id="denoise-wrap-auto" style="width: 100%; margin-bottom: 28px;">
+              <div class="section-title-row">
+                <span class="section-title-text section-accent--blue">① 日销量自动去噪（大订单去噪）</span>
+                <label class="section-title-toggle">
+                  <input type="checkbox" id="auto-denoise-toggle" checked onchange="toggleSectionDisabled('denoise-body-auto', this.checked)" />
+                  <span class="pill-switch-ui" aria-hidden="true">
+                    <span class="pill-switch-label pill-switch-label--on">启用</span>
+                    <span class="pill-switch-label pill-switch-label--off">停用</span>
+                    <span class="pill-switch-knob"></span>
+                  </span>
+                </label>
+              </div>
+              <div class="denoise-section-body" id="denoise-body-auto">
+              <div style="font-size: 12px; color: #606266; margin-bottom: 12px; line-height: 1.6;">
+                当单个订单同一产品销量过大，影响历史平均销量时，将该订单的产品销量按指定值计算，避免拉高日均数据。
+              </div>
+              <div class="table-container">
+                <table class="data-table denoise-auto-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 100px;">类型</th>
+                      <th>规则</th>
+                      <th style="width: 100px; text-align: center;">状态</th>
+                    </tr>
+                  </thead>
+                  <tbody id="auto-denoise-tbody">
+                    <tr>
+                      <td style="font-weight:500;">大订单去噪</td>
+                      <td class="auto-denoise-rule-cell">
+                        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                          <span>单个订单单个产品销量 ≥</span>
+                          <input type="number" class="form-control" id="auto-denoise-x" value="10" style="width:70px;text-align:center;" />
+                          <span>个时，该订单产品销量记为</span>
+                          <input type="number" class="form-control" id="auto-denoise-y" value="1" style="width:70px;text-align:center;" />
+                          <span>个</span>
+                        </div>
+                      </td>
+                      <td style="text-align: center; vertical-align: middle;">
+                        <label class="section-title-toggle auto-denoise-status-toggle">
+                          <input type="checkbox" id="auto-denoise-large-enabled" checked onchange="syncAutoDenoiseRowEnabled(this)" />
+                          <span class="pill-switch-ui" aria-hidden="true">
+                            <span class="pill-switch-label pill-switch-label--on">启用</span>
+                            <span class="pill-switch-label pill-switch-label--off">停用</span>
+                            <span class="pill-switch-knob"></span>
+                          </span>
+                        </label>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div style="font-size: 12px; color: #909399; margin-top: 4px;">
+                示例：X=10, Y=1，如果某订单某产品销量 ≥ 10个，该订单对应产品的销量只按1个计算
+              </div>
+              </div>
+            </div>
+
+            <!-- 2. 日销量指定日期去噪 -->
+            <div class="form-group denoise-section-wrap" id="denoise-wrap-date" style="width: 100%; margin-bottom: 28px;">
+              <div class="section-title-row">
+                <span class="section-title-text section-accent--green">② 日销量指定日期去噪</span>
+                <label class="section-title-toggle">
+                  <input type="checkbox" id="date-denoise-enable" checked onchange="toggleSectionDisabled('denoise-body-date', this.checked)" />
+                  <span class="pill-switch-ui" aria-hidden="true">
+                    <span class="pill-switch-label pill-switch-label--on">启用</span>
+                    <span class="pill-switch-label pill-switch-label--off">停用</span>
+                    <span class="pill-switch-knob"></span>
+                  </span>
+                </label>
+              </div>
+              <div class="denoise-section-body" id="denoise-body-date">
+              <div style="font-size: 12px; color: #606266; margin-bottom: 12px; line-height: 1.6;">
+                历史某段时间销量存在异常情况（如促销导致暴增、其他原因导致暴跌），支持指定时间修复历史销量数据。
+              </div>
+              <div class="table-container">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 50px;">序号</th>
+                      <th style="min-width: 200px; width: 22%;">去噪类型</th>
+                      <th>时间段</th>
+                      <th style="width: 140px;">去噪值</th>
+                      <th style="width: 160px;">名称/说明</th>
+                      <th style="width: 72px;">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="date-denoise-tbody">
+                    <tr>
+                      <td>1</td>
+                      <td>
+                        <select class="form-control">
+                          <option selected>固定值去噪</option>
+                          <option>百分比去噪</option>
+                        </select>
+                      </td>
+                      <td>
+                        <div style="display:flex;align-items:center;gap:6px;justify-content:center;">
+                          <input type="date" class="form-control" style="width:130px;" />
+                          <span>至</span>
+                          <input type="date" class="form-control" style="width:130px;" />
+                        </div>
+                      </td>
+                      <td>
+                        <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
+                          <input type="number" class="form-control" placeholder="值" style="width:80px;text-align:center;" />
+                        </div>
+                      </td>
+                      <td><input type="text" class="form-control" placeholder="如：BD促销去噪" style="width:100%;" /></td>
+                      <td><button class="btn-delete" onclick="deleteDenoiseRow(this, 'date-denoise-tbody')">🗑️</button></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <button class="btn btn-secondary btn-add" style="margin-top: 8px;" onclick="addDateDenoiseRow()"><span>+</span> 添加</button>
+              <div style="font-size: 12px; color: #909399; margin-top: 4px;">
+                固定值去噪：将该时段日销量替换为指定数值。百分比去噪：将该时段日销量按百分比缩放（如填50，表示按50%计算）。
+              </div>
+              </div>
+            </div>
+
+            <!-- 3. 日销量断货去噪 -->
+            <div class="form-group denoise-section-wrap" id="denoise-wrap-stockout" style="width: 100%; margin-bottom: 28px;">
+              <div class="section-title-row">
+                <span class="section-title-text section-accent--orange">③ 日销量断货去噪</span>
+                <label class="section-title-toggle">
+                  <input type="checkbox" id="stockout-denoise-toggle" checked onchange="toggleSectionDisabled('denoise-body-stockout', this.checked)" />
+                  <span class="pill-switch-ui" aria-hidden="true">
+                    <span class="pill-switch-label pill-switch-label--on">启用</span>
+                    <span class="pill-switch-label pill-switch-label--off">停用</span>
+                    <span class="pill-switch-knob"></span>
+                  </span>
+                </label>
+              </div>
+              <div class="denoise-section-body" id="denoise-body-stockout">
+              <div style="padding: 12px 16px; background: #fdf6ec; border-radius: 4px; margin-bottom: 12px;">
+                <div style="font-size: 13px; color: #e6a23c; font-weight: 500; margin-bottom: 6px;">系统自动断货去噪公式</div>
+                <div style="font-size: 12px; color: #606266; line-height: 1.8; font-family: 'Courier New', monospace;">
+                  修正后日销量 = 原日销量 × （预计销售天数 / （预计销售天数 - 断货天数））
+                </div>
+                <div style="font-size: 12px; color: #909399; margin-top: 6px;">
+                  断货点定义：系统每日记录 FBA 库存（FBA可售量 + FBA预留中转 + FBA预留处理中），当为0时，标记为断货日。
+                </div>
+              </div>
+              <div style="font-size: 12px; color: #909399; padding: 0 4px;">
+                启用后，系统将自动识别断货时段并按上述公式修正历史日销量
+              </div>
+              </div>
+            </div>
+
+            <!-- 4. 退货量去噪 -->
+            <div class="form-group denoise-section-wrap" id="denoise-wrap-return" style="width: 100%; margin-bottom: 20px;">
+              <div class="section-title-row">
+                <span class="section-title-text section-accent--red">④ 退货量去噪</span>
+                <label class="section-title-toggle">
+                  <input type="checkbox" id="return-denoise-enable" checked onchange="toggleSectionDisabled('denoise-body-return', this.checked)" />
+                  <span class="pill-switch-ui" aria-hidden="true">
+                    <span class="pill-switch-label pill-switch-label--on">启用</span>
+                    <span class="pill-switch-label pill-switch-label--off">停用</span>
+                    <span class="pill-switch-knob"></span>
+                  </span>
+                </label>
+              </div>
+              <div class="denoise-section-body" id="denoise-body-return">
+              <div style="font-size: 12px; color: #606266; margin-bottom: 12px; line-height: 1.6;">
+                从历史销量中扣减退货/退款数量，使净销量更准确地反映真实需求。
+              </div>
+              <div class="table-container">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 50px;">序号</th>
+                      <th style="min-width: 200px; width: 22%;">类型</th>
+                      <th>时间段</th>
+                      <th style="width: 140px;">扣减比例</th>
+                      <th style="width: 160px;">名称/说明</th>
+                      <th style="width: 72px;">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="return-denoise-tbody">
+                    <tr>
+                      <td>1</td>
+                      <td style="font-weight:500;">退货量去噪</td>
+                      <td>
+                        <div style="display:flex;align-items:center;gap:6px;justify-content:center;">
+                          <input type="date" class="form-control" style="width:130px;" />
+                          <span>至</span>
+                          <input type="date" class="form-control" style="width:130px;" />
+                        </div>
+                      </td>
+                      <td>
+                        <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
+                          <input type="number" class="form-control" placeholder="%" style="width:70px;text-align:center;" />
+                          <span>%</span>
+                        </div>
+                      </td>
+                      <td><input type="text" class="form-control" placeholder="如：质量问题退货" style="width:100%;" /></td>
+                      <td><button class="btn-delete" onclick="deleteDenoiseRow(this, 'return-denoise-tbody')">🗑️</button></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <button class="btn btn-secondary btn-add" style="margin-top: 8px;" onclick="addReturnDenoiseRow()"><span>+</span> 添加</button>
+              <div style="font-size: 12px; color: #909399; margin-top: 4px;">
+                扣减比例：如填15，表示该时段销量扣减15%的退货量
+              </div>
+              </div>
+            </div>
+
+            <!-- 去噪效果提示 -->
+            <div style="margin-top: 16px; padding: 14px 16px; background: #f5f7fa; border-radius: 4px;">
+              <div style="font-size: 13px; font-weight: 500; color: #303133; margin-bottom: 8px;">去噪在整体链路中的位置</div>
+              <div style="font-size: 12px; color: #606266; line-height: 2;">
+                <div>① <strong>去噪处理（本页）</strong> → 清洗历史异常数据（大订单/指定日期/断货/退货）</div>
+                <div>② 基础日销量（日销量规则页面） → 对去噪后的数据做 6 时段加权</div>
+                <div>③ 影响系数（影响系数页面） → 乘以各系数得到最终动态日销量</div>
+                <div>④ 备货公式（备货规则页面） → 备货天数 × 动态日销量 - 现有库存</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- 可视化区域 -->
+      <div class="visualization" style="display: none;">
+        <!-- 销量分析图 -->
+        <div class="chart-section">
+          <div class="chart-header">
+            <div class="chart-title">销量分析图</div>
+            <div class="date-picker">
+              <button class="btn btn-secondary" onclick="setDateRange('month')">本月</button>
+              <button class="btn btn-secondary" onclick="setDateRange('year')">今年</button>
+              <input type="date" class="date-input" value="2026-02-24" />
+              <span>至</span>
+              <input type="date" class="date-input" value="2026-04-24" />
+            </div>
+          </div>
+          <div class="chart-placeholder">
+            历史销量/预测销量/去噪销量图表（可集成ECharts等图表库）
+          </div>
+        </div>
+        
+        <!-- 销量预测表 -->
+        <div class="chart-section"  style="display: none;">
+          <div class="chart-header">
+            <div class="chart-title">销量预测表</div>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>时间段(今天及未来)</th>
+                  <th>销量类型</th>
+                  <th>预测日销量</th>
+                  <th>天数</th>
+                  <th>总销量</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>2026-03-24 至 2026-04-24</td>
+                  <td>动态销量</td>
+                  <td>44.57</td>
+                  <td>32</td>
+                  <td>1426.24</td>
+                </tr>
+                <tr style="background: #f5f7fa; font-weight: 500;">
+                  <td colspan="3">合计</td>
+                  <td>32</td>
+                  <td>1426.24</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 底部按钮 -->
+    <div class="footer">
+      <button class="btn btn-secondary" onclick="cancel()">取消</button>
+      <button class="btn btn-primary" onclick="submit()">确定</button>
+    </div>
+  </div>
+  
+  <script>
+    const TIME_RANGE_OPTIONS = [
+      { value: '1', label: '近1周' },
+      { value: '2', label: '近2周' },
+      { value: '4', label: '近4周' },
+      { value: '8', label: '近8周' },
+      { value: '12', label: '近12周' },
+      { value: '26', label: '近26周（半年）' },
+      { value: '52', label: '近52周（一年）' }
+    ];
+
+    // ========== 标签页切换 ==========
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+      document.querySelector(`[onclick*="${tabName}"]`).classList.add('active');
+      document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+      document.getElementById(`${tabName}-tab`).style.display = 'block';
+    }
+
+    // ========== 预测类型切换 ==========
+    function onPredictionTypeChange(type) {
+      const expParams = document.getElementById('exponential-params');
+      const expPreview = document.getElementById('exponential-preview');
+      const weightSection = document.getElementById('weight-config-section');
+      const weightColHeader = document.getElementById('weight-col-header');
+      const autoDistBtn = document.getElementById('auto-distribute-btn');
+      const hintEl = document.getElementById('prediction-type-hint');
+
+      expParams.style.display = 'none';
+      expPreview.style.display = 'none';
+
+      if (type === 'weighted') {
+        hintEl.textContent = '自定义各时间段权重，所有权重之和必须等于1';
+        weightSection.style.display = '';
+        weightColHeader.textContent = '周均销量的权重';
+        setWeightInputsEditable(true);
+        autoDistBtn.style.display = '';
+      } else if (type === 'simple') {
+        hintEl.textContent = '各时间段等权重自动均分，只需选择时间范围';
+        weightSection.style.display = '';
+        weightColHeader.textContent = '周均销量的权重（自动均分）';
+        autoDistributeWeights();
+        setWeightInputsEditable(false);
+        autoDistBtn.style.display = 'none';
+      } else if (type === 'exponential') {
+        hintEl.textContent = '基于平滑系数 α 自动计算衰减权重，越近期数据影响越大';
+        expParams.style.display = '';
+        expPreview.style.display = '';
+        weightSection.style.display = 'none';
+        updateExponentialPreview();
+      }
+      updatePredictionQualityHint();
+    }
+
+    function setWeightInputsEditable(editable) {
+      document.querySelectorAll('#weight-tbody .weight-input').forEach(input => {
+        input.readOnly = !editable;
+        input.style.backgroundColor = editable ? '' : '#f5f7fa';
+        input.style.cursor = editable ? '' : 'not-allowed';
+      });
+    }
+
+    // ========== 指数平滑 α 参数 ==========
+    function onAlphaChange(val) {
+      const alpha = (parseInt(val) / 100).toFixed(2);
+      document.getElementById('alpha-input').value = alpha;
+      updateExponentialPreview();
+    }
+
+    function onAlphaInputChange(val) {
+      const alpha = parseFloat(val);
+      if (alpha >= 0.01 && alpha <= 0.99) {
+        document.getElementById('alpha-slider').value = Math.round(alpha * 100);
+        updateExponentialPreview();
+      }
+    }
+
+    function updateExponentialPreview() {
+      const alpha = parseFloat(document.getElementById('alpha-input').value) || 0.3;
+      const periods = ['近1周', '近2周', '近4周', '近8周', '近12周'];
+      const container = document.getElementById('exponential-weight-bars');
+
+      let weights = [];
+      let sum = 0;
+      for (let i = 0; i < periods.length; i++) {
+        const w = alpha * Math.pow(1 - alpha, i);
+        weights.push(w);
+        sum += w;
+      }
+      weights = weights.map(w => w / sum);
+
+      let html = '<div style="display: flex; flex-direction: column; gap: 8px;">';
+      weights.forEach((w, i) => {
+        const pctNum = w * 100;
+        const pct = pctNum.toFixed(1);
+        const barWidth = Math.min(100, Math.max(pctNum, 0));
+        html += `
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="width: 70px; font-size: 13px; text-align: right; color: #606266;">${periods[i]}</span>
+            <div style="flex: 1; min-width: 0; background: #ebeef5; border-radius: 3px; height: 22px; position: relative; overflow: hidden;">
+              <div style="width: ${barWidth}%; max-width: 100%; background: linear-gradient(90deg, #409eff, #66b1ff); height: 100%; border-radius: 3px; transition: width 0.3s;"></div>
+            </div>
+            <span style="width: 55px; font-size: 13px; font-weight: 500; color: #303133;">${pct}%</span>
+          </div>`;
+      });
+      html += '</div>';
+      container.innerHTML = html;
+      updatePredictionQualityHint();
+    }
+
+    // ========== 权重管理 ==========
+    function updateWeightSum() {
+      const inputs = document.querySelectorAll('#weight-tbody .weight-input');
+      let sum = 0;
+      inputs.forEach(input => { sum += parseFloat(input.value) || 0; });
+
+      const sumValue = document.getElementById('weight-sum-value');
+      const status = document.getElementById('weight-sum-status');
+      sumValue.textContent = sum.toFixed(2);
+
+      const diff = Math.abs(sum - 1);
+      if (diff < 0.005) {
+        sumValue.style.color = '#67c23a';
+        status.textContent = '✓ 权重分配完成';
+        status.style.color = '#67c23a';
+      } else if (sum > 1) {
+        sumValue.style.color = '#f56c6c';
+        status.textContent = `✗ 超出 ${(sum - 1).toFixed(2)}，请减少`;
+        status.style.color = '#f56c6c';
+      } else {
+        sumValue.style.color = '#e6a23c';
+        status.textContent = `剩余 ${(1 - sum).toFixed(2)} 待分配`;
+        status.style.color = '#e6a23c';
+      }
+      updateRowCount();
+      updatePredictionQualityHint();
+    }
+
+    function autoDistributeWeights() {
+      const inputs = document.querySelectorAll('#weight-tbody .weight-input');
+      if (inputs.length === 0) return;
+      const avg = (1 / inputs.length).toFixed(2);
+      const remainder = (1 - avg * inputs.length).toFixed(2);
+      inputs.forEach((input, i) => {
+        input.value = i === 0 ? (parseFloat(avg) + parseFloat(remainder)).toFixed(2) : avg;
+      });
+      updateWeightSum();
+    }
+
+    function checkDuplicateTimeRange() {
+      const selects = document.querySelectorAll('#weight-tbody .weight-time-select');
+      const values = [];
+      let hasDuplicate = false;
+
+      selects.forEach(sel => {
+        sel.style.borderColor = '';
+        if (sel.value && sel.value !== '') {
+          if (values.includes(sel.value)) {
+            hasDuplicate = true;
+            sel.style.borderColor = '#e6a23c';
+            selects.forEach(s => {
+              if (s.value === sel.value) s.style.borderColor = '#e6a23c';
+            });
+          }
+          values.push(sel.value);
+        }
+      });
+
+      document.getElementById('weight-duplicate-warn').style.display = hasDuplicate ? '' : 'none';
+    }
+
+    function updateRowCount() {
+      const count = document.querySelectorAll('#weight-tbody tr').length;
+      document.getElementById('weight-row-count').textContent = `共${count}条`;
+    }
+
+    function buildTimeRangeOptions(selectedValue) {
+      return TIME_RANGE_OPTIONS.map(opt =>
+        `<option value="${opt.value}"${opt.value === selectedValue ? ' selected' : ''}>${opt.label}</option>`
+      ).join('');
+    }
+
+    function addWeightRow() {
+      const tbody = document.getElementById('weight-tbody');
+      const rowCount = tbody.querySelectorAll('tr').length;
+      if (rowCount >= 10) {
+        alert('最多只能添加10条记录');
+        return;
+      }
+
+      const newRow = document.createElement('tr');
+      newRow.innerHTML = `
+        <td>${rowCount + 1}</td>
+        <td>
+          <select class="form-control weight-time-select" onchange="checkDuplicateTimeRange()">
+            <option value="">请在下拉中选择</option>
+            ${buildTimeRangeOptions('')}
+          </select>
+        </td>
+        <td>
+          <input type="number" class="form-control weight-input" placeholder="如 0.3" min="0" max="1" step="0.01" oninput="updateWeightSum()" />
+        </td>
+        <td>
+          <button class="btn-delete" onclick="deleteWeightRow(this)">🗑️</button>
+        </td>
+      `;
+      tbody.appendChild(newRow);
+
+      const predType = document.getElementById('prediction-type').value;
+      if (predType === 'simple') {
+        autoDistributeWeights();
+        setWeightInputsEditable(false);
+      }
+      updateWeightSum();
+      checkDuplicateTimeRange();
+    }
+
+    function deleteWeightRow(button) {
+      const tbody = document.getElementById('weight-tbody');
+      if (tbody.querySelectorAll('tr').length <= 1) {
+        alert('至少保留1条记录');
+        return;
+      }
+      button.closest('tr').remove();
+      updateRowNumbers(tbody);
+
+      const predType = document.getElementById('prediction-type').value;
+      if (predType === 'simple') {
+        autoDistributeWeights();
+      }
+      updateWeightSum();
+      checkDuplicateTimeRange();
+    }
+
+    // ========== 通用行号更新 ==========
+    function updateRowNumbers(tbody) {
+      tbody.querySelectorAll('tr').forEach((row, index) => {
+        const cell = row.querySelector('td:first-child');
+        if (cell) cell.textContent = index + 1;
+      });
+    }
+
+    // ========== 通用删除行（趋势等其他表格用） ==========
+    function deleteRow(button) {
+      const row = button.closest('tr');
+      if (row && row.parentElement.rows.length > 1) {
+        const parent = row.parentElement;
+        row.remove();
+        updateRowNumbers(parent);
+      }
+    }
+
+    // ========== 预测质量提示 ==========
+    function updatePredictionQualityHint() {
+      const type = document.getElementById('prediction-type').value;
+      const hintEl = document.getElementById('prediction-quality-hint');
+      const rowCount = document.querySelectorAll('#weight-tbody tr').length;
+
+      const typeLabels = { weighted: '移动加权', simple: '简单平均', exponential: '指数平滑' };
+      let hints = [];
+
+      if (type === 'exponential') {
+        const alpha = parseFloat(document.getElementById('alpha-input').value) || 0.3;
+        hints.push(`指数平滑 α=${alpha}，自动计算5个时间段的衰减权重`);
+        if (alpha > 0.5) hints.push('α 较高，预测对短期波动敏感，适合趋势变化快的商品');
+        if (alpha < 0.15) hints.push('α 较低，预测非常平稳，可能对趋势反应迟缓');
+      } else {
+        hints.push(`${typeLabels[type]}，使用${rowCount}个历史时间段`);
+        if (rowCount < 3) hints.push('建议至少配置3个不同跨度的时间段以提高预测稳定性');
+      }
+
+      hintEl.textContent = '当前配置：' + hints.join('。') + '。';
+    }
+
+    // ========== 备货规则：模式切换 ==========
+    function switchShipMode(mode) {
+      const directSection = document.getElementById('direct-mode-section');
+      const transitSection = document.getElementById('transit-mode-section');
+      const btnDirect = document.getElementById('btn-direct-mode');
+      const btnTransit = document.getElementById('btn-transit-mode');
+
+      if (mode === 'direct') {
+        directSection.style.display = '';
+        transitSection.style.display = 'none';
+        btnDirect.className = 'btn btn-primary';
+        btnTransit.className = 'btn btn-secondary';
+      } else {
+        directSection.style.display = 'none';
+        transitSection.style.display = '';
+        btnDirect.className = 'btn btn-secondary';
+        btnTransit.className = 'btn btn-primary';
+      }
+    }
+
+    function getFreqCell(tbody) {
+      return tbody.querySelector('tr:first-child td[rowspan]');
+    }
+
+    function deleteShipRow(button) {
+      const row = button.closest('tr');
+      const tbody = row.parentElement;
+      const rows = tbody.querySelectorAll('tr');
+      if (rows.length <= 1) {
+        alert('至少保留1条运输方式');
+        return;
+      }
+
+      const freqCell = getFreqCell(tbody);
+      const isFirstRow = (row === rows[0]);
+
+      if (isFirstRow && freqCell) {
+        const nextRow = rows[1];
+        nextRow.insertBefore(freqCell, nextRow.firstChild);
+      }
+
+      row.remove();
+
+      const newFreqCell = getFreqCell(tbody);
+      if (newFreqCell) {
+        newFreqCell.setAttribute('rowspan', tbody.querySelectorAll('tr').length);
+      }
+    }
+
+    function addShipRow(tbodyId) {
+      const tbody = document.getElementById(tbodyId);
+      const newRow = document.createElement('tr');
+      newRow.innerHTML = `
+        <td class="col-ship-method">
+          <select class="form-control ship-method-select" onchange="updateStockFormula()">
+            <option>快船</option>
+            <option>慢船</option>
+            <option>空派</option>
+            <option>卡派</option>
+            <option>铁路</option>
+          </select>
+        </td>
+        <td class="col-lead-time">
+          <div style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+            <input type="number" class="form-control" value="" placeholder="天数" style="text-align: center;" oninput="updateStockFormula()" />
+            <span>天</span>
+          </div>
+        </td>
+        <td><button class="btn-delete" onclick="deleteShipRow(this)">🗑️</button></td>
+      `;
+      tbody.appendChild(newRow);
+
+      const freqCell = getFreqCell(tbody);
+      if (freqCell) {
+        freqCell.setAttribute('rowspan', tbody.querySelectorAll('tr').length);
+      }
+    }
+
+    function addTransitRow() {
+      const tbody = document.getElementById('transit-tbody');
+      const newRow = document.createElement('tr');
+      newRow.innerHTML = `
+        <td class="col-transit-method">
+          <select class="form-control">
+            <option>海运</option>
+            <option>空运</option>
+            <option>铁路</option>
+          </select>
+        </td>
+        <td class="col-transit-days">
+          <div style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+            <input type="number" class="form-control" value="" placeholder="天数" style="text-align: center;" />
+            <span>天</span>
+          </div>
+        </td>
+        <td class="col-transit-days">
+          <div style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+            <input type="number" class="form-control" value="" placeholder="天数" style="text-align: center;" />
+            <span>天</span>
+          </div>
+        </td>
+        <td class="col-transit-days">
+          <div style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+            <input type="number" class="form-control" value="" placeholder="天数" style="text-align: center;" />
+            <span>天</span>
+          </div>
+        </td>
+        <td><button class="btn-delete" onclick="deleteRow(this)">🗑️</button></td>
+      `;
+      tbody.appendChild(newRow);
+    }
+
+    function updateStockFormula() {
+      const leadtime = parseInt(document.getElementById('proc-leadtime').value) || 0;
+      const qc = parseInt(document.getElementById('proc-qc').value) || 0;
+      const pickup = parseInt(document.getElementById('proc-pickup').value) || 0;
+      document.getElementById('proc-cycle-sum').textContent = leadtime + qc + pickup;
+
+      const safety = parseInt(document.getElementById('fba-safety-days').value) || 0;
+      const preview = document.getElementById('formula-calc-preview');
+
+      const freqInputs = document.querySelectorAll('#direct-na-tbody .ship-freq');
+      const naFreq = freqInputs.length > 0 ? (parseInt(freqInputs[0].value) || 0) : 0;
+      const naLogistics = document.querySelector('#direct-na-tbody tr td:nth-child(3) input');
+      const naTime = naLogistics ? (parseInt(naLogistics.value) || 0) : 0;
+
+      const directDays = naTime + safety + naFreq;
+      const transitDays = leadtime + qc + pickup + naTime + safety + (parseInt(document.getElementById('proc-frequency').value) || 0);
+
+      preview.innerHTML =
+        `<strong>当前参数试算（以北美站快船为例）：</strong><br>` +
+        `直发备货天数 = ${naTime}(物流时效) + ${safety}(安全天数) + ${naFreq}(发货频率) = <strong style="color:#409eff;">${directDays}天</strong><br>` +
+        `中转全链路天数 = ${leadtime}(采购交期) + ${qc}(质检) + ${pickup}(提货准备) + ${naTime}(CN至海外仓时效) + ${safety}(安全天数) + ${parseInt(document.getElementById('proc-frequency').value) || 0}(采购频率) = <strong style="color:#409eff;">${transitDays}天</strong>`;
+    }
+
+    // ========== 日销量规则：权重校验 ==========
+    const DAILY_PERIODS = ['3d','7d','14d','30d','60d','90d'];
+
+    function onDailyWeightChange() {
+      const sum = getDailyWeightSum();
+      const sumEl = document.getElementById('daily-weight-sum');
+      const statusEl = document.getElementById('daily-weight-status');
+
+      sumEl.textContent = sum + '%';
+      if (sum === 100) {
+        sumEl.style.color = '#67c23a';
+        statusEl.textContent = '✓ 权重分配完成';
+        statusEl.style.color = '#67c23a';
+      } else if (sum > 100) {
+        sumEl.style.color = '#f56c6c';
+        statusEl.textContent = '✗ 超出 ' + (sum - 100) + '%，请减少';
+        statusEl.style.color = '#f56c6c';
+      } else {
+        sumEl.style.color = '#e6a23c';
+        statusEl.textContent = '剩余 ' + (100 - sum) + '% 待分配';
+        statusEl.style.color = '#e6a23c';
+      }
+      calcDailySalesPreview();
+    }
+
+    function getDailyWeightSum() {
+      let sum = 0;
+      DAILY_PERIODS.forEach(p => {
+        sum += parseInt(document.getElementById('wt-' + p).value) || 0;
+      });
+      return sum;
+    }
+
+    function calcDailySalesPreview() {
+      let result = 0;
+      DAILY_PERIODS.forEach(p => {
+        const avg = parseFloat(document.getElementById('avg-' + p).value) || 0;
+        const wt = (parseInt(document.getElementById('wt-' + p).value) || 0) / 100;
+        result += avg * wt;
+      });
+      document.getElementById('daily-sales-preview').textContent = result.toFixed(2);
+    }
+
+    // ========== 生命周期模板 ==========
+    const LIFECYCLE_TEMPLATES = {
+      'new-early':  [0, 100, 0, 0, 0, 0],
+      'new-mid':    [0, 70, 30, 0, 0, 0],
+      'new-late':   [0, 60, 30, 10, 0, 0],
+      'growth':     [0, 60, 30, 10, 0, 0],
+      'mature':     [0, 10, 20, 30, 25, 15]
+    };
+
+    function applyLifecycleTemplate(key, btn) {
+      const tpl = LIFECYCLE_TEMPLATES[key];
+      if (!tpl) return;
+      document.querySelectorAll('.lifecycle-template-btn').forEach(function (b) {
+        b.classList.remove('is-selected');
+      });
+      if (btn) btn.classList.add('is-selected');
+      DAILY_PERIODS.forEach((p, i) => {
+        document.getElementById('wt-' + p).value = tpl[i];
+      });
+      onDailyWeightChange();
+    }
+
+    // ========== 促销销量管理 ==========
+    function addPromoRow() {
+      const tbody = document.getElementById('promo-tbody');
+      const count = tbody.querySelectorAll('tr').length;
+      const newRow = document.createElement('tr');
+      newRow.innerHTML = `
+        <td>${count + 1}</td>
+        <td><input type="text" class="form-control" placeholder="如 Prime Day" style="width:100%;" /></td>
+        <td>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <input type="date" class="form-control promo-start" style="width:130px;" onchange="calcPromoTotal(this)" />
+            <span>至</span>
+            <input type="date" class="form-control promo-end" style="width:130px;" onchange="calcPromoTotal(this)" />
+          </div>
+        </td>
+        <td>
+          <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
+            <input type="number" class="form-control promo-daily" placeholder="件/天" style="width:90px;text-align:center;" oninput="calcPromoTotal(this)" />
+          </div>
+        </td>
+        <td>
+          <span class="promo-total" style="font-weight:500;">—</span>
+        </td>
+        <td><button class="btn-delete" onclick="deletePromoRow(this)">🗑️</button></td>
+      `;
+      tbody.appendChild(newRow);
+      updatePromoCount();
+    }
+
+    function deletePromoRow(button) {
+      const tbody = document.getElementById('promo-tbody');
+      if (tbody.querySelectorAll('tr').length <= 0) return;
+      button.closest('tr').remove();
+      updateRowNumbers(tbody);
+      updatePromoCount();
+    }
+
+    function updatePromoCount() {
+      const count = document.querySelectorAll('#promo-tbody tr').length;
+      document.getElementById('promo-row-count').textContent = '共' + count + '条';
+    }
+
+    function calcPromoTotal(el) {
+      const row = el.closest('tr');
+      const startInput = row.querySelector('.promo-start');
+      const endInput = row.querySelector('.promo-end');
+      const dailyInput = row.querySelector('.promo-daily');
+      const totalSpan = row.querySelector('.promo-total');
+
+      const start = startInput.value ? new Date(startInput.value) : null;
+      const end = endInput.value ? new Date(endInput.value) : null;
+      const daily = parseFloat(dailyInput.value) || 0;
+
+      if (start && end && daily > 0 && end >= start) {
+        const days = Math.round((end - start) / 86400000) + 1;
+        totalSpan.textContent = (daily * days).toFixed(0) + ' (' + days + '天)';
+      } else {
+        totalSpan.textContent = '—';
+      }
+    }
+
+    // ========== 影响系数：行管理 ==========
+    function addCoeffRow(tbodyId, type) {
+      const tbody = document.getElementById(tbodyId);
+      const count = tbody.querySelectorAll('tr').length;
+      const newRow = document.createElement('tr');
+
+      if (type === 'promo') {
+        newRow.innerHTML = `
+          <td>${count + 1}</td>
+          <td><input type="text" class="form-control" placeholder="如 Prime Day" style="width:100%;" /></td>
+          <td>
+            <div style="display:flex;align-items:center;gap:6px;justify-content:center;">
+              <input type="date" class="form-control" style="width:130px;" />
+              <span>至</span>
+              <input type="date" class="form-control" style="width:130px;" />
+            </div>
+          </td>
+          <td>
+            <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
+              <input type="number" class="form-control" value="1.0" min="0" step="0.01" style="width:80px;text-align:center;" />
+            </div>
+          </td>
+          <td><button class="btn-delete" onclick="deleteCoeffRow(this)">🗑️</button></td>
+        `;
+      } else if (type === 'lifecycle') {
+        newRow.innerHTML = `
+          <td>${count + 1}</td>
+          <td>
+            <select class="form-control">
+              <option>次新品</option>
+              <option>老品</option>
+            </select>
+          </td>
+          <td>
+            <div style="display:flex;align-items:center;gap:6px;justify-content:center;">
+              <input type="date" class="form-control" style="width:130px;" />
+              <span>至</span>
+              <input type="date" class="form-control" style="width:130px;" />
+            </div>
+          </td>
+          <td>
+            <select class="form-control">
+              <option value="up">同比增长</option>
+              <option value="down">同比衰减</option>
+            </select>
+          </td>
+          <td>
+            <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
+              <input type="number" class="form-control" value="1.0" min="0" step="0.01" style="width:80px;text-align:center;" />
+            </div>
+          </td>
+          <td><button class="btn-delete" onclick="deleteCoeffRow(this)">🗑️</button></td>
+        `;
+      } else {
+        newRow.innerHTML = `
+          <td>${count + 1}</td>
+          <td>
+            <div style="display:flex;align-items:center;gap:6px;justify-content:center;">
+              <input type="date" class="form-control" style="width:130px;" />
+              <span>至</span>
+              <input type="date" class="form-control" style="width:130px;" />
+            </div>
+          </td>
+          <td>
+            <select class="form-control">
+              <option value="up">增长 ↑</option>
+              <option value="down">衰减 ↓</option>
+            </select>
+          </td>
+          <td>
+            <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
+              <input type="number" class="form-control" value="1.0" min="0" step="0.01" style="width:80px;text-align:center;" />
+            </div>
+          </td>
+          <td><input type="text" class="form-control" placeholder="说明" style="width:100%;" /></td>
+          <td><button class="btn-delete" onclick="deleteCoeffRow(this)">🗑️</button></td>
+        `;
+      }
+      tbody.appendChild(newRow);
+    }
+
+    function deleteCoeffRow(button) {
+      const row = button.closest('tr');
+      const tbody = row.parentElement;
+      if (tbody.querySelectorAll('tr').length <= 1) {
+        alert('至少保留1条记录');
+        return;
+      }
+      row.remove();
+      updateRowNumbers(tbody);
+    }
+
+    // ========== 去噪规则：行管理 ==========
+    function addDateDenoiseRow() {
+      const tbody = document.getElementById('date-denoise-tbody');
+      const count = tbody.querySelectorAll('tr').length;
+      const newRow = document.createElement('tr');
+      newRow.innerHTML = `
+        <td>${count + 1}</td>
+        <td>
+          <select class="form-control">
+            <option selected>固定值去噪</option>
+            <option>百分比去噪</option>
+          </select>
+        </td>
+        <td>
+          <div style="display:flex;align-items:center;gap:6px;justify-content:center;">
+            <input type="date" class="form-control" style="width:130px;" />
+            <span>至</span>
+            <input type="date" class="form-control" style="width:130px;" />
+          </div>
+        </td>
+        <td>
+          <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
+            <input type="number" class="form-control" placeholder="值" style="width:80px;text-align:center;" />
+          </div>
+        </td>
+        <td><input type="text" class="form-control" placeholder="说明" style="width:100%;" /></td>
+        <td><button class="btn-delete" onclick="deleteDenoiseRow(this, 'date-denoise-tbody')">🗑️</button></td>
+      `;
+      tbody.appendChild(newRow);
+    }
+
+    function addReturnDenoiseRow() {
+      const tbody = document.getElementById('return-denoise-tbody');
+      const count = tbody.querySelectorAll('tr').length;
+      const newRow = document.createElement('tr');
+      newRow.innerHTML = `
+        <td>${count + 1}</td>
+        <td style="font-weight:500;">退货量去噪</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:6px;justify-content:center;">
+            <input type="date" class="form-control" style="width:130px;" />
+            <span>至</span>
+            <input type="date" class="form-control" style="width:130px;" />
+          </div>
+        </td>
+        <td>
+          <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
+            <input type="number" class="form-control" placeholder="%" style="width:70px;text-align:center;" />
+            <span>%</span>
+          </div>
+        </td>
+        <td><input type="text" class="form-control" placeholder="说明" style="width:100%;" /></td>
+        <td><button class="btn-delete" onclick="deleteDenoiseRow(this, 'return-denoise-tbody')">🗑️</button></td>
+      `;
+      tbody.appendChild(newRow);
+    }
+
+    function deleteDenoiseRow(button, tbodyId) {
+      const tbody = document.getElementById(tbodyId);
+      if (tbody.querySelectorAll('tr').length <= 1) {
+        alert('至少保留1条记录');
+        return;
+      }
+      button.closest('tr').remove();
+      updateRowNumbers(tbody);
+    }
+
+    // ========== 日期范围 ==========
+    function setDateRange(range) {
+      const today = new Date();
+      const inputs = document.querySelectorAll('.date-picker input[type="date"]');
+      if (inputs.length < 2) return;
+
+      if (range === 'month') {
+        inputs[0].value = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+        inputs[1].value = new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0];
+      } else if (range === 'year') {
+        inputs[0].value = new Date(today.getFullYear(), 0, 1).toISOString().split('T')[0];
+        inputs[1].value = new Date(today.getFullYear(), 11, 31).toISOString().split('T')[0];
+      }
+    }
+
+    // ========== 提交 / 取消 ==========
+    function cancel() {
+      if (confirm('确定要取消吗？未保存的更改将会丢失。')) alert('已取消');
+    }
+
+    function submit() {
+      const type = document.getElementById('prediction-type').value;
+
+      if (type === 'weighted' || type === 'simple') {
+        const inputs = document.querySelectorAll('#weight-tbody .weight-input');
+        let sum = 0;
+        inputs.forEach(i => { sum += parseFloat(i.value) || 0; });
+        if (Math.abs(sum - 1) >= 0.005) {
+          alert(`权重合计为 ${sum.toFixed(2)}，必须等于1.00，请调整后再保存。`);
+          return;
+        }
+      }
+
+      const dailyWtSum = getDailyWeightSum();
+      if (dailyWtSum !== 100) {
+        alert(`日销量权重合计为 ${dailyWtSum}%，必须等于100%，请调整后再保存。`);
+        return;
+      }
+
+      const formData = {
+        basicPrediction: getBasicPredictionData(),
+        inventoryRule: getInventoryRuleData(),
+        salesRule: getSalesRuleData(),
+        coefficients: getCoefficientData(),
+        denoiseRules: getDenoiseData()
+      };
+
+      console.log('提交的数据:', formData);
+      alert('规则配置已保存！');
+    }
+
+    // ========== 数据收集 ==========
+    function getBasicPredictionData() {
+      const type = document.getElementById('prediction-type').value;
+      const data = {
+        predictionType: type,
+        weights: []
+      };
+
+      if (type === 'exponential') {
+        data.alpha = parseFloat(document.getElementById('alpha-input').value) || 0.3;
+      } else {
+        document.querySelectorAll('#weight-tbody tr').forEach(row => {
+          const sel = row.querySelector('.weight-time-select');
+          const inp = row.querySelector('.weight-input');
+          if (sel && inp) {
+            data.weights.push({
+              timeRange: sel.value,
+              timeLabel: sel.options[sel.selectedIndex]?.text || '',
+              weight: parseFloat(inp.value) || 0
+            });
+          }
+        });
+      }
+      return data;
+    }
+
+    function getInventoryRuleData() {
+      return {
+        procurementFrequency: parseInt(document.getElementById('proc-frequency')?.value) || 15,
+        procurementLeadTime: parseInt(document.getElementById('proc-leadtime')?.value) || 30,
+        qualityInspection: parseInt(document.getElementById('proc-qc')?.value) || 2,
+        pickupPrep: parseInt(document.getElementById('proc-pickup')?.value) || 7,
+        fbaSafetyDays: parseInt(document.getElementById('fba-safety-days')?.value) || 28,
+        deductStockout: document.getElementById('deduct-stock')?.checked,
+        excludeOutageData: document.getElementById('exclude-outage')?.checked
+      };
+    }
+
+    function getSalesRuleData() {
+      const data = {
+        defaultDailySales: {},
+        promos: []
+      };
+
+      DAILY_PERIODS.forEach(p => {
+        data.defaultDailySales[p] = {
+          avg: parseFloat(document.getElementById('avg-' + p).value) || 0,
+          weight: (parseInt(document.getElementById('wt-' + p).value) || 0) / 100
+        };
+      });
+
+      document.querySelectorAll('#promo-tbody tr').forEach(row => {
+        const name = row.querySelector('input[type="text"]')?.value || '';
+        const start = row.querySelector('.promo-start')?.value || '';
+        const end = row.querySelector('.promo-end')?.value || '';
+        const daily = parseFloat(row.querySelector('.promo-daily')?.value) || 0;
+        data.promos.push({ name, start, end, dailySales: daily });
+      });
+
+      return data;
+    }
+
+    // ========== 影响系数数据收集 ==========
+    function collectTableRows(tbodyId, fields) {
+      const rows = [];
+      document.querySelectorAll('#' + tbodyId + ' tr').forEach(row => {
+        const data = {};
+        const inputs = row.querySelectorAll('input, select');
+        fields.forEach((f, i) => {
+          if (inputs[i]) {
+            data[f] = inputs[i].type === 'checkbox' ? inputs[i].checked : inputs[i].value;
+          }
+        });
+        rows.push(data);
+      });
+      return rows;
+    }
+
+    function toggleSectionDisabled(bodyId, enabled) {
+      const el = document.getElementById(bodyId);
+      if (!el) return;
+      const cls = 'section-disabled';
+      if (enabled) el.classList.remove(cls);
+      else el.classList.add(cls);
+    }
+
+    /** 自动去噪表格行内「状态」与隐藏区块开关同步，并弱化未启用时的规则列 */
+    function syncAutoDenoiseRowEnabled(input) {
+      const row = input.closest('tr');
+      if (row) row.classList.toggle('auto-denoise-row-off', !input.checked);
+      const sec = document.getElementById('auto-denoise-toggle');
+      if (sec) sec.checked = input.checked;
+    }
+
+    function getCoefficientData() {
+      return {
+        enabled: {
+          season: document.getElementById('coeff-enable-season')?.checked,
+          promo: document.getElementById('coeff-enable-promo')?.checked,
+          yoy: document.getElementById('coeff-enable-yoy')?.checked,
+          lifecycle: document.getElementById('coeff-enable-lifecycle')?.checked,
+          competitor: document.getElementById('coeff-enable-competitor')?.checked,
+          target: document.getElementById('coeff-enable-target')?.checked,
+          safetyLevel: document.getElementById('coeff-enable-safety-level')?.checked,
+          safetyNew: document.getElementById('coeff-enable-safety-new')?.checked,
+          safetyColor: document.getElementById('coeff-enable-safety-color')?.checked,
+          safetyTraffic: document.getElementById('coeff-enable-safety-traffic')?.checked
+        },
+        seasonCoeffs: collectTableRows('season-coeff-tbody', ['startDate','endDate','direction','value','note']),
+        promoCoeffs: collectTableRows('promo-coeff-tbody', ['name','startDate','endDate','value']),
+        yoyCoeffs: collectTableRows('yoy-coeff-tbody', ['startDate','endDate','direction','value','note']),
+        lifecycleCoeffs: collectTableRows('lifecycle-coeff-tbody', ['type','startDate','endDate','direction','value']),
+        competitorCoeffs: collectTableRows('competitor-coeff-tbody', ['startDate','endDate','direction','value','note']),
+        targetCoeffs: collectTableRows('target-coeff-tbody', ['startDate','endDate','direction','value','note']),
+        safetyDays: {
+          levelA: parseInt(document.getElementById('safety-a')?.value) || 45,
+          levelB: parseInt(document.getElementById('safety-b')?.value) || 28,
+          levelC: parseInt(document.getElementById('safety-c')?.value) || 20,
+          newProduct: parseInt(document.getElementById('safety-new')?.value) || 45,
+          mainColor: parseInt(document.getElementById('safety-main-color')?.value) || 45,
+          subColor: parseInt(document.getElementById('safety-sub-color')?.value) || 28,
+          organicTraffic: parseInt(document.getElementById('safety-or')?.value) || 45,
+          adTraffic: parseInt(document.getElementById('safety-ad')?.value) || 28
+        }
+      };
+    }
+
+    // ========== 去噪数据收集 ==========
+    function getDenoiseData() {
+      const largeEl = document.getElementById('auto-denoise-large-enabled');
+      const autoSec = document.getElementById('auto-denoise-toggle');
+      const thr = parseInt(document.getElementById('auto-denoise-x')?.value) || 10;
+      const rep = parseInt(document.getElementById('auto-denoise-y')?.value) || 1;
+      const largeEnabled = largeEl != null ? largeEl.checked : (autoSec?.checked !== false);
+
+      return {
+        autoDenoise: {
+          enabled: largeEnabled,
+          threshold: thr,
+          replaceValue: rep,
+          types: [
+            {
+              id: 'largeOrder',
+              name: '大订单去噪',
+              enabled: largeEnabled,
+              threshold: thr,
+              replaceValue: rep
+            }
+          ]
+        },
+        dateDenoise: {
+          enabled: document.getElementById('date-denoise-enable')?.checked,
+          rows: collectTableRows('date-denoise-tbody', ['type','startDate','endDate','value','note'])
+        },
+        stockoutDenoise: {
+          enabled: document.getElementById('stockout-denoise-toggle')?.checked
+        },
+        returnDenoise: {
+          enabled: document.getElementById('return-denoise-enable')?.checked,
+          rows: collectTableRows('return-denoise-tbody', ['type','startDate','endDate','ratio','note'])
+        }
+      };
+    }
+
+    // ========== 初始化 ==========
+    document.addEventListener('DOMContentLoaded', function() {
+      switchTab('basic');
+      updateWeightSum();
+      updatePredictionQualityHint();
+      updateStockFormula();
+      calcDailySalesPreview();
+      const autoRow = document.querySelector('#auto-denoise-tbody tr');
+      const autoLarge = document.getElementById('auto-denoise-large-enabled');
+      if (autoRow && autoLarge) {
+        autoRow.classList.toggle('auto-denoise-row-off', !autoLarge.checked);
+        const sec = document.getElementById('auto-denoise-toggle');
+        if (sec) sec.checked = autoLarge.checked;
+      }
+    });
+  </script>
+</body>
+</html>
