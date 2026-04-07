@@ -410,6 +410,87 @@
       color: #909399;
     }
 
+    /* 表格内胶囊开关（同预测规则配置页 pill-switch-ui 风格） */
+    .pill-toggle {
+      display: inline-flex;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+      position: relative;
+    }
+    .pill-toggle input[type="checkbox"] {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 56px;
+      height: 26px;
+      margin: 0;
+      opacity: 0;
+      cursor: pointer;
+      z-index: 4;
+    }
+    .pill-toggle:focus-within .pill-switch-ui {
+      box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.35);
+    }
+    .pill-switch-ui {
+      position: relative;
+      display: inline-block;
+      width: 56px;
+      height: 26px;
+      border-radius: 999px;
+      background: #c0c4cc;
+      transition: background 0.22s ease;
+      flex-shrink: 0;
+      vertical-align: middle;
+    }
+    .pill-toggle input:checked + .pill-switch-ui {
+      background: #52c41a;
+    }
+    .pill-switch-knob {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+      transition: transform 0.22s ease;
+      z-index: 2;
+    }
+    .pill-toggle input:checked + .pill-switch-ui .pill-switch-knob {
+      transform: translateX(30px);
+    }
+    .pill-switch-label {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 11px;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1;
+      pointer-events: none;
+      z-index: 1;
+      letter-spacing: 0.02em;
+    }
+    .pill-switch-label--on {
+      left: 8px;
+      opacity: 0;
+      transition: opacity 0.15s ease;
+    }
+    .pill-switch-label--off {
+      right: 7px;
+      opacity: 1;
+      transition: opacity 0.15s ease;
+    }
+    .pill-toggle input:checked + .pill-switch-ui .pill-switch-label--on {
+      opacity: 1;
+    }
+    .pill-toggle input:checked + .pill-switch-ui .pill-switch-label--off {
+      opacity: 0;
+    }
+
     /* 操作列按钮 */
     .op-link {
       color: #409eff;
@@ -506,7 +587,8 @@
       border-radius: 6px;
       width: 820px;
       max-width: 90vw;
-      max-height: calc(100vh - 120px);
+      height: 66vh;
+      max-height: 66vh;
       display: flex;
       flex-direction: column;
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
@@ -556,6 +638,87 @@
       flex: 1;
       overflow-y: auto;
       padding: 0;
+    }
+
+    /* 新建规则弹窗：预警分类表头下拉筛选（单选） */
+    .th-filter {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      user-select: none;
+      color: #606266;
+    }
+    .th-filter:hover {
+      color: #409eff;
+    }
+    .th-filter .th-filter-label {
+      font-weight: 500;
+    }
+    .th-filter .th-filter-value {
+      font-weight: 600;
+      color: #303133;
+      background: #f4f4f5;
+      border: 1px solid #ebeef5;
+      border-radius: 999px;
+      padding: 1px 8px;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+    .th-filter:hover .th-filter-value {
+      border-color: #c6e2ff;
+    }
+    .th-filter .th-filter-caret {
+      font-size: 12px;
+      color: #909399;
+      transform: translateY(1px);
+    }
+
+    .th-filter-menu {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      min-width: 180px;
+      background: #fff;
+      border: 1px solid #ebeef5;
+      border-radius: 6px;
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.14);
+      padding: 6px;
+      z-index: 2000;
+      display: none;
+    }
+    .th-filter-menu.show {
+      display: block;
+    }
+    .th-filter-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 4px;
+      color: #606266;
+      font-size: 13px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .th-filter-item:hover {
+      background: #f5f7fa;
+      color: #409eff;
+    }
+    .th-filter-item.is-selected {
+      background: #ecf5ff;
+      color: #409eff;
+      font-weight: 600;
+    }
+    .th-filter-item .tick {
+      color: #409eff;
+      font-weight: 700;
+      opacity: 0;
+    }
+    .th-filter-item.is-selected .tick {
+      opacity: 1;
     }
 
     .modal-table {
@@ -749,6 +912,196 @@
       justify-content: center;
       gap: 12px;
       flex-shrink: 0;
+    }
+
+    /* 消息通知 */
+    .notify-block {
+      border: 1px solid #ebeef5;
+      border-radius: 6px;
+      background: #fafcff;
+      padding: 14px 14px 10px;
+    }
+
+    .notify-row {
+      align-items: flex-start;
+      margin-bottom: 14px;
+    }
+
+    .notify-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .notify-row .cfg-label {
+      line-height: 36px;
+    }
+
+    .notify-recipient-line {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px 14px;
+      width: 100%;
+    }
+
+    .notify-inline {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+      color: #606266;
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+      min-height: 36px;
+      padding: 0 2px;
+    }
+
+    .notify-inline input[type="checkbox"] {
+      accent-color: #409eff;
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+
+    .notify-user-picker {
+      position: relative;
+      flex: 1 1 320px;
+      min-width: 320px;
+      max-width: 100%;
+    }
+
+    .notify-user-trigger {
+      width: 100%;
+      min-height: 38px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 34px 5px 8px;
+      cursor: pointer;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      position: relative;
+      flex-wrap: wrap;
+    }
+
+    .notify-user-trigger:hover {
+      border-color: #c6e2ff;
+    }
+
+    .notify-user-trigger.is-open {
+      border-color: #409eff;
+      box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.15);
+    }
+
+    .notify-user-trigger.is-disabled {
+      background: #f5f7fa;
+      color: #c0c4cc;
+      cursor: not-allowed;
+    }
+
+    .notify-user-placeholder {
+      font-size: 13px;
+      color: #c0c4cc;
+      line-height: 1.8;
+      padding-left: 2px;
+    }
+
+    .notify-user-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #ecf5ff;
+      color: #409eff;
+      border: 1px solid #d9ecff;
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .notify-user-chip-remove {
+      border: none;
+      background: none;
+      color: #a0cfff;
+      font-size: 14px;
+      cursor: pointer;
+      padding: 0;
+      line-height: 1;
+    }
+
+    .notify-user-chip-remove:hover {
+      color: #f56c6c;
+    }
+
+    .notify-user-caret {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #909399;
+      font-size: 12px;
+      pointer-events: none;
+    }
+
+    .notify-user-menu {
+      position: absolute;
+      left: 0;
+      top: calc(100% + 4px);
+      width: 100%;
+      max-height: 220px;
+      overflow-y: auto;
+      background: #fff;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+      z-index: 1301;
+      display: none;
+      padding: 6px 0;
+    }
+
+    .notify-user-menu.show {
+      display: block;
+    }
+
+    .notify-user-option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      font-size: 14px;
+      color: #303133;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .notify-user-option:hover {
+      background: #f5f7fa;
+    }
+
+    .notify-user-option input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: #409eff;
+      margin: 0;
+      cursor: pointer;
+    }
+
+    .notify-user-hint {
+      font-size: 12px;
+      color: #909399;
+      width: 100%;
+      margin-top: 6px;
+      padding-left: 2px;
+    }
+
+    .notify-channels {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 24px;
+      align-items: center;
+      min-height: 36px;
     }
 
     /* 表单区块 */
@@ -1376,79 +1729,97 @@
           <thead>
             <tr>
               <th class="col-name">模型名称</th>
-              <th class="col-type">预警分类</th>
+              <th class="col-type">
+                <div class="th-filter" id="create-modal-cat-th" onclick="toggleCreateModalCategoryMenu(event)">
+                  <span class="th-filter-label">预警分类</span>
+                  <span class="th-filter-value" id="create-modal-cat-value">全部</span>
+                  <span class="th-filter-caret">▾</span>
+                  <div class="th-filter-menu" id="create-modal-cat-menu">
+                    <div class="th-filter-item is-selected" data-value="" onclick="selectCreateModalCategory('', event)"><span>全部</span><span class="tick">✓</span></div>
+                    <div class="th-filter-item" data-value="库龄预警" onclick="selectCreateModalCategory('库龄预警', event)"><span>库龄预警</span><span class="tick">✓</span></div>
+                    <div class="th-filter-item" data-value="仓储费预警" onclick="selectCreateModalCategory('仓储费预警', event)"><span>仓储费预警</span><span class="tick">✓</span></div>
+                    <div class="th-filter-item" data-value="下单预警" onclick="selectCreateModalCategory('下单预警', event)"><span>下单预警</span><span class="tick">✓</span></div>
+                    <div class="th-filter-item" data-value="销售偏差预警" onclick="selectCreateModalCategory('销售偏差预警', event)"><span>销售偏差预警</span><span class="tick">✓</span></div>
+                    <div class="th-filter-item" data-value="发货预警" onclick="selectCreateModalCategory('发货预警', event)"><span>发货预警</span><span class="tick">✓</span></div>
+                    <div class="th-filter-item" data-value="断货预警" onclick="selectCreateModalCategory('断货预警', event)"><span>断货预警</span><span class="tick">✓</span></div>
+                    <div class="th-filter-item" data-value="物流预警" onclick="selectCreateModalCategory('物流预警', event)"><span>物流预警</span><span class="tick">✓</span></div>
+                    <div class="th-filter-item" data-value="生产预警" onclick="selectCreateModalCategory('生产预警', event)"><span>生产预警</span><span class="tick">✓</span></div>
+                    <div class="th-filter-item" data-value="滞销预警" onclick="selectCreateModalCategory('滞销预警', event)"><span>滞销预警</span><span class="tick">✓</span></div>
+                  </div>
+                </div>
+              </th>
               <th class="col-desc">模型说明</th>
               <th class="col-action">操作</th>
             </tr>
           </thead>
-          <tbody>
-            <tr>
+          <tbody id="modal-model-tbody">
+            <tr data-category="库龄预警">
               <td class="col-name">本地库龄预警</td>
               <td class="col-type"><span class="tag tag-inventory">库龄预警</span></td>
               <td class="col-desc">当指定商品存在高库龄库存时，触发预警提醒的模型。</td>
               <td class="col-action"><button class="modal-add-link" onclick="addRule('本地库龄预警')">添加</button></td>
             </tr>
-            <tr>
+            <tr data-category="库龄预警">
               <td class="col-name">亚马逊库龄预警</td>
               <td class="col-type"><span class="tag tag-inventory">库龄预警</span></td>
               <td class="col-desc">当指定亚马逊商品存在高库龄库存时，触发预警提醒的模型。</td>
               <td class="col-action"><button class="modal-add-link" onclick="addRule('亚马逊库龄预警')">添加</button></td>
             </tr>
-            <tr>
+            <tr data-category="仓储费预警">
               <td class="col-name">FBA长期仓储费预警</td>
               <td class="col-type"><span class="tag tag-storage">仓储费预警</span></td>
               <td class="col-desc">在亚马逊收取长期仓储费截止日之前，提前预警即将被收费的库存。</td>
               <td class="col-action"><button class="modal-add-link" onclick="addRule('FBA长期仓储费预警')">添加</button></td>
             </tr>
-            <tr>
+            <tr data-category="下单预警">
               <td class="col-name">订单加急预警</td>
               <td class="col-type"><span class="tag tag-order">下单预警</span></td>
               <td class="col-desc">当国内仓（CN仓）的可用库存无法满足未来 N 个发货周期（例如2次）的计划需求，且在下次补货到货前无"在产订单"预计到货时触发，提示需加急生产或运输中的订单。</td>
               <td class="col-action"><button class="modal-add-link" onclick="addRule('订单加急预警')">添加</button></td>
             </tr>
-            <tr>
+            <tr data-category="销售偏差预警">
               <td class="col-name">销售偏差预警</td>
               <td class="col-type"><span class="tag tag-deviation">销售偏差预警</span></td>
               <td class="col-desc">对于预测和年规偏差较大的情况进行预警。</td>
               <td class="col-action"><button class="modal-add-link" onclick="addRule('销售偏差预警')">添加</button></td>
             </tr>
-            <tr>
+            <tr data-category="下单预警">
               <td class="col-name">库存下单预警</td>
               <td class="col-type"><span class="tag tag-order">下单预警</span></td>
               <td class="col-desc">库存已经无法满足生产天数的需求条件下，需要紧急下单。</td>
               <td class="col-action"><button class="modal-add-link" onclick="addRule('库存下单预警')">添加</button></td>
             </tr>
-            <tr>
+            <tr data-category="发货预警">
               <td class="col-name">断货预警（普船）</td>
               <td class="col-type"><span class="tag tag-shipping">发货预警</span></td>
               <td class="col-desc">常规普船补货就能补充的场景。</td>
               <td class="col-action"><button class="modal-add-link" onclick="addRule('断货预警（普船）')">添加</button></td>
             </tr>
-            <tr>
+            <tr data-category="发货预警">
               <td class="col-name">断货预警（快船）</td>
               <td class="col-type"><span class="tag tag-shipping">发货预警</span></td>
               <td class="col-desc">快船：本质是填补普船无法覆盖的真空期预警，需要快船发货，或者普船发货量 ≥ 预计日均销量×发货频率（防止就个位数几双也触发补货预警）。</td>
               <td class="col-action"><button class="modal-add-link" onclick="addRule('断货预警（快船）')">添加</button></td>
             </tr>
-            <tr>
+            <tr data-category="断货预警">
               <td class="col-name">断货预警（必断）</td>
               <td class="col-type"><span class="tag tag-stockout">断货预警</span></td>
               <td class="col-desc">断货点在快船到货前，普船到货前的逻辑处理：快船也救不了，库存会归零。</td>
               <td class="col-action"><button class="modal-add-link" onclick="addRule('断货预警（必断）')">添加</button></td>
             </tr>
-            <tr>
+            <tr data-category="物流预警">
               <td class="col-name">头程物流在途异常预警</td>
               <td class="col-type"><span class="tag tag-logistics">物流预警</span></td>
               <td class="col-desc">监控已发货的补货批次在运输途中的时效与状态。</td>
               <td class="col-action"><button class="modal-add-link" onclick="addRule('头程物流在途异常预警')">添加</button></td>
             </tr>
-            <tr>
+            <tr data-category="生产预警">
               <td class="col-name">供应商生产延期预警</td>
               <td class="col-type"><span class="tag tag-production">生产预警</span></td>
               <td class="col-desc">监控已确认的采购订单，其生产进度是否滞后于计划交期。</td>
               <td class="col-action"><button class="modal-add-link" onclick="addRule('供应商生产延期预警')">添加</button></td>
             </tr>
-            <tr>
+            <tr data-category="滞销预警">
               <td class="col-name">冗余库存（呆滞料）预警</td>
               <td class="col-type"><span class="tag tag-overstock">滞销预警</span></td>
               <td class="col-desc">比库龄预警更进一步，识别那些在未来一段时间内（根据销售预测）无法被消耗的高库龄库存。</td>
@@ -1541,6 +1912,54 @@
           <div class="cfg-row" style="align-items:flex-start;">
             <label class="cfg-label" style="font-weight:500; line-height:1.6;">触发条件：</label>
             <div class="cfg-field" id="cfg-formula-area"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 消息通知 -->
+      <div class="form-section">
+        <div class="form-section-header">
+          <div class="form-section-title">消息通知</div>
+        </div>
+        <div class="notify-block">
+          <div class="cfg-row notify-row">
+            <label class="cfg-label required">接收人</label>
+            <div class="cfg-field">
+              <div class="notify-recipient-line">
+                <label class="notify-inline">
+                  <input type="checkbox" id="cfg-notify-specify-user" onchange="syncNotifyUserSelectState()" />
+                  <span>指定用户</span>
+                </label>
+                <div class="notify-user-picker" id="notify-user-picker">
+                  <div class="notify-user-trigger is-disabled" id="notify-user-trigger" onclick="toggleNotifyUserMenu(event)">
+                    <span class="notify-user-placeholder">请选择接收人</span>
+                    <span class="notify-user-caret">▾</span>
+                  </div>
+                  <div class="notify-user-menu" id="notify-user-menu" onclick="event.stopPropagation()">
+                    <label class="notify-user-option"><input type="checkbox" value="u_zhangsan" onchange="onNotifyUserOptionChange(this)" /><span>张三</span></label>
+                    <label class="notify-user-option"><input type="checkbox" value="u_lisi" onchange="onNotifyUserOptionChange(this)" /><span>李四</span></label>
+                    <label class="notify-user-option"><input type="checkbox" value="u_wangwu" onchange="onNotifyUserOptionChange(this)" /><span>王五</span></label>
+                    <label class="notify-user-option"><input type="checkbox" value="u_zhaoliu" onchange="onNotifyUserOptionChange(this)" /><span>赵六</span></label>
+                    <label class="notify-user-option"><input type="checkbox" value="u_ops" onchange="onNotifyUserOptionChange(this)" /><span>运营组</span></label>
+                    <label class="notify-user-option"><input type="checkbox" value="u_pm" onchange="onNotifyUserOptionChange(this)" /><span>产品经理</span></label>
+                  </div>
+                </div>
+              </div>
+              <div class="notify-user-hint">勾选「指定用户」后，在右侧框内按住 Ctrl（Windows）或 Command（Mac）多选接收人；不勾选则按系统默认接收策略。</div>
+            </div>
+          </div>
+          <div class="cfg-row notify-row">
+            <label class="cfg-label required">通知方式</label>
+            <div class="cfg-field notify-channels">
+              <label class="notify-inline">
+                <input type="checkbox" id="cfg-notify-system" checked />
+                <span>系统内部提醒</span>
+              </label>
+              <label class="notify-inline">
+                <input type="checkbox" id="cfg-notify-dingtalk" />
+                <span>钉钉</span>
+              </label>
+            </div>
           </div>
         </div>
       </div>
@@ -1705,8 +2124,13 @@
     };
 
     var currentAgeConditions = [];
-    var savedRules = [];
-    var ruleIdCounter = 1;
+    var savedRules = JSON.parse(localStorage.getItem('alertRules') || '[]');
+    var ruleIdCounter = parseInt(localStorage.getItem('alertRuleIdCounter') || '1');
+
+    function persistRules() {
+      localStorage.setItem('alertRules', JSON.stringify(savedRules));
+      localStorage.setItem('alertRuleIdCounter', String(ruleIdCounter));
+    }
 
     var MODEL_CATEGORY_MAP = {
       '本地库龄预警': '库龄预警',
@@ -1745,7 +2169,6 @@
       document.querySelector('.page-info strong').textContent = savedRules.length;
 
       savedRules.forEach(function(r) {
-        var statusClass = r.status ? 'status-badge-on' : 'status-badge-off';
         var statusText = r.status ? '启用' : '停用';
         var tr = document.createElement('tr');
         tr.innerHTML =
@@ -1753,7 +2176,16 @@
           '<td style="color:#409eff; cursor:pointer;" onclick="editRule(' + r.id + ')">' + r.name + '</td>' +
           '<td>' + r.model + '</td>' +
           '<td>' + r.category + '</td>' +
-          '<td><span class="status-badge ' + statusClass + '">' + statusText + '</span></td>' +
+          '<td>' +
+            '<label class="pill-toggle" title="' + statusText + '">' +
+              '<input type="checkbox" ' + (r.status ? 'checked' : '') + ' onchange="onTableStatusToggle(' + r.id + ', this.checked)" />' +
+              '<span class="pill-switch-ui">' +
+                '<span class="pill-switch-knob"></span>' +
+                '<span class="pill-switch-label pill-switch-label--on">启用</span>' +
+                '<span class="pill-switch-label pill-switch-label--off">停用</span>' +
+              '</span>' +
+            '</label>' +
+          '</td>' +
           '<td>' + r.createTime + '</td>' +
           '<td>' + r.creator + '</td>' +
           '<td>' + r.updateTime + '</td>' +
@@ -1765,6 +2197,24 @@
           '</td>';
         tbody.appendChild(tr);
       });
+    }
+
+    function onTableStatusToggle(id, checked) {
+      var now = formatNow();
+      var rule = savedRules.filter(function(r) { return r.id === id; })[0];
+      if (!rule) return;
+      rule.status = !!checked;
+      rule.updateTime = now;
+      rule.updater = '当前用户';
+      persistRules();
+
+      // 若当前正在编辑同一条记录，同步回写抽屉开关
+      if (editingRuleId === id) {
+        var sw = document.getElementById('cfg-rule-status');
+        if (sw) sw.checked = !!checked;
+        var txt = document.getElementById('cfg-status-text');
+        if (txt) txt.textContent = checked ? '启用' : '停用';
+      }
     }
 
     var editingRuleId = null;
@@ -1797,6 +2247,7 @@
       }
 
       renderSelectedParents();
+      applyNotifyFromRule(rule);
 
       document.getElementById('drawer-mask').classList.add('show');
       document.getElementById('drawer-config').classList.add('open');
@@ -1806,6 +2257,7 @@
     function deleteRule(id) {
       if (!confirm('确定要删除此规则吗？')) return;
       savedRules = savedRules.filter(function(r) { return r.id !== id; });
+      persistRules();
       renderRuleTable();
     }
 
@@ -1836,7 +2288,52 @@
     }
 
     /* ===== 第一步：选择模型弹窗 ===== */
+    var createModalSelectedCategory = '';
+
+    function setCreateModalCategoryValue(val) {
+      createModalSelectedCategory = val || '';
+      var label = document.getElementById('create-modal-cat-value');
+      if (label) label.textContent = createModalSelectedCategory || '全部';
+
+      var menu = document.getElementById('create-modal-cat-menu');
+      if (menu) {
+        menu.querySelectorAll('.th-filter-item').forEach(function(it) {
+          it.classList.toggle('is-selected', (it.getAttribute('data-value') || '') === createModalSelectedCategory);
+        });
+      }
+    }
+
+    function toggleCreateModalCategoryMenu(e) {
+      if (e) e.stopPropagation();
+      var menu = document.getElementById('create-modal-cat-menu');
+      if (!menu) return;
+      menu.classList.toggle('show');
+    }
+
+    function closeCreateModalCategoryMenu() {
+      var menu = document.getElementById('create-modal-cat-menu');
+      if (menu) menu.classList.remove('show');
+    }
+
+    function selectCreateModalCategory(val, e) {
+      if (e) e.stopPropagation();
+      setCreateModalCategoryValue(val);
+      applyCreateModalFilter();
+      closeCreateModalCategoryMenu();
+    }
+
+    function applyCreateModalFilter() {
+      var tbody = document.getElementById('modal-model-tbody');
+      if (!tbody) return;
+      tbody.querySelectorAll('tr[data-category]').forEach(function(tr) {
+        var cat = tr.getAttribute('data-category') || '';
+        tr.style.display = (!createModalSelectedCategory || cat === createModalSelectedCategory) ? '' : 'none';
+      });
+    }
+
     function createRule() {
+      setCreateModalCategoryValue('');
+      applyCreateModalFilter();
       document.getElementById('modal-create-rule').classList.add('show');
       document.body.style.overflow = 'hidden';
     }
@@ -1872,12 +2369,130 @@
       }
 
       renderSelectedParents();
+      resetNotifyForm();
 
       setTimeout(function() {
         document.getElementById('drawer-mask').classList.add('show');
         document.getElementById('drawer-config').classList.add('open');
         document.body.style.overflow = 'hidden';
       }, 180);
+    }
+
+    var notifySelectedUserIds = [];
+    var NOTIFY_USER_NAME_MAP = {
+      u_zhangsan: '张三',
+      u_lisi: '李四',
+      u_wangwu: '王五',
+      u_zhaoliu: '赵六',
+      u_ops: '运营组',
+      u_pm: '产品经理'
+    };
+
+    function resetNotifyForm() {
+      var spec = document.getElementById('cfg-notify-specify-user');
+      var sys = document.getElementById('cfg-notify-system');
+      var ding = document.getElementById('cfg-notify-dingtalk');
+      if (spec) spec.checked = false;
+      if (sys) sys.checked = true;
+      if (ding) ding.checked = false;
+      notifySelectedUserIds = [];
+      syncNotifyUserSelectState();
+      syncNotifyUserMenuChecks();
+      renderNotifyUserTrigger();
+      closeNotifyUserMenu();
+    }
+
+    function syncNotifyUserSelectState() {
+      var cb = document.getElementById('cfg-notify-specify-user');
+      var trigger = document.getElementById('notify-user-trigger');
+      if (!cb || !trigger) return;
+      trigger.classList.toggle('is-disabled', !cb.checked);
+      if (!cb.checked) closeNotifyUserMenu();
+    }
+
+    function syncNotifyUserMenuChecks() {
+      document.querySelectorAll('#notify-user-menu input[type="checkbox"]').forEach(function(input) {
+        input.checked = notifySelectedUserIds.indexOf(input.value) !== -1;
+      });
+    }
+
+    function renderNotifyUserTrigger() {
+      var trigger = document.getElementById('notify-user-trigger');
+      if (!trigger) return;
+      var caret = '<span class="notify-user-caret">▾</span>';
+      if (notifySelectedUserIds.length === 0) {
+        trigger.innerHTML = '<span class="notify-user-placeholder">请选择接收人</span>' + caret;
+        return;
+      }
+      var chips = notifySelectedUserIds.map(function(id) {
+        var name = NOTIFY_USER_NAME_MAP[id] || id;
+        return '<span class="notify-user-chip">' + name + '<button type="button" class="notify-user-chip-remove" onclick="removeNotifyUserTag(\'' + id + '\', event)">×</button></span>';
+      }).join('');
+      trigger.innerHTML = chips + caret;
+    }
+
+    function toggleNotifyUserMenu(e) {
+      if (e) e.stopPropagation();
+      var enabled = document.getElementById('cfg-notify-specify-user').checked;
+      var menu = document.getElementById('notify-user-menu');
+      var trigger = document.getElementById('notify-user-trigger');
+      if (!enabled || !menu || !trigger) return;
+      var open = menu.classList.toggle('show');
+      trigger.classList.toggle('is-open', open);
+    }
+
+    function closeNotifyUserMenu() {
+      var menu = document.getElementById('notify-user-menu');
+      var trigger = document.getElementById('notify-user-trigger');
+      if (menu) menu.classList.remove('show');
+      if (trigger) trigger.classList.remove('is-open');
+    }
+
+    function onNotifyUserOptionChange(input) {
+      var id = input.value;
+      if (input.checked) {
+        if (notifySelectedUserIds.indexOf(id) === -1) notifySelectedUserIds.push(id);
+      } else {
+        notifySelectedUserIds = notifySelectedUserIds.filter(function(x) { return x !== id; });
+      }
+      renderNotifyUserTrigger();
+    }
+
+    function removeNotifyUserTag(id, e) {
+      if (e) e.stopPropagation();
+      notifySelectedUserIds = notifySelectedUserIds.filter(function(x) { return x !== id; });
+      syncNotifyUserMenuChecks();
+      renderNotifyUserTrigger();
+    }
+
+    function getNotifyUserIds() {
+      return notifySelectedUserIds.slice();
+    }
+
+    function getNotifyChannels() {
+      return {
+        system: document.getElementById('cfg-notify-system').checked,
+        dingtalk: document.getElementById('cfg-notify-dingtalk').checked
+      };
+    }
+
+    function applyNotifyFromRule(rule) {
+      if (!rule) return;
+      var spec = document.getElementById('cfg-notify-specify-user');
+      var sys = document.getElementById('cfg-notify-system');
+      var ding = document.getElementById('cfg-notify-dingtalk');
+      if (spec) spec.checked = !!rule.notifySpecifyUser;
+      notifySelectedUserIds = (rule.notifyUserIds || []).slice();
+      syncNotifyUserSelectState();
+      syncNotifyUserMenuChecks();
+      renderNotifyUserTrigger();
+      if (rule.notifyChannels) {
+        if (sys) sys.checked = !!rule.notifyChannels.system;
+        if (ding) ding.checked = !!rule.notifyChannels.dingtalk;
+      } else {
+        if (sys) sys.checked = true;
+        if (ding) ding.checked = false;
+      }
     }
 
     function renderFormulaArea(model) {
@@ -1958,12 +2573,31 @@
 
     document.getElementById('cfg-rule-status').addEventListener('change', function() {
       document.getElementById('cfg-status-text').textContent = this.checked ? '启用' : '停用';
+      // 编辑态下：抽屉开关与列表启用状态实时同步
+      if (editingRuleId != null) {
+        var now = formatNow();
+        var rule = savedRules.filter(function(r) { return r.id === editingRuleId; })[0];
+        if (rule) {
+          rule.status = this.checked;
+          rule.updateTime = now;
+          rule.updater = '当前用户';
+          persistRules();
+          renderRuleTable();
+        }
+      }
     });
 
     function saveRule() {
       var name = document.getElementById('cfg-rule-name').value.trim();
       if (!name) { alert('请输入规则名称'); return; }
       if (selectedParents.length === 0) { alert('请至少添加一个父体'); return; }
+
+      var ch = getNotifyChannels();
+      if (!ch.system && !ch.dingtalk) { alert('请至少选择一种通知方式（系统内部提醒 / 钉钉）'); return; }
+      if (document.getElementById('cfg-notify-specify-user').checked && getNotifyUserIds().length === 0) {
+        alert('已勾选「指定用户」，请至少选择一名接收人（可多选）');
+        return;
+      }
 
       var model = ALERT_MODELS[currentModel];
       var ruleInfo = '';
@@ -1996,6 +2630,12 @@
         if (thEl) thVal = thEl.value;
       }
 
+      var notifyPayload = {
+        notifySpecifyUser: document.getElementById('cfg-notify-specify-user').checked,
+        notifyUserIds: getNotifyUserIds(),
+        notifyChannels: getNotifyChannels()
+      };
+
       if (editingRuleId != null) {
         var existing = savedRules.filter(function(r) { return r.id === editingRuleId; })[0];
         if (existing) {
@@ -2004,6 +2644,9 @@
           existing.parents = selectedParents.slice();
           existing.ageConditions = ageConds;
           existing.threshold = thVal;
+          existing.notifySpecifyUser = notifyPayload.notifySpecifyUser;
+          existing.notifyUserIds = notifyPayload.notifyUserIds;
+          existing.notifyChannels = notifyPayload.notifyChannels;
           existing.updateTime = now;
           existing.updater = '当前用户';
         }
@@ -2017,6 +2660,9 @@
           parents: selectedParents.slice(),
           ageConditions: ageConds,
           threshold: thVal,
+          notifySpecifyUser: notifyPayload.notifySpecifyUser,
+          notifyUserIds: notifyPayload.notifyUserIds,
+          notifyChannels: notifyPayload.notifyChannels,
           createTime: now,
           creator: '当前用户',
           updateTime: now,
@@ -2024,6 +2670,7 @@
         });
       }
       editingRuleId = null;
+      persistRules();
       renderRuleTable();
       closeDrawer();
     }
@@ -2177,6 +2824,8 @@
     /* ===== 全局键盘 ===== */
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') {
+        closeCreateModalCategoryMenu();
+        closeNotifyUserMenu();
         if (document.getElementById('modal-parent-pick').classList.contains('show')) {
           closeParentModal();
         } else if (document.getElementById('drawer-config').classList.contains('open')) {
@@ -2186,6 +2835,14 @@
         }
       }
     });
+
+    document.addEventListener('click', function() {
+      closeCreateModalCategoryMenu();
+      closeNotifyUserMenu();
+    });
+
+    renderNotifyUserTrigger();
+    renderRuleTable();
   </script>
 </body>
 </html>
