@@ -1575,11 +1575,19 @@
         <div class="sidebar-section-title">功能模块</div>
         <a class="sidebar-item" href="预测规则配置页面_v1.html">
           <span class="item-icon">📊</span>
-          <span class="item-label">备货规则</span>
+          <span class="item-label">备货规则（旧）</span>
+        </a>
+        <a class="sidebar-item" href="备货规则新_v1.html">
+          <span class="item-icon">🆕</span>
+          <span class="item-label">备货规则（新）</span>
         </a>
         <a class="sidebar-item active" href="预警页面_v1.html">
           <span class="item-icon">⚠️</span>
           <span class="item-label">预警模型</span>
+        </a>
+        <a class="sidebar-item" href="预警消息页面_v1.html">
+          <span class="item-icon">📩</span>
+          <span class="item-label">预警消息</span>
         </a>
       </nav>
     </aside>
@@ -1774,7 +1782,7 @@
             <tr data-category="下单预警">
               <td class="col-name">订单加急预警</td>
               <td class="col-type"><span class="tag tag-order">下单预警</span></td>
-              <td class="col-desc">当国内仓（CN仓）的可用库存无法满足未来 N 个发货周期（例如2次）的计划需求，且在下次补货到货前无"在产订单"预计到货时触发，提示需加急生产或运输中的订单。</td>
+              <td class="col-desc">提示需加急生产或运输中的订单。</td>
               <td class="col-action"><button class="modal-add-link" onclick="addRule('订单加急预警')">添加</button></td>
             </tr>
             <tr data-category="销售偏差预警">
@@ -2050,11 +2058,11 @@
         unit: '天'
       },
       '订单加急预警': {
-        conditionDesc: '当国内仓（CN仓）的可用库存无法满足未来 N 个发货周期的计划需求，且在下次补货到货前无"在产订单"预计到货时触发。',
+        conditionDesc: '当CN仓的可用库存无法满足未来N个发货周期（例如2次）的计划需求量，且在下次补货到货前无“在产订单”预计到货时触发，提示需加急生产或运输中的订单。',
         formulaType: 'threshold',
         thresholdLabel: '发货周期次数',
         defaultThreshold: 2,
-        formulaDesc: 'CN仓可用库存 < 未来 N 个发货周期需求量 且 无在产订单',
+        formulaDesc: 'CN仓天数<发货频率*3 同时 当天日期+（FBA库存天数+在途天数+CN仓天数+发货频率*3）<在产订单最快到货日期',
         unit: '次'
       },
       '销售偏差预警': {

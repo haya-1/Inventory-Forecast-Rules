@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>预警消息</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Microsoft YaHei", sans-serif;
+    }
+
+    body {
+      background: #f5f7fa;
+      color: #303133;
+    }
+
+    .app-layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      width: 220px;
+      background: #fff;
+      border-right: 1px solid #e4e7ed;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      z-index: 100;
+      box-shadow: 2px 0 8px rgba(0, 0, 0, 0.04);
+    }
+
+    .sidebar-brand {
+      padding: 20px 20px 16px;
+      border-bottom: 1px solid #ebeef5;
+    }
+
+    .sidebar-brand h2 {
+      font-size: 17px;
+      font-weight: 600;
+      color: #303133;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sidebar-brand .brand-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #409eff 0%, #66b1ff 100%);
+      border-radius: 8px;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .sidebar-nav {
+      padding: 8px 0;
+      flex: 1;
+    }
+
+    .sidebar-section-title {
+      padding: 16px 20px 8px;
+      font-size: 12px;
+      color: #909399;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 500;
+    }
+
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 20px;
+      margin: 2px 8px;
+      border-radius: 6px;
+      color: #606266;
+      text-decoration: none;
+      font-size: 14px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      gap: 10px;
+      position: relative;
+    }
+
+    .sidebar-item:hover {
+      background: #f0f7ff;
+      color: #409eff;
+    }
+
+    .sidebar-item.active {
+      background: #ecf5ff;
+      color: #409eff;
+      font-weight: 500;
+    }
+
+    .sidebar-item.active::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 24px;
+      background: #409eff;
+      border-radius: 0 3px 3px 0;
+    }
+
+    .sidebar-item .item-icon {
+      font-size: 18px;
+      width: 24px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .main-content {
+      flex: 1;
+      margin-left: 220px;
+      min-height: 100vh;
+    }
+
+    .panel {
+      margin: 16px 20px;
+      background: #fff;
+      border-radius: 4px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+    }
+
+    .panel-body {
+      padding: 16px 18px 20px;
+    }
+
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .filter-control {
+      height: 32px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      background: #fff;
+      color: #606266;
+      font-size: 13px;
+      padding: 0 10px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .filter-control:focus {
+      border-color: #409eff;
+    }
+
+    .w-120 { width: 120px; }
+    .w-140 { width: 140px; }
+    .w-160 { width: 160px; }
+    .w-200 { width: 200px; }
+
+    .date-sep {
+      color: #c0c4cc;
+      font-size: 13px;
+    }
+
+    .btn {
+      height: 32px;
+      padding: 0 14px;
+      border-radius: 4px;
+      border: 1px solid #dcdfe6;
+      background: #fff;
+      color: #606266;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: #409eff;
+      border-color: #409eff;
+      color: #fff;
+    }
+
+    .btn-primary:hover { background: #66b1ff; border-color: #66b1ff; }
+
+    .table-wrap {
+      border: 1px solid #ebeef5;
+      border-radius: 4px;
+      overflow: hidden;
+      background: #fff;
+      min-height: 420px;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .data-table th,
+    .data-table td {
+      border-bottom: 1px solid #ebeef5;
+      padding: 10px 8px;
+      text-align: center;
+      font-size: 13px;
+      color: #606266;
+      white-space: nowrap;
+    }
+
+    .data-table th {
+      background: #f5f7fa;
+      color: #303133;
+      font-weight: 500;
+    }
+
+    .data-table tbody tr:hover {
+      background: #f8fbff;
+    }
+
+    .status-tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-size: 12px;
+      color: #67c23a;
+      background: #f0f9eb;
+    }
+
+    .level-tag {
+      display: inline-block;
+      min-width: 46px;
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-size: 12px;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    .level-red {
+      background: #fef0f0;
+      color: #f56c6c;
+    }
+
+    .level-orange {
+      background: #fdf6ec;
+      color: #e6a23c;
+    }
+
+    .level-yellow {
+      background: #fff7e6;
+      color: #d48806;
+    }
+
+    .empty-tip {
+      color: #c0c4cc;
+      font-size: 13px;
+      text-align: center;
+      padding: 120px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <h2><span class="brand-icon">📦</span><span>OMS</span></h2>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="sidebar-section-title">功能模块</div>
+        <a class="sidebar-item" href="预测规则配置页面_v1.html">
+          <span class="item-icon">📊</span>
+          <span>备货规则（旧）</span>
+        </a>
+        <a class="sidebar-item" href="备货规则新_v1.html">
+          <span class="item-icon">🆕</span>
+          <span>备货规则（新）</span>
+        </a>
+        <a class="sidebar-item" href="预警页面_v1.html">
+          <span class="item-icon">⚠️</span>
+          <span>预警模型</span>
+        </a>
+        <a class="sidebar-item active" href="预警消息页面_v1.html">
+          <span class="item-icon">📩</span>
+          <span>预警消息</span>
+        </a>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      <div class="panel">
+        <div class="panel-body">
+          <div class="filter-bar">
+            <input class="filter-control w-120" type="text" placeholder="父体" />
+            <input class="filter-control w-120" type="text" placeholder="ASIN" />
+            <input class="filter-control w-120" type="text" placeholder="SPU" />
+            <select class="filter-control w-160">
+              <option>店铺</option>
+              <option>noorkie Inc-US</option>
+              <option>STEP QUEEN INC-UK</option>
+            </select>
+            <input class="filter-control w-160" type="text" placeholder="SKU" />
+            <select class="filter-control w-120">
+              <option>国家</option>
+              <option>美国</option>
+              <option>英国</option>
+            </select>
+            <select class="filter-control w-120">
+              <option>预警级别</option>
+              <option>红色</option>
+              <option>橙色</option>
+              <option>黄色</option>
+            </select>
+            <input class="filter-control w-160" type="text" placeholder="规则名称" />
+            <select class="filter-control w-120">
+              <option>提醒方式</option>
+              <option>系统内</option>
+              <option>钉钉</option>
+              <option>系统内、钉钉</option>
+            </select>
+            <input class="filter-control w-120" type="date" />
+            <span class="date-sep">至</span>
+            <input class="filter-control w-120" type="date" />
+            <select class="filter-control w-120">
+              <option>接收人</option>
+              <option>张三</option>
+              <option>李四</option>
+              <option>王五</option>
+              <option>赵六</option>
+              <option>运营组</option>
+            </select>
+            <select class="filter-control w-120">
+              <option>状态</option>
+              <option>未读</option>
+              <option>已读</option>
+            </select>
+            <input class="filter-control w-200" type="text" placeholder="标题" />
+            <button class="btn btn-primary">搜索</button>
+            <button class="btn">重置</button>
+          </div>
+
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="width:36px;"><input type="checkbox" /></th>                 
+                  <th>父体</th>
+                  <th>ASIN</th>
+                  <th>SPU</th>
+                  <th>店铺</th>
+                  <th>SKU</th>
+                  <th>国家</th>
+                  <th>标题(预警内容)</th>
+                  <th>预警级别</th>
+                  <th>规则名称</th>
+                  <th>提醒方式</th>
+                  <th>提醒时间</th>
+                  <th>接收人</th>
+                  <th>状态</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><input type="checkbox" /></td>
+                  <td>LFT00002261</td>
+                  <td>B083J69DSQ</td>
+                  <td>ST18106</td>
+                  <td>noorkie Inc-US</td>
+                  <td>ST18106DENIMBLUE095</td>
+                  <td>美国</td>
+                  <td>【本地库龄预警】"ST18106DENIMBLUE095"库龄≥90天库存 146 件，超过阈值 120 件，请尽快处理滞销库存</td>
+                  <td><span class="level-tag level-orange">橙色</span></td>
+                  <td>本地库龄预警-美国站鞋靴</td>
+                  <td>系统内、钉钉</td>
+                  <td>2026-04-08 10:18:36</td>
+                  <td>张三、李四、运营组</td>
+                  <td><span class="status-tag">未读</span></td>
+                  <td><a href="#" style="color:#409eff;text-decoration:none;">查看</a></td>
+                </tr>
+                <tr>
+                  <td><input type="checkbox" /></td>
+                  <td>LFT00000784</td>
+                  <td>B07NV7QK7H</td>
+                  <td>HK1839</td>
+                  <td>STEP QUEEN INC-UK</td>
+                  <td>HK1839-BLK-41</td>
+                  <td>英国</td>
+                  <td>【断货预警（必断）】“HK1839-BLK-41”预计断货点早于快船到货 5 天，库存将归零，请立即执行快船+慢船补货方案</td>
+                  <td><span class="level-tag level-red">红色</span></td>
+                  <td>断货预警（必断）-英国站鞋靴</td>
+                  <td>系统内、钉钉</td>
+                  <td>2026-04-08 11:06:44</td>
+                  <td>王五、赵六、运营组</td>
+                  <td><span class="status-tag">未读</span></td>
+                  <td><a href="#" style="color:#409eff;text-decoration:none;">查看</a></td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="empty-tip" style="display:none;">暂无数据</div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
