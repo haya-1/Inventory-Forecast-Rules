@@ -1,0 +1,2191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>预警规则</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Microsoft YaHei", sans-serif;
+    }
+
+    body {
+      background-color: #f5f7fa;
+      color: #303133;
+    }
+
+    /* ===== 整体布局 ===== */
+    .app-layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ===== 侧边栏 ===== */
+    .sidebar {
+      width: 220px;
+      background: #fff;
+      border-right: 1px solid #e4e7ed;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      z-index: 100;
+      box-shadow: 2px 0 8px rgba(0, 0, 0, 0.04);
+    }
+
+    .sidebar-brand {
+      padding: 20px 20px 16px;
+      border-bottom: 1px solid #ebeef5;
+    }
+
+    .sidebar-brand h2 {
+      font-size: 17px;
+      font-weight: 600;
+      color: #303133;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sidebar-brand .brand-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #409eff 0%, #66b1ff 100%);
+      border-radius: 8px;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .sidebar-nav {
+      padding: 8px 0;
+      flex: 1;
+    }
+
+    .sidebar-section-title {
+      padding: 16px 20px 8px;
+      font-size: 12px;
+      color: #909399;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 500;
+    }
+
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 20px;
+      margin: 2px 8px;
+      border-radius: 6px;
+      color: #606266;
+      text-decoration: none;
+      font-size: 14px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      gap: 10px;
+      position: relative;
+    }
+
+    .sidebar-item:hover {
+      background: #f0f7ff;
+      color: #409eff;
+    }
+
+    .sidebar-item.active {
+      background: #ecf5ff;
+      color: #409eff;
+      font-weight: 500;
+    }
+
+    .sidebar-item.active::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 24px;
+      background: #409eff;
+      border-radius: 0 3px 3px 0;
+    }
+
+    .sidebar-item .item-icon {
+      font-size: 18px;
+      width: 24px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    /* ===== 主内容区 ===== */
+    .main-content {
+      flex: 1;
+      margin-left: 220px;
+      min-height: 100vh;
+      padding: 0;
+    }
+
+    /* ===== 顶部页签（规则管理 / 预警模块） ===== */
+    .page-tabs {
+      display: flex;
+      align-items: center;
+      background: #fff;
+      padding: 0 24px;
+      border-bottom: 1px solid #ebeef5;
+      gap: 0;
+    }
+
+    .page-tab {
+      padding: 14px 20px;
+      font-size: 15px;
+      color: #606266;
+      cursor: pointer;
+      position: relative;
+      transition: color 0.2s;
+      text-decoration: none;
+      border-bottom: 2px solid transparent;
+    }
+
+    .page-tab:hover {
+      color: #409eff;
+    }
+
+    .page-tab.active {
+      color: #409eff;
+      font-weight: 500;
+      border-bottom-color: #409eff;
+    }
+
+    /* ===== 内容面板 ===== */
+    .panel {
+      margin: 16px 20px;
+      background: #fff;
+      border-radius: 4px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+    }
+
+    .panel-body {
+      padding: 20px;
+    }
+
+    /* ===== 状态筛选标签 ===== */
+    .status-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .status-tab {
+      padding: 5px 16px;
+      border-radius: 3px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 1px solid #dcdfe6;
+      background: #fff;
+      color: #606266;
+    }
+
+    .status-tab:hover {
+      border-color: #409eff;
+      color: #409eff;
+    }
+
+    .status-tab.active {
+      background: #409eff;
+      color: #fff;
+      border-color: #409eff;
+    }
+
+    /* ===== 过滤条件栏 ===== */
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .filter-item {
+      display: flex;
+      align-items: center;
+      gap: 0;
+    }
+
+    .filter-item select,
+    .filter-item input[type="text"],
+    .filter-item input[type="date"] {
+      padding: 7px 12px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      font-size: 13px;
+      color: #606266;
+      background: #fff;
+      outline: none;
+      transition: border-color 0.2s;
+      height: 34px;
+    }
+
+    .filter-item select {
+      min-width: 130px;
+      appearance: auto;
+    }
+
+    .filter-item input[type="text"] {
+      width: 160px;
+    }
+
+    .filter-item input[type="date"] {
+      width: 140px;
+    }
+
+    .filter-item select:focus,
+    .filter-item input:focus {
+      border-color: #409eff;
+    }
+
+    .filter-date-sep {
+      padding: 0 4px;
+      color: #c0c4cc;
+      font-size: 13px;
+    }
+
+    .filter-btn {
+      padding: 7px 20px;
+      border-radius: 4px;
+      font-size: 13px;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      height: 34px;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .filter-btn-search {
+      background: #409eff;
+      color: #fff;
+    }
+
+    .filter-btn-search:hover {
+      background: #66b1ff;
+    }
+
+    .filter-btn-reset {
+      background: #fff;
+      color: #606266;
+      border: 1px solid #dcdfe6;
+    }
+
+    .filter-btn-reset:hover {
+      border-color: #409eff;
+      color: #409eff;
+    }
+
+    /* ===== 操作栏 ===== */
+    .action-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .btn {
+      padding: 8px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .btn-primary {
+      background: #409eff;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #66b1ff;
+    }
+
+    .table-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .toolbar-icon {
+      width: 32px;
+      height: 32px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      cursor: pointer;
+      color: #909399;
+      font-size: 16px;
+      transition: all 0.2s;
+      border: 1px solid #ebeef5;
+      background: #fff;
+    }
+
+    .toolbar-icon:hover {
+      color: #409eff;
+      border-color: #409eff;
+    }
+
+    /* ===== 数据表格 ===== */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .data-table th,
+    .data-table td {
+      border: 1px solid #ebeef5;
+      padding: 12px 10px;
+      text-align: center;
+      font-size: 13px;
+    }
+
+    .data-table th {
+      background: #f5f7fa;
+      font-weight: 500;
+      color: #303133;
+      white-space: nowrap;
+    }
+
+    .data-table td {
+      color: #606266;
+    }
+
+    .data-table tbody tr:hover {
+      background: #f5f7fa;
+    }
+
+    .table-container {
+      overflow-x: auto;
+    }
+
+    /* 空数据状态 */
+    .table-empty {
+      text-align: center;
+      padding: 60px 20px;
+      color: #909399;
+      font-size: 14px;
+    }
+
+    .table-empty-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+      opacity: 0.4;
+    }
+
+    /* 状态标签 */
+    .status-badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 3px;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .status-badge-on {
+      background: #f0f9eb;
+      color: #67c23a;
+    }
+
+    .status-badge-off {
+      background: #f4f4f5;
+      color: #909399;
+    }
+
+    /* 操作列按钮 */
+    .op-link {
+      color: #409eff;
+      cursor: pointer;
+      font-size: 13px;
+      padding: 0 4px;
+      background: none;
+      border: none;
+      transition: color 0.2s;
+    }
+
+    .op-link:hover {
+      color: #66b1ff;
+    }
+
+    .op-link-danger {
+      color: #f56c6c;
+    }
+
+    .op-link-danger:hover {
+      color: #f89898;
+    }
+
+    .op-sep {
+      color: #dcdfe6;
+      margin: 0 2px;
+    }
+
+    /* ===== 分页 ===== */
+    .pagination {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      padding: 16px 0 0;
+      gap: 8px;
+      font-size: 13px;
+      color: #606266;
+    }
+
+    .pagination .page-info {
+      margin-right: 16px;
+    }
+
+    .pagination .page-btn {
+      width: 32px;
+      height: 32px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      background: #fff;
+      cursor: pointer;
+      font-size: 13px;
+      color: #606266;
+      transition: all 0.2s;
+    }
+
+    .pagination .page-btn:hover {
+      color: #409eff;
+      border-color: #409eff;
+    }
+
+    .pagination .page-btn.active {
+      background: #409eff;
+      color: #fff;
+      border-color: #409eff;
+    }
+
+    .pagination .page-btn.disabled {
+      color: #c0c4cc;
+      cursor: not-allowed;
+      border-color: #ebeef5;
+    }
+
+    /* ===== 弹窗 ===== */
+    .modal-mask {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      z-index: 1000;
+      justify-content: center;
+      align-items: flex-start;
+      padding-top: 60px;
+    }
+
+    .modal-mask.show {
+      display: flex;
+    }
+
+    .modal {
+      background: #fff;
+      border-radius: 6px;
+      width: 820px;
+      max-width: 90vw;
+      max-height: calc(100vh - 120px);
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+      animation: modalIn 0.25s ease;
+    }
+
+    @keyframes modalIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid #ebeef5;
+    }
+
+    .modal-header h3 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #303133;
+    }
+
+    .modal-close {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: #909399;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: all 0.2s;
+      border: none;
+      background: none;
+    }
+
+    .modal-close:hover {
+      color: #303133;
+      background: #f5f7fa;
+    }
+
+    .modal-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0;
+    }
+
+    .modal-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .modal-table th,
+    .modal-table td {
+      padding: 14px 20px;
+      text-align: left;
+      font-size: 14px;
+      border-bottom: 1px solid #ebeef5;
+    }
+
+    .modal-table th {
+      background: #fafafa;
+      font-weight: 500;
+      color: #606266;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    .modal-table td {
+      color: #303133;
+      vertical-align: top;
+      line-height: 1.6;
+    }
+
+    .modal-table .col-name {
+      width: 170px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .modal-table .col-type {
+      width: 110px;
+      white-space: nowrap;
+    }
+
+    .modal-table .col-type .tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .tag-inventory  { background: #ecf5ff; color: #409eff; }
+    .tag-storage    { background: #fdf6ec; color: #e6a23c; }
+    .tag-order      { background: #f0f9eb; color: #67c23a; }
+    .tag-deviation  { background: #fef0f0; color: #f56c6c; }
+    .tag-shipping   { background: #ecf5ff; color: #409eff; }
+    .tag-stockout   { background: #fef0f0; color: #f56c6c; }
+    .tag-logistics  { background: #f4f4f5; color: #909399; }
+    .tag-production { background: #fdf6ec; color: #e6a23c; }
+    .tag-overstock  { background: #f0f9eb; color: #67c23a; }
+
+    .modal-table .col-desc {
+      color: #606266;
+    }
+
+    .modal-table .col-action {
+      width: 70px;
+      text-align: center;
+    }
+
+    .modal-table tbody tr {
+      transition: background 0.15s;
+    }
+
+    .modal-table tbody tr:hover {
+      background: #f5f7fa;
+    }
+
+    .modal-add-link {
+      color: #409eff;
+      cursor: pointer;
+      font-size: 14px;
+      background: none;
+      border: none;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .modal-add-link:hover {
+      color: #66b1ff;
+    }
+
+    .modal-footer {
+      padding: 14px 24px;
+      border-top: 1px solid #ebeef5;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .modal-footer .btn-close {
+      padding: 8px 24px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      background: #fff;
+      color: #606266;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .modal-footer .btn-close:hover {
+      border-color: #409eff;
+      color: #409eff;
+    }
+
+    /* ===== 右侧抽屉（规则配置） ===== */
+    .drawer-mask {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.35);
+      z-index: 1100;
+    }
+
+    .drawer-mask.show {
+      display: block;
+    }
+
+    .drawer {
+      position: fixed;
+      top: 0;
+      right: -680px;
+      width: 680px;
+      max-width: 90vw;
+      height: 100vh;
+      background: #fff;
+      z-index: 1200;
+      display: flex;
+      flex-direction: column;
+      box-shadow: -4px 0 24px rgba(0, 0, 0, 0.12);
+      transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .drawer.open {
+      right: 0;
+    }
+
+    .drawer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 18px 24px;
+      border-bottom: 1px solid #ebeef5;
+      flex-shrink: 0;
+    }
+
+    .drawer-header h3 {
+      font-size: 17px;
+      font-weight: 600;
+      color: #303133;
+    }
+
+    .drawer-close {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: #909399;
+      cursor: pointer;
+      border-radius: 4px;
+      border: none;
+      background: none;
+      transition: all 0.2s;
+    }
+
+    .drawer-close:hover {
+      color: #303133;
+      background: #f5f7fa;
+    }
+
+    .drawer-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 28px;
+    }
+
+    .drawer-footer {
+      padding: 14px 28px;
+      border-top: 1px solid #ebeef5;
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    /* 表单区块 */
+    .form-section {
+      margin-bottom: 28px;
+    }
+
+    .form-section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+
+    .form-section-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #303133;
+      padding-left: 10px;
+      border-left: 3px solid #409eff;
+      line-height: 1;
+      margin: 0;
+    }
+
+    .cfg-row {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 16px;
+      gap: 12px;
+    }
+
+    .cfg-label {
+      width: 90px;
+      flex-shrink: 0;
+      text-align: right;
+      font-size: 14px;
+      color: #606266;
+      line-height: 34px;
+    }
+
+    .cfg-label.required::before {
+      content: '*';
+      color: #f56c6c;
+      margin-right: 4px;
+    }
+
+    .cfg-field {
+      flex: 1;
+    }
+
+    .cfg-input {
+      width: 320px;
+      max-width: 100%;
+      padding: 7px 12px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      font-size: 14px;
+      color: #303133;
+      outline: none;
+      transition: border-color 0.2s;
+      height: 34px;
+    }
+
+    .cfg-input:focus {
+      border-color: #409eff;
+    }
+
+    .cfg-select {
+      width: 320px;
+      max-width: 100%;
+      padding: 7px 12px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      font-size: 14px;
+      color: #606266;
+      background: #fff;
+      outline: none;
+      transition: border-color 0.2s;
+      height: 34px;
+      appearance: auto;
+    }
+
+    .cfg-select:focus {
+      border-color: #409eff;
+    }
+
+    .cfg-input-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .cfg-input-group .cfg-input {
+      width: 160px;
+    }
+
+    .cfg-unit {
+      font-size: 14px;
+      color: #606266;
+    }
+
+    /* 开关 */
+    .cfg-switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 22px;
+      margin-top: 6px;
+    }
+
+    .cfg-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .cfg-switch-slider {
+      position: absolute;
+      inset: 0;
+      background: #dcdfe6;
+      border-radius: 22px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .cfg-switch-slider::before {
+      content: '';
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #fff;
+      top: 2px;
+      left: 2px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+      transition: transform 0.2s;
+    }
+
+    .cfg-switch input:checked + .cfg-switch-slider {
+      background: #409eff;
+    }
+
+    .cfg-switch input:checked + .cfg-switch-slider::before {
+      transform: translateX(22px);
+    }
+
+    .cfg-switch-text {
+      display: inline-block;
+      margin-left: 8px;
+      font-size: 13px;
+      color: #909399;
+      line-height: 34px;
+      vertical-align: top;
+    }
+
+    /* 规则设置区块头 */
+    .rule-block-header {
+      background: #409eff;
+      color: #fff;
+      padding: 10px 16px;
+      border-radius: 4px 4px 0 0;
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 0;
+    }
+
+    .rule-block-body {
+      border: 1px solid #ebeef5;
+      border-top: none;
+      border-radius: 0 0 4px 4px;
+      padding: 20px 16px;
+    }
+
+    /* 库龄条件行 */
+    .age-condition-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .age-condition-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding: 10px 12px;
+      background: #f9fafc;
+      border: 1px solid #ebeef5;
+      border-radius: 4px;
+    }
+
+    .age-condition-row .acr-text {
+      font-size: 14px;
+      color: #606266;
+      white-space: nowrap;
+    }
+
+    .age-condition-row .acr-input {
+      width: 80px;
+      padding: 5px 8px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      font-size: 14px;
+      text-align: center;
+      color: #303133;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .age-condition-row .acr-input:focus {
+      border-color: #409eff;
+    }
+
+    .age-condition-row .acr-select {
+      padding: 5px 8px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      font-size: 14px;
+      color: #606266;
+      outline: none;
+      background: #fff;
+      appearance: auto;
+      transition: border-color 0.2s;
+    }
+
+    .age-condition-row .acr-select:focus {
+      border-color: #409eff;
+    }
+
+    .age-condition-row .acr-remove {
+      margin-left: auto;
+      color: #f56c6c;
+      cursor: pointer;
+      border: none;
+      background: none;
+      font-size: 18px;
+      padding: 0 4px;
+      line-height: 1;
+    }
+
+    .age-condition-row .acr-remove:hover {
+      color: #f89898;
+    }
+
+    .age-add-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 14px;
+      border: 1px dashed #dcdfe6;
+      border-radius: 4px;
+      background: #fff;
+      font-size: 13px;
+      color: #909399;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 4px;
+    }
+
+    .age-add-btn:hover {
+      border-color: #409eff;
+      color: #409eff;
+    }
+
+    .formula-desc {
+      font-size: 13px;
+      color: #909399;
+      margin-top: 10px;
+      line-height: 1.5;
+    }
+
+    /* 父体范围已选表格 */
+    .parent-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .parent-table th,
+    .parent-table td {
+      border: 1px solid #ebeef5;
+      padding: 8px 10px;
+      text-align: center;
+    }
+
+    .parent-table th {
+      background: #f5f7fa;
+      font-weight: 500;
+      color: #303133;
+      white-space: nowrap;
+    }
+
+    .parent-table td {
+      color: #606266;
+    }
+
+    .parent-table tbody tr:hover {
+      background: #fafafa;
+    }
+
+    .parent-empty {
+      text-align: center;
+      padding: 32px 16px;
+      color: #c0c4cc;
+      font-size: 13px;
+    }
+
+    .parent-remove {
+      color: #f56c6c;
+      cursor: pointer;
+      border: none;
+      background: none;
+      font-size: 13px;
+    }
+
+    .parent-remove:hover {
+      color: #f89898;
+    }
+
+    /* 底部按钮 */
+    .btn-cancel {
+      padding: 8px 28px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      background: #fff;
+      color: #606266;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-cancel:hover {
+      border-color: #409eff;
+      color: #409eff;
+    }
+
+    .btn-save {
+      padding: 8px 28px;
+      border: none;
+      border-radius: 4px;
+      background: #409eff;
+      color: #fff;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-save:hover {
+      background: #66b1ff;
+    }
+
+    /* ===== 父体选择弹窗 ===== */
+    .modal.modal-parent {
+      width: 1060px;
+      max-width: 95vw;
+    }
+
+    .modal-parent .modal-body {
+      padding: 16px 20px;
+    }
+
+    .parent-filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .parent-filter-bar input,
+    .parent-filter-bar select {
+      padding: 6px 10px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      font-size: 13px;
+      height: 32px;
+      outline: none;
+      color: #606266;
+    }
+
+    .parent-filter-bar input:focus,
+    .parent-filter-bar select:focus {
+      border-color: #409eff;
+    }
+
+    .parent-pick-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .parent-pick-table th,
+    .parent-pick-table td {
+      border: 1px solid #ebeef5;
+      padding: 9px 8px;
+      text-align: center;
+    }
+
+    .parent-pick-table th {
+      background: #f5f7fa;
+      font-weight: 500;
+      color: #303133;
+      white-space: nowrap;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    .parent-pick-table td {
+      color: #606266;
+    }
+
+    .parent-pick-table tbody tr:hover {
+      background: #f5f7fa;
+    }
+
+    .parent-pick-table input[type="checkbox"] {
+      accent-color: #409eff;
+      width: 15px;
+      height: 15px;
+      cursor: pointer;
+    }
+
+    .modal-parent .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      padding: 14px 20px;
+    }
+
+    /* ===== 响应式 ===== */
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 60px;
+      }
+      .sidebar-brand h2 span,
+      .sidebar-section-title,
+      .sidebar-item .item-label {
+        display: none;
+      }
+      .sidebar-brand {
+        padding: 16px 8px;
+        text-align: center;
+      }
+      .sidebar-item {
+        justify-content: center;
+        padding: 12px 8px;
+        margin: 2px 4px;
+      }
+      .main-content {
+        margin-left: 60px;
+      }
+      .filter-bar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-layout">
+    <!-- 侧边栏 -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <h2>
+          <span class="brand-icon">📦</span>
+          <span>OMS</span>
+        </h2>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="sidebar-section-title">功能模块</div>
+        <a class="sidebar-item" href="预测规则配置页面_v1.html">
+          <span class="item-icon">📊</span>
+          <span class="item-label">备货规则</span>
+        </a>
+        <a class="sidebar-item active" href="预警页面_v1.html">
+          <span class="item-icon">⚠️</span>
+          <span class="item-label">预警模型</span>
+        </a>
+      </nav>
+    </aside>
+
+    <!-- 主内容区 -->
+    <div class="main-content">
+      <!-- 顶部页签 -->
+      <div class="page-tabs">
+        <a class="page-tab active" onclick="switchPageTab('rules', this)">规则管理</a>
+        <a class="page-tab" onclick="switchPageTab('alerts', this)">预警模版</a>
+      </div>
+
+      <!-- 规则管理面板 -->
+      <div class="panel" id="panel-rules">
+        <div class="panel-body">
+          <!-- 状态筛选标签 -->
+          <!-- 过滤条件栏 -->
+          <div class="filter-bar">
+            <div class="filter-item">
+              <input type="text" placeholder="规则名称" />
+            </div>
+            <div class="filter-item">
+              <select>
+                <option value="">预警模型 </option>
+                <option>亚马逊库龄预警</option>
+                <option>本地库龄预警</option>
+                <option>FBA长期仓储费预警</option>
+                <option>订单加急预警</option>
+                <option>销售偏差预警</option>
+                <option>库存下单预警</option>
+                <option>断货预警（普船）</option>
+                <option>断货预警（快船）</option>
+                <option>断货预警（必断）</option>
+                <option>头程物流在途异常预警</option>
+                <option>供应商生产延期预警</option>
+                <option>冗余库存（呆滞料）预警</option>
+              </select>
+            </div>
+            <div class="filter-item">
+              <select>
+                <option value="">预警分类 </option>
+                <option>库龄预警</option>
+                <option>仓储费预警</option>
+                <option>下单预警</option>
+                <option>销售偏差预警</option>
+                <option>发货预警</option>
+                <option>断货预警</option>
+                <option>物流预警</option>
+                <option>生产预警</option>
+                <option>滞销预警</option>
+              </select>
+            </div>
+            <div class="filter-item">
+              <select>
+                <option value="">创建人 </option>
+                <option>更新人</option>
+              </select>
+            </div>
+            <div class="filter-item">
+              <input type="text" placeholder="人员" />
+            </div>
+            <div class="filter-item">
+              <select>
+                <option value="">创建时间 ▾</option>
+                <option>更新时间</option>
+              </select>
+            </div>
+            <div class="filter-item">
+              <input type="date" placeholder="开始日期" />
+              <span class="filter-date-sep">至</span>
+              <input type="date" placeholder="结束日期" />
+            </div>
+            <button class="filter-btn filter-btn-search" onclick="doSearch()">🔍 搜索</button>
+            <button class="filter-btn filter-btn-reset" onclick="doReset()">重置</button>
+          </div>
+
+          <!-- 操作栏 -->
+          <div class="action-bar">
+            <button class="btn btn-primary" onclick="createRule()">＋ 新建规则</button>
+            <div class="table-toolbar">
+              <span class="toolbar-icon" title="刷新" onclick="refreshTable()">🔄</span>
+              <span class="toolbar-icon" title="列设置">⚙️</span>
+            </div>
+          </div>
+
+          <!-- 数据表格 -->
+          <div class="table-container">
+            <table class="data-table" id="rule-table">
+              <thead>
+                <tr>
+                  <th style="width: 50px;">
+                    <input type="checkbox" onclick="toggleSelectAll(this)" />
+                  </th>
+                  <th>规则名称</th>
+                  <th>预警模型</th>
+                  <th>预警分类</th>
+                  <th>状态</th>
+                  <th>创建时间</th>
+                  <th>创建人</th>
+                  <th>更新时间</th>                  
+                  <th>更新人</th>
+                  <th style="width: 120px;">操作</th>
+                </tr>
+              </thead>
+              <tbody id="rule-tbody">
+              </tbody>
+            </table>
+          </div>
+
+          <!-- 空数据占位 -->
+          <div class="table-empty" id="table-empty">
+            <div class="table-empty-icon">📋</div>
+            <div>暂无数据</div>
+          </div>
+
+          <!-- 分页 -->
+          <div class="pagination" id="pagination" style="display: none;">
+            <span class="page-info">共 <strong>0</strong> 条</span>
+            <button class="page-btn disabled">‹</button>
+            <button class="page-btn active">1</button>
+            <button class="page-btn disabled">›</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 预警模板（待扩展） -->
+      <div class="panel" id="panel-alerts" style="display: none;">
+        <div class="panel-body">
+          <div class="table-empty">
+            <div class="table-empty-icon">🔔</div>
+            <div>预警模板内容待后续补充</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 新建规则弹窗 -->
+  <div class="modal-mask" id="modal-create-rule" onclick="closeModalOnMask(event)">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>添加商品预警规则</h3>
+        <button class="modal-close" onclick="closeModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <table class="modal-table">
+          <thead>
+            <tr>
+              <th class="col-name">模型名称</th>
+              <th class="col-type">预警分类</th>
+              <th class="col-desc">模型说明</th>
+              <th class="col-action">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="col-name">本地库龄预警</td>
+              <td class="col-type"><span class="tag tag-inventory">库龄预警</span></td>
+              <td class="col-desc">当指定商品存在高库龄库存时，触发预警提醒的模型。</td>
+              <td class="col-action"><button class="modal-add-link" onclick="addRule('本地库龄预警')">添加</button></td>
+            </tr>
+            <tr>
+              <td class="col-name">亚马逊库龄预警</td>
+              <td class="col-type"><span class="tag tag-inventory">库龄预警</span></td>
+              <td class="col-desc">当指定亚马逊商品存在高库龄库存时，触发预警提醒的模型。</td>
+              <td class="col-action"><button class="modal-add-link" onclick="addRule('亚马逊库龄预警')">添加</button></td>
+            </tr>
+            <tr>
+              <td class="col-name">FBA长期仓储费预警</td>
+              <td class="col-type"><span class="tag tag-storage">仓储费预警</span></td>
+              <td class="col-desc">在亚马逊收取长期仓储费截止日之前，提前预警即将被收费的库存。</td>
+              <td class="col-action"><button class="modal-add-link" onclick="addRule('FBA长期仓储费预警')">添加</button></td>
+            </tr>
+            <tr>
+              <td class="col-name">订单加急预警</td>
+              <td class="col-type"><span class="tag tag-order">下单预警</span></td>
+              <td class="col-desc">当国内仓（CN仓）的可用库存无法满足未来 N 个发货周期（例如2次）的计划需求，且在下次补货到货前无"在产订单"预计到货时触发，提示需加急生产或运输中的订单。</td>
+              <td class="col-action"><button class="modal-add-link" onclick="addRule('订单加急预警')">添加</button></td>
+            </tr>
+            <tr>
+              <td class="col-name">销售偏差预警</td>
+              <td class="col-type"><span class="tag tag-deviation">销售偏差预警</span></td>
+              <td class="col-desc">对于预测和年规偏差较大的情况进行预警。</td>
+              <td class="col-action"><button class="modal-add-link" onclick="addRule('销售偏差预警')">添加</button></td>
+            </tr>
+            <tr>
+              <td class="col-name">库存下单预警</td>
+              <td class="col-type"><span class="tag tag-order">下单预警</span></td>
+              <td class="col-desc">库存已经无法满足生产天数的需求条件下，需要紧急下单。</td>
+              <td class="col-action"><button class="modal-add-link" onclick="addRule('库存下单预警')">添加</button></td>
+            </tr>
+            <tr>
+              <td class="col-name">断货预警（普船）</td>
+              <td class="col-type"><span class="tag tag-shipping">发货预警</span></td>
+              <td class="col-desc">常规普船补货就能补充的场景。</td>
+              <td class="col-action"><button class="modal-add-link" onclick="addRule('断货预警（普船）')">添加</button></td>
+            </tr>
+            <tr>
+              <td class="col-name">断货预警（快船）</td>
+              <td class="col-type"><span class="tag tag-shipping">发货预警</span></td>
+              <td class="col-desc">快船：本质是填补普船无法覆盖的真空期预警，需要快船发货，或者普船发货量 ≥ 预计日均销量×发货频率（防止就个位数几双也触发补货预警）。</td>
+              <td class="col-action"><button class="modal-add-link" onclick="addRule('断货预警（快船）')">添加</button></td>
+            </tr>
+            <tr>
+              <td class="col-name">断货预警（必断）</td>
+              <td class="col-type"><span class="tag tag-stockout">断货预警</span></td>
+              <td class="col-desc">断货点在快船到货前，普船到货前的逻辑处理：快船也救不了，库存会归零。</td>
+              <td class="col-action"><button class="modal-add-link" onclick="addRule('断货预警（必断）')">添加</button></td>
+            </tr>
+            <tr>
+              <td class="col-name">头程物流在途异常预警</td>
+              <td class="col-type"><span class="tag tag-logistics">物流预警</span></td>
+              <td class="col-desc">监控已发货的补货批次在运输途中的时效与状态。</td>
+              <td class="col-action"><button class="modal-add-link" onclick="addRule('头程物流在途异常预警')">添加</button></td>
+            </tr>
+            <tr>
+              <td class="col-name">供应商生产延期预警</td>
+              <td class="col-type"><span class="tag tag-production">生产预警</span></td>
+              <td class="col-desc">监控已确认的采购订单，其生产进度是否滞后于计划交期。</td>
+              <td class="col-action"><button class="modal-add-link" onclick="addRule('供应商生产延期预警')">添加</button></td>
+            </tr>
+            <tr>
+              <td class="col-name">冗余库存（呆滞料）预警</td>
+              <td class="col-type"><span class="tag tag-overstock">滞销预警</span></td>
+              <td class="col-desc">比库龄预警更进一步，识别那些在未来一段时间内（根据销售预测）无法被消耗的高库龄库存。</td>
+              <td class="col-action"><button class="modal-add-link" onclick="addRule('冗余库存（呆滞料）预警')">添加</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-close" onclick="closeModal()">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 抽屉遮罩 -->
+  <div class="drawer-mask" id="drawer-mask" onclick="closeDrawer()"></div>
+
+  <!-- 右侧抽屉（规则配置） -->
+  <div class="drawer" id="drawer-config">
+    <div class="drawer-header">
+      <h3 id="drawer-title">本地库龄预警</h3>
+      <button class="drawer-close" onclick="closeDrawer()">×</button>
+    </div>
+    <div class="drawer-body">
+      <!-- 基本信息 -->
+      <div class="form-section">
+        <div class="form-section-header">
+          <div class="form-section-title">基本信息</div>
+        </div>
+        <div class="cfg-row">
+          <label class="cfg-label required">规则名称</label>
+          <div class="cfg-field">
+            <input type="text" class="cfg-input" id="cfg-rule-name" placeholder="请输入规则名称" />
+          </div>
+        </div>
+        <div class="cfg-row">
+          <label class="cfg-label">规则状态</label>
+          <div class="cfg-field" style="display: flex; align-items: center;">
+            <label class="cfg-switch">
+              <input type="checkbox" id="cfg-rule-status" checked />
+              <span class="cfg-switch-slider"></span>
+            </label>
+            <span class="cfg-switch-text" id="cfg-status-text">启用</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 父体范围 -->
+      <div class="form-section">
+        <div class="form-section-header">
+          <div class="form-section-title">父体范围</div>
+          <button class="btn btn-primary" style="padding: 6px 16px; font-size: 13px;" onclick="openParentModal()">+ 添加父体</button>
+        </div>
+        <div class="table-container">
+          <table class="parent-table" id="selected-parent-table">
+            <thead>
+              <tr>
+                <th style="width:40px;">序号</th>
+                <th>父体编号</th>
+                <th>父ASIN</th>
+                <th>平台</th>
+                <th>站点</th>
+                <th>店铺</th>
+                <th>SPU</th>
+                <th>运营负责人</th>
+                <th>库存可售天数</th>
+                <th style="width:60px;">操作</th>
+              </tr>
+            </thead>
+            <tbody id="selected-parent-tbody">
+            </tbody>
+          </table>
+        </div>
+        <div class="parent-empty" id="parent-empty-tip">暂未添加父体，请点击上方【添加父体】按钮</div>
+      </div>
+
+      <!-- 规则设置 -->
+      <div class="form-section">
+        <div class="form-section-header">
+          <div class="form-section-title">规则设置</div>
+        </div>
+        <div class="rule-block-header">规则内容</div>
+        <div class="rule-block-body" id="rule-block-body">
+          <div class="cfg-row">
+            <label class="cfg-label" style="font-weight:500; line-height:1.6;">规则说明：</label>
+            <div class="cfg-field">
+              <div id="cfg-condition-desc" style="font-size:14px; color:#606266; line-height:1.7; padding:0px 0;"></div>
+            </div>
+          </div>
+          <div class="cfg-row" style="align-items:flex-start;">
+            <label class="cfg-label" style="font-weight:500; line-height:1.6;">触发条件：</label>
+            <div class="cfg-field" id="cfg-formula-area"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="drawer-footer">
+      <button class="btn-cancel" onclick="closeDrawer()">取消</button>
+      <button class="btn-save" onclick="saveRule()">保存</button>
+    </div>
+  </div>
+
+  <!-- 父体选择弹窗 -->
+  <div class="modal-mask" id="modal-parent-pick" style="z-index:1300;" onclick="closeParentOnMask(event)">
+    <div class="modal modal-parent">
+      <div class="modal-header">
+        <h3>选择父体</h3>
+        <button class="modal-close" onclick="closeParentModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="parent-filter-bar">
+          <input type="text" placeholder="父体编号" id="pf-code" style="width:130px;" />
+          <input type="text" placeholder="父ASIN" id="pf-asin" style="width:130px;" />
+          <select id="pf-platform" style="width:110px;">
+            <option value="">平台</option>
+            <option>Amazon</option>
+          </select>
+          <select id="pf-site" style="width:100px;">
+            <option value="">站点</option>
+            <option>美国</option>
+            <option>英国</option>
+            <option>德国</option>
+          </select>
+          <input type="text" placeholder="店铺" id="pf-store" style="width:140px;" />
+          <input type="text" placeholder="SPU" id="pf-spu" style="width:110px;" />
+          <button class="filter-btn filter-btn-search" onclick="searchParents()" style="padding:6px 14px;">搜索</button>
+          <button class="filter-btn filter-btn-reset" onclick="resetParentFilter()" style="padding:6px 14px;">重置</button>
+        </div>
+        <div style="overflow-y:auto; max-height: 420px;">
+          <table class="parent-pick-table" id="parent-pick-table">
+            <thead>
+              <tr>
+                <th style="width:40px;"><input type="checkbox" id="parent-pick-all" onclick="toggleParentPickAll(this)" /></th>
+                <th>父体编号</th>
+                <th>父ASIN</th>
+                <th>链接相册</th>
+                <th>平台</th>
+                <th>站点</th>
+                <th>店铺</th>
+                <th>SPU</th>
+                <th>运营负责人</th>
+                <th>库存可售天数</th>
+              </tr>
+            </thead>
+            <tbody id="parent-pick-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <span style="flex:1; font-size:13px; color:#606266;">已选择 <strong id="parent-pick-count">0</strong> 个父体</span>
+        <button class="btn-close" onclick="closeParentModal()">取消</button>
+        <button class="btn-save" onclick="confirmParentPick()">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ===== 预警模型元数据 ===== */
+    var ALERT_MODELS = {
+      '本地库龄预警': {
+        conditionDesc: '当指定商品的库存中，库龄超过 N 天（例如90天、180天）的库存数量或占比超过预设阈值时触发。',
+        formulaType: 'age_stages',
+        defaultStages: [60, 90, 180],
+        formulaDesc: '显示对应父体在每个不同的库龄阶段的数量',
+        unit: '天'
+      },
+      '亚马逊库龄预警': {
+        conditionDesc: '当指定 ASIN/SKU 在 FBA 仓库中的库存，其库龄超过 M 天（例如180天、270天），或接近亚马逊长期仓储费计费点时触发。',
+        formulaType: 'age_stages',
+        defaultStages: [90, 180, 270, 365],
+        formulaDesc: '显示对应父体在 FBA 仓库中每个库龄阶段的数量',
+        unit: '天'
+      },
+      'FBA长期仓储费预警': {
+        conditionDesc: '在库龄接近亚马逊长期仓储费收费节点（如365天）前 N 天，库存数量仍大于 K 时触发预警。',
+        formulaType: 'threshold',
+        thresholdLabel: '提前预警天数',
+        defaultThreshold: 30,
+        formulaDesc: '距收费节点剩余天数 ≤ 预警天数 且 库存数量 > 0',
+        unit: '天'
+      },
+      '订单加急预警': {
+        conditionDesc: '当国内仓（CN仓）的可用库存无法满足未来 N 个发货周期的计划需求，且在下次补货到货前无"在产订单"预计到货时触发。',
+        formulaType: 'threshold',
+        thresholdLabel: '发货周期次数',
+        defaultThreshold: 2,
+        formulaDesc: 'CN仓可用库存 < 未来 N 个发货周期需求量 且 无在产订单',
+        unit: '次'
+      },
+      '销售偏差预警': {
+        conditionDesc: '当短期（如周/月）销售预测值与年度规划（年规）中对应时间点的目标值偏差超过 ±Y% 时触发。',
+        formulaType: 'threshold',
+        thresholdLabel: '偏差阈值',
+        defaultThreshold: 20,
+        formulaDesc: '|销售预测值 − 年规目标值| / 年规目标值 × 100% > Y%',
+        unit: '%'
+      },
+      '库存下单预警': {
+        conditionDesc: '当（FBA总库存+CN仓可用量+采购在途量+预发货+海外仓库存）无法覆盖下单覆盖总时长时触发。',
+        formulaType: 'threshold',
+        thresholdLabel: '安全覆盖天数',
+        defaultThreshold: 45,
+        formulaDesc: '动态可售天数 < 下单覆盖总时长（合同审批+生产周期+品检入库+提货准备+运输时间+安全库存天数）',
+        unit: '天'
+      },
+      '断货预警（普船）': {
+        conditionDesc: '断货点在普船到货时间范围内，常规普船补货即可覆盖。预警状态：黄色预警。',
+        formulaType: 'threshold',
+        thresholdLabel: '普船运输时效',
+        defaultThreshold: 55,
+        formulaDesc: '快船总运输时间 ≤ 断货点T0 ≤ 普船总运输时间',
+        unit: '天'
+      },
+      '断货预警（快船）': {
+        conditionDesc: '断货点在快船与普船到货之间，需要快船发货填补真空期。预警状态：橙色预警。',
+        formulaType: 'threshold',
+        thresholdLabel: '快船运输时效',
+        defaultThreshold: 35,
+        formulaDesc: '快船总运输时间 ≤ 断货点T0 ≤ 普船总运输时间',
+        unit: '天'
+      },
+      '断货预警（必断）': {
+        conditionDesc: '断货点在快船到货前，快船也救不了，库存会归零。预警状态：红色预警。',
+        formulaType: 'threshold',
+        thresholdLabel: '快船运输时效',
+        defaultThreshold: 35,
+        formulaDesc: '断货点T0 < 快船总运输时间，启动快船+慢船组合',
+        unit: '天'
+      },
+      '头程物流在途异常预警': {
+        conditionDesc: '物流轨迹信息长时间未更新（超出正常区间），或预计到港/入仓时间将晚于计划时间 X 天以上时触发。',
+        formulaType: 'threshold',
+        thresholdLabel: '延迟预警天数',
+        defaultThreshold: 7,
+        formulaDesc: '预计到货时间 − 计划到货时间 > X 天',
+        unit: '天'
+      },
+      '供应商生产延期预警': {
+        conditionDesc: '在关键生产节点（如物料备齐日、上线日、完成日）未按计划达成，或供应商主动通知交期延误时触发。',
+        formulaType: 'threshold',
+        thresholdLabel: '延期预警天数',
+        defaultThreshold: 3,
+        formulaDesc: '实际节点完成日期 − 计划节点日期 > X 天',
+        unit: '天'
+      },
+      '冗余库存（呆滞料）预警': {
+        conditionDesc: '识别在未来一段时间内（根据销售预测）无法被消耗的高库龄库存。当高库龄库存数量 > 未来 M 天的销售预测值 × 安全系数时触发。',
+        formulaType: 'threshold',
+        thresholdLabel: '预测覆盖天数',
+        defaultThreshold: 90,
+        formulaDesc: '高库龄库存数量 > 未来 M 天销售预测值 × 安全系数',
+        unit: '天'
+      }
+    };
+
+    var currentAgeConditions = [];
+    var savedRules = [];
+    var ruleIdCounter = 1;
+
+    var MODEL_CATEGORY_MAP = {
+      '本地库龄预警': '库龄预警',
+      '亚马逊库龄预警': '库龄预警',
+      'FBA长期仓储费预警': '仓储费预警',
+      '订单加急预警': '下单预警',
+      '销售偏差预警': '销售偏差预警',
+      '库存下单预警': '下单预警',
+      '断货预警（普船）': '发货预警',
+      '断货预警（快船）': '发货预警',
+      '断货预警（必断）': '断货预警',
+      '头程物流在途异常预警': '物流预警',
+      '供应商生产延期预警': '生产预警',
+      '冗余库存（呆滞料）预警': '滞销预警'
+    };
+
+    function formatNow() {
+      var d = new Date();
+      var pad = function(n) { return n < 10 ? '0' + n : n; };
+      return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+    }
+
+    function renderRuleTable() {
+      var tbody = document.getElementById('rule-tbody');
+      var empty = document.getElementById('table-empty');
+      var pagi = document.getElementById('pagination');
+      tbody.innerHTML = '';
+
+      if (savedRules.length === 0) {
+        empty.style.display = '';
+        pagi.style.display = 'none';
+        return;
+      }
+      empty.style.display = 'none';
+      pagi.style.display = 'flex';
+      document.querySelector('.page-info strong').textContent = savedRules.length;
+
+      savedRules.forEach(function(r) {
+        var statusClass = r.status ? 'status-badge-on' : 'status-badge-off';
+        var statusText = r.status ? '启用' : '停用';
+        var tr = document.createElement('tr');
+        tr.innerHTML =
+          '<td><input type="checkbox" /></td>' +
+          '<td style="color:#409eff; cursor:pointer;" onclick="editRule(' + r.id + ')">' + r.name + '</td>' +
+          '<td>' + r.model + '</td>' +
+          '<td>' + r.category + '</td>' +
+          '<td><span class="status-badge ' + statusClass + '">' + statusText + '</span></td>' +
+          '<td>' + r.createTime + '</td>' +
+          '<td>' + r.creator + '</td>' +
+          '<td>' + r.updateTime + '</td>' +
+          '<td>' + r.updater + '</td>' +
+          '<td>' +
+            '<button class="op-link" onclick="editRule(' + r.id + ')">编辑</button>' +
+            '<span class="op-sep">|</span>' +
+            '<button class="op-link op-link-danger" onclick="deleteRule(' + r.id + ')">删除</button>' +
+          '</td>';
+        tbody.appendChild(tr);
+      });
+    }
+
+    var editingRuleId = null;
+
+    function editRule(id) {
+      var rule = savedRules.filter(function(r) { return r.id === id; })[0];
+      if (!rule) return;
+
+      editingRuleId = id;
+      currentModel = rule.model;
+      selectedParents = (rule.parents || []).map(function(p) { return Object.assign({}, p); });
+
+      document.getElementById('drawer-title').textContent = rule.model;
+      document.getElementById('cfg-rule-name').value = rule.name;
+      document.getElementById('cfg-rule-status').checked = rule.status;
+      document.getElementById('cfg-status-text').textContent = rule.status ? '启用' : '停用';
+
+      var model = ALERT_MODELS[currentModel];
+      if (model) {
+        document.getElementById('cfg-condition-desc').textContent = model.conditionDesc || '';
+        renderFormulaArea(model);
+
+        if (model.formulaType === 'age_stages' && rule.ageConditions) {
+          currentAgeConditions = rule.ageConditions.map(function(c) { return { days: c.days, type: c.type, value: c.value }; });
+          renderAgeConditions();
+        } else if (model.formulaType !== 'age_stages' && rule.threshold != null) {
+          var thEl = document.getElementById('cfg-trigger-threshold');
+          if (thEl) thEl.value = rule.threshold;
+        }
+      }
+
+      renderSelectedParents();
+
+      document.getElementById('drawer-mask').classList.add('show');
+      document.getElementById('drawer-config').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function deleteRule(id) {
+      if (!confirm('确定要删除此规则吗？')) return;
+      savedRules = savedRules.filter(function(r) { return r.id !== id; });
+      renderRuleTable();
+    }
+
+    /* ===== 页面基础 ===== */
+    function switchPageTab(tabKey, el) {
+      document.querySelectorAll('.page-tab').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById('panel-rules').style.display = tabKey === 'rules' ? '' : 'none';
+      document.getElementById('panel-alerts').style.display = tabKey === 'alerts' ? '' : 'none';
+    }
+
+    function switchStatusTab(el) {
+      document.querySelectorAll('.status-tab').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+    }
+
+    function doSearch() { alert('搜索功能待实现'); }
+
+    function doReset() {
+      document.querySelectorAll('.filter-item select').forEach(s => s.selectedIndex = 0);
+      document.querySelectorAll('.filter-item input').forEach(i => i.value = '');
+    }
+
+    function refreshTable() { alert('刷新功能待实现'); }
+
+    function toggleSelectAll(masterCb) {
+      document.querySelectorAll('#rule-tbody input[type="checkbox"]').forEach(cb => cb.checked = masterCb.checked);
+    }
+
+    /* ===== 第一步：选择模型弹窗 ===== */
+    function createRule() {
+      document.getElementById('modal-create-rule').classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+      document.getElementById('modal-create-rule').classList.remove('show');
+      document.body.style.overflow = '';
+    }
+
+    function closeModalOnMask(e) {
+      if (e.target === e.currentTarget) closeModal();
+    }
+
+    /* ===== 第二步：右侧抽屉 ===== */
+    var currentModel = '';
+    var selectedParents = [];
+
+    function addRule(modelName) {
+      closeModal();
+      editingRuleId = null;
+      currentModel = modelName;
+      selectedParents = [];
+
+      document.getElementById('drawer-title').textContent = modelName;
+      document.getElementById('cfg-rule-name').value = modelName;
+      document.getElementById('cfg-rule-status').checked = true;
+      document.getElementById('cfg-status-text').textContent = '启用';
+
+      var model = ALERT_MODELS[modelName];
+      if (model) {
+        document.getElementById('cfg-condition-desc').textContent = model.conditionDesc || '';
+        renderFormulaArea(model);
+      }
+
+      renderSelectedParents();
+
+      setTimeout(function() {
+        document.getElementById('drawer-mask').classList.add('show');
+        document.getElementById('drawer-config').classList.add('open');
+        document.body.style.overflow = 'hidden';
+      }, 180);
+    }
+
+    function renderFormulaArea(model) {
+      var area = document.getElementById('cfg-formula-area');
+      area.innerHTML = '';
+
+      if (model.formulaType === 'age_stages') {
+        currentAgeConditions = (model.defaultStages || [60, 90, 180]).map(function(d) {
+          return { days: d, type: 'qty', value: '' };
+        });
+        area.innerHTML =
+          '<div class="age-condition-list" id="age-condition-list"></div>' +
+          '<button class="age-add-btn" onclick="addAgeCondition()">+ 添加条件</button>' +
+          '<div class="formula-desc">' + (model.formulaDesc || '') + '</div>';
+        renderAgeConditions();
+      } else {
+        currentAgeConditions = [];
+        var label = model.thresholdLabel || '触发阈值';
+        var unit = model.unit || '天';
+        var defVal = model.defaultThreshold || '';
+        area.innerHTML =
+          '<div class="cfg-input-group" style="margin-bottom:8px;">' +
+            '<span style="font-size:14px; color:#606266; margin-right:4px;">' + label + '：</span>' +
+            '<input type="number" class="cfg-input" id="cfg-trigger-threshold" value="' + defVal + '" style="width:120px;" />' +
+            '<span class="cfg-unit">' + unit + '</span>' +
+          '</div>' +
+          '<div class="formula-desc">' + (model.formulaDesc || '') + '</div>';
+      }
+    }
+
+    function renderAgeConditions() {
+      var list = document.getElementById('age-condition-list');
+      if (!list) return;
+      list.innerHTML = '';
+      currentAgeConditions.forEach(function(c, i) {
+        var row = document.createElement('div');
+        row.className = 'age-condition-row';
+        row.innerHTML =
+          '<span class="acr-text">库龄 ≥</span>' +
+          '<input type="number" class="acr-input" value="' + (c.days || '') + '" placeholder="天数" onchange="updateAgeCondition(' + i + ',\'days\',this.value)" />' +
+          '<span class="acr-text">天，库存</span>' +
+          '<select class="acr-select" onchange="updateAgeCondition(' + i + ',\'type\',this.value)">' +
+            '<option value="qty"' + (c.type === 'qty' ? ' selected' : '') + '>数量超过</option>' +
+            '<option value="ratio"' + (c.type === 'ratio' ? ' selected' : '') + '>占比超过</option>' +
+          '</select>' +
+          '<input type="number" class="acr-input" value="' + (c.value || '') + '" placeholder="阈值" onchange="updateAgeCondition(' + i + ',\'value\',this.value)" />' +
+          '<span class="acr-text">' + (c.type === 'ratio' ? '%' : '个') + '</span>' +
+          '<button class="acr-remove" title="删除" onclick="removeAgeCondition(' + i + ')">×</button>';
+        list.appendChild(row);
+      });
+    }
+
+    function updateAgeCondition(idx, field, val) {
+      if (field === 'days') currentAgeConditions[idx].days = parseInt(val) || 0;
+      else if (field === 'type') {
+        currentAgeConditions[idx].type = val;
+        renderAgeConditions();
+      }
+      else if (field === 'value') currentAgeConditions[idx].value = val;
+    }
+
+    function removeAgeCondition(idx) {
+      currentAgeConditions.splice(idx, 1);
+      renderAgeConditions();
+    }
+
+    function addAgeCondition() {
+      currentAgeConditions.push({ days: '', type: 'qty', value: '' });
+      renderAgeConditions();
+    }
+
+    function closeDrawer() {
+      document.getElementById('drawer-config').classList.remove('open');
+      document.getElementById('drawer-mask').classList.remove('show');
+      document.body.style.overflow = '';
+      currentModel = '';
+    }
+
+    document.getElementById('cfg-rule-status').addEventListener('change', function() {
+      document.getElementById('cfg-status-text').textContent = this.checked ? '启用' : '停用';
+    });
+
+    function saveRule() {
+      var name = document.getElementById('cfg-rule-name').value.trim();
+      if (!name) { alert('请输入规则名称'); return; }
+      if (selectedParents.length === 0) { alert('请至少添加一个父体'); return; }
+
+      var model = ALERT_MODELS[currentModel];
+      var ruleInfo = '';
+      if (model && model.formulaType === 'age_stages') {
+        if (currentAgeConditions.length === 0) { alert('请至少添加一个库龄条件'); return; }
+        for (var i = 0; i < currentAgeConditions.length; i++) {
+          var ac = currentAgeConditions[i];
+          if (!ac.days || ac.days <= 0) { alert('第 ' + (i+1) + ' 条条件请填写库龄天数'); return; }
+          if (!ac.value) { alert('第 ' + (i+1) + ' 条条件请填写阈值'); return; }
+        }
+        ruleInfo = '库龄条件：\n' + currentAgeConditions.map(function(c, i) {
+          var unit = c.type === 'ratio' ? '%' : '个';
+          return '  ' + (i+1) + '. 库龄≥' + c.days + '天，' + (c.type === 'ratio' ? '占比' : '数量') + '超过 ' + c.value + unit;
+        }).join('\n');
+      } else {
+        var thEl = document.getElementById('cfg-trigger-threshold');
+        if (thEl && !thEl.value) { alert('请输入触发阈值'); return; }
+        ruleInfo = (model ? model.thresholdLabel : '阈值') + '：' + thEl.value + ' ' + (model ? model.unit : '');
+      }
+
+      var now = formatNow();
+      var status = document.getElementById('cfg-rule-status').checked;
+      var model = ALERT_MODELS[currentModel];
+      var thVal = null;
+      var ageConds = null;
+      if (model && model.formulaType === 'age_stages') {
+        ageConds = currentAgeConditions.map(function(c) { return { days: c.days, type: c.type, value: c.value }; });
+      } else {
+        var thEl = document.getElementById('cfg-trigger-threshold');
+        if (thEl) thVal = thEl.value;
+      }
+
+      if (editingRuleId != null) {
+        var existing = savedRules.filter(function(r) { return r.id === editingRuleId; })[0];
+        if (existing) {
+          existing.name = name;
+          existing.status = status;
+          existing.parents = selectedParents.slice();
+          existing.ageConditions = ageConds;
+          existing.threshold = thVal;
+          existing.updateTime = now;
+          existing.updater = '当前用户';
+        }
+      } else {
+        savedRules.push({
+          id: ruleIdCounter++,
+          name: name,
+          model: currentModel,
+          category: MODEL_CATEGORY_MAP[currentModel] || '',
+          status: status,
+          parents: selectedParents.slice(),
+          ageConditions: ageConds,
+          threshold: thVal,
+          createTime: now,
+          creator: '当前用户',
+          updateTime: now,
+          updater: '当前用户'
+        });
+      }
+      editingRuleId = null;
+      renderRuleTable();
+      closeDrawer();
+    }
+
+    /* ===== 已选父体表格渲染 ===== */
+    function renderSelectedParents() {
+      var tbody = document.getElementById('selected-parent-tbody');
+      var tip = document.getElementById('parent-empty-tip');
+      tbody.innerHTML = '';
+      if (selectedParents.length === 0) {
+        tip.style.display = '';
+        return;
+      }
+      tip.style.display = 'none';
+      selectedParents.forEach(function(p, i) {
+        var tr = document.createElement('tr');
+        tr.innerHTML =
+          '<td>' + (i + 1) + '</td>' +
+          '<td>' + p.code + '</td>' +
+          '<td>' + p.asin + '</td>' +
+          '<td>' + p.platform + '</td>' +
+          '<td>' + p.site + '</td>' +
+          '<td>' + p.store + '</td>' +
+          '<td>' + p.spu + '</td>' +
+          '<td>' + p.owner + '</td>' +
+          '<td>' + p.days + '</td>' +
+          '<td><button class="parent-remove" onclick="removeParent(' + i + ')">移除</button></td>';
+        tbody.appendChild(tr);
+      });
+    }
+
+    function removeParent(idx) {
+      selectedParents.splice(idx, 1);
+      renderSelectedParents();
+    }
+
+    /* ===== 父体选择弹窗 ===== */
+    var MOCK_PARENTS = [
+      { code:'LFT00002261', asin:'B083J69DSQ', album:'无', platform:'Amazon', site:'美国', store:'noorkie Inc-US', spu:'ST18106', owner:'陈柏宏', days:'0/0' },
+      { code:'LFT00002260', asin:'B09K799DH7', album:'无', platform:'Amazon', site:'美国', store:'STQWALKING_sandbox-US', spu:'ST210808', owner:'黄国阳', days:'0/0' },
+      { code:'LFT00002259', asin:'B083J69DSQ', album:'无', platform:'Amazon', site:'美国', store:'noorkie Inc-US', spu:'ST18106w', owner:'陈柏宏', days:'0/0' },
+      { code:'LFT00000785', asin:'B0GS1KVQS8', album:'无', platform:'Amazon', site:'美国', store:'STQ Inc-US', spu:'WT82627272', owner:'特殊杰', days:'0/0' },
+      { code:'LFT00000784', asin:'B07NV7QK7H', album:'无', platform:'Amazon', site:'英国', store:'STEP QUEEN INC-UK', spu:'HK1839', owner:'黄利萍', days:'0/0' },
+      { code:'LFT00000783', asin:'B0F8GGJ7LK', album:'无', platform:'Amazon', site:'英国', store:'STEP QUEEN INC-UK', spu:'STK2527157', owner:'余滢', days:'0/0' },
+      { code:'LFT00000782', asin:'B0CY8G2GQK', album:'无', platform:'Amazon', site:'英国', store:'STEP QUEEN INC-UK', spu:'ST223501', owner:'黄利萍', days:'0/0' },
+      { code:'LFT00000781', asin:'B0FX422Y75', album:'无', platform:'Amazon', site:'英国', store:'STEP QUEEN INC-UK', spu:'ST253501', owner:'黄利萍', days:'0/0' },
+      { code:'LFT00000780', asin:'B07YXY149WF', album:'无', platform:'Amazon', site:'美国', store:'STEP QUEEN INC-UK', spu:'HKA19', owner:'黄利萍', days:'0/0' },
+      { code:'LFT00000779', asin:'B086VZ1W9Q', album:'无', platform:'Amazon', site:'英国', store:'STEP QUEEN INC-UK', spu:'ST1218', owner:'黄利萍', days:'0/0' },
+      { code:'LFT00000778', asin:'B0F8GTKXQK', album:'无', platform:'Amazon', site:'德国', store:'STEP QUEEN INC-DE', spu:'STK2527157', owner:'余滢', days:'0/0' },
+      { code:'LFT00000777', asin:'B09KGS86L4', album:'无', platform:'Amazon', site:'德国', store:'STEP QUEEN INC-DE', spu:'ST1218', owner:'黄利萍', days:'18/42' },
+      { code:'LFT00000776', asin:'B0D45CYNF4', album:'无', platform:'Amazon', site:'德国', store:'STEP QUEEN INC-DE', spu:'ST223501', owner:'黄利萍', days:'0/0' },
+      { code:'LFT00000775', asin:'B0D45CYNF4', album:'无', platform:'Amazon', site:'德国', store:'STEP QUEEN INC-DE', spu:'ST243501', owner:'黄利萍', days:'0/0' },
+      { code:'LFT00000774', asin:'B0FK4LVDK2', album:'无', platform:'Amazon', site:'德国', store:'STEP QUEEN INC-DE', spu:'ST253501', owner:'黄利萍', days:'20/51' },
+      { code:'LFT00000773', asin:'B093389FC4', album:'无', platform:'Amazon', site:'德国', store:'STEP QUEEN INC-DE', spu:'ST241213', owner:'黄利萍', days:'20/146' },
+      { code:'LFT00000755', asin:'B0GLNK47Y9', album:'无', platform:'Amazon', site:'美国', store:'STQ Inc-US', spu:'WT82527258', owner:'黄利萍', days:'0/5' },
+      { code:'LFT00000754', asin:'B0B8MT1KMC9', album:'无', platform:'Amazon', site:'美国', store:'STEP QUEEN INC-DE', spu:'HKA19', owner:'黄利萍', days:'4/95' },
+      { code:'LFT00000753', asin:'B0GKFVi8MP', album:'无', platform:'Amazon', site:'美国', store:'STQ Inc-US', spu:'WT8252392', owner:'叠翠', days:'0/0' }
+    ];
+
+    function openParentModal() {
+      renderParentPickTable(MOCK_PARENTS);
+      document.getElementById('parent-pick-all').checked = false;
+      updateParentPickCount();
+      document.getElementById('modal-parent-pick').classList.add('show');
+    }
+
+    function closeParentModal() {
+      document.getElementById('modal-parent-pick').classList.remove('show');
+    }
+
+    function closeParentOnMask(e) {
+      if (e.target === e.currentTarget) closeParentModal();
+    }
+
+    function renderParentPickTable(list) {
+      var tbody = document.getElementById('parent-pick-tbody');
+      tbody.innerHTML = '';
+      var existCodes = selectedParents.map(function(p) { return p.code; });
+      list.forEach(function(p) {
+        var already = existCodes.indexOf(p.code) !== -1;
+        var tr = document.createElement('tr');
+        tr.innerHTML =
+          '<td><input type="checkbox" class="parent-pick-cb" data-code="' + p.code + '"' + (already ? ' checked disabled title="已添加"' : '') + ' onchange="updateParentPickCount()" /></td>' +
+          '<td style="color:#409eff; cursor:pointer;">' + p.code + '</td>' +
+          '<td>' + p.asin + '</td>' +
+          '<td>' + p.album + '</td>' +
+          '<td>' + p.platform + '</td>' +
+          '<td>' + p.site + '</td>' +
+          '<td>' + p.store + '</td>' +
+          '<td>' + p.spu + '</td>' +
+          '<td>' + p.owner + '</td>' +
+          '<td>' + p.days + '</td>';
+        tbody.appendChild(tr);
+      });
+    }
+
+    function toggleParentPickAll(master) {
+      document.querySelectorAll('.parent-pick-cb:not(:disabled)').forEach(function(cb) {
+        cb.checked = master.checked;
+      });
+      updateParentPickCount();
+    }
+
+    function updateParentPickCount() {
+      var cnt = document.querySelectorAll('.parent-pick-cb:checked').length;
+      document.getElementById('parent-pick-count').textContent = cnt;
+    }
+
+    function confirmParentPick() {
+      var existCodes = selectedParents.map(function(p) { return p.code; });
+      document.querySelectorAll('.parent-pick-cb:checked:not(:disabled)').forEach(function(cb) {
+        var code = cb.getAttribute('data-code');
+        if (existCodes.indexOf(code) === -1) {
+          var match = MOCK_PARENTS.filter(function(p) { return p.code === code; })[0];
+          if (match) selectedParents.push(match);
+        }
+      });
+      renderSelectedParents();
+      closeParentModal();
+    }
+
+    function searchParents() {
+      var fc = (document.getElementById('pf-code').value || '').toLowerCase();
+      var fa = (document.getElementById('pf-asin').value || '').toLowerCase();
+      var fp = document.getElementById('pf-platform').value;
+      var fs = document.getElementById('pf-site').value;
+      var fst = (document.getElementById('pf-store').value || '').toLowerCase();
+      var fsp = (document.getElementById('pf-spu').value || '').toLowerCase();
+      var filtered = MOCK_PARENTS.filter(function(p) {
+        if (fc && p.code.toLowerCase().indexOf(fc) === -1) return false;
+        if (fa && p.asin.toLowerCase().indexOf(fa) === -1) return false;
+        if (fp && p.platform !== fp) return false;
+        if (fs && p.site !== fs) return false;
+        if (fst && p.store.toLowerCase().indexOf(fst) === -1) return false;
+        if (fsp && p.spu.toLowerCase().indexOf(fsp) === -1) return false;
+        return true;
+      });
+      renderParentPickTable(filtered);
+      document.getElementById('parent-pick-all').checked = false;
+      updateParentPickCount();
+    }
+
+    function resetParentFilter() {
+      ['pf-code','pf-asin','pf-store','pf-spu'].forEach(function(id) { document.getElementById(id).value = ''; });
+      ['pf-platform','pf-site'].forEach(function(id) { document.getElementById(id).selectedIndex = 0; });
+      renderParentPickTable(MOCK_PARENTS);
+      document.getElementById('parent-pick-all').checked = false;
+      updateParentPickCount();
+    }
+
+    /* ===== 全局键盘 ===== */
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        if (document.getElementById('modal-parent-pick').classList.contains('show')) {
+          closeParentModal();
+        } else if (document.getElementById('drawer-config').classList.contains('open')) {
+          closeDrawer();
+        } else {
+          closeModal();
+        }
+      }
+    });
+  </script>
+</body>
+</html>

@@ -609,8 +609,141 @@
       background: white;
     }
     
+    /* 整体布局 */
+    .app-layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* 侧边栏 */
+    .sidebar {
+      width: 220px;
+      background: #fff;
+      border-right: 1px solid #e4e7ed;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      z-index: 100;
+      box-shadow: 2px 0 8px rgba(0, 0, 0, 0.04);
+    }
+
+    .sidebar-brand {
+      padding: 20px 20px 16px;
+      border-bottom: 1px solid #ebeef5;
+    }
+
+    .sidebar-brand h2 {
+      font-size: 17px;
+      font-weight: 600;
+      color: #303133;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sidebar-brand .brand-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #409eff 0%, #66b1ff 100%);
+      border-radius: 8px;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .sidebar-nav {
+      padding: 8px 0;
+      flex: 1;
+    }
+
+    .sidebar-section-title {
+      padding: 16px 20px 8px;
+      font-size: 12px;
+      color: #909399;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 500;
+    }
+
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 20px;
+      margin: 2px 8px;
+      border-radius: 6px;
+      color: #606266;
+      text-decoration: none;
+      font-size: 14px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      gap: 10px;
+      position: relative;
+    }
+
+    .sidebar-item:hover {
+      background: #f0f7ff;
+      color: #409eff;
+    }
+
+    .sidebar-item.active {
+      background: #ecf5ff;
+      color: #409eff;
+      font-weight: 500;
+    }
+
+    .sidebar-item.active::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 24px;
+      background: #409eff;
+      border-radius: 0 3px 3px 0;
+    }
+
+    .sidebar-item .item-icon {
+      font-size: 18px;
+      width: 24px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    /* 主内容区 */
+    .main-content {
+      flex: 1;
+      margin-left: 220px;
+      min-height: 100vh;
+    }
+
     /* 响应式调整 */
     @media (max-width: 768px) {
+      .sidebar {
+        width: 60px;
+      }
+      .sidebar-brand h2 span,
+      .sidebar-section-title,
+      .sidebar-item .item-label {
+        display: none;
+      }
+      .sidebar-brand {
+        padding: 16px 8px;
+        text-align: center;
+      }
+      .sidebar-item {
+        justify-content: center;
+        padding: 12px 8px;
+        margin: 2px 4px;
+      }
+      .main-content {
+        margin-left: 60px;
+      }
       .container {
         margin: 0;
         border-radius: 0;
@@ -632,6 +765,30 @@
   </style>
 </head>
 <body>
+  <div class="app-layout">
+    <!-- 侧边栏 -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <h2>
+          <span class="brand-icon">📦</span>
+          <span>OMS</span>
+        </h2>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="sidebar-section-title">功能模块</div>
+        <a class="sidebar-item active" href="预测规则配置页面_v1.html">
+          <span class="item-icon">📊</span>
+          <span class="item-label">备货规则</span>
+        </a>
+        <a class="sidebar-item" href="预警页面_v1.html">
+          <span class="item-icon">⚠️</span>
+          <span class="item-label">预警模型</span>
+        </a>
+      </nav>
+    </aside>
+
+    <!-- 主内容区 -->
+    <div class="main-content">
   <div class="container">
     <!-- 头部 -->
     <div class="header">
@@ -3046,5 +3203,7 @@
       }
     });
   </script>
+    </div><!-- /.main-content -->
+  </div><!-- /.app-layout -->
 </body>
 </html>
