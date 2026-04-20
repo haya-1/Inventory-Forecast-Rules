@@ -1,0 +1,3224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>销量预测规则</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Microsoft YaHei", sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: #f5f7fa;
+      color: #303133;
+    }
+
+    .app-layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      width: 88px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      display: flex;
+      flex-direction: row;
+      overflow: visible;
+      background: transparent;
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.08);
+      z-index: 1200;
+    }
+
+    .sidebar-primary {
+      width: 88px;
+      background: linear-gradient(180deg, #2f47a6 0%, #1f2a78 100%);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px 0;
+    }
+
+    .sidebar-brand {
+      width: 100%;
+      padding: 6px 0 14px;
+      text-align: center;
+    }
+
+    .sidebar-brand h2 {
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 17px;
+      font-weight: 600;
+    }
+
+    .brand-icon {
+      width: 24px;
+      height: 24px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+
+    .sidebar-nav {
+      width: 100%;
+      padding: 4px 0;
+    }
+
+    .primary-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      height: 58px;
+      margin: 6px 10px;
+      border-radius: 10px;
+      color: rgba(255, 255, 255, 0.8);
+      text-decoration: none;
+      font-size: 12px;
+    }
+
+    .primary-item:hover,
+    .primary-item.active {
+      background: #0d5bff;
+      color: #fff;
+    }
+
+    .item-icon {
+      font-size: 16px;
+      width: auto;
+    }
+
+    .item-label {
+      line-height: 1;
+    }
+
+    .sidebar-submenu-panel {
+      position: fixed;
+      left: 88px;
+      top: 0;
+      bottom: 0;
+      width: 184px;
+      background: #fff;
+      border-right: 1px solid #e5e7eb;
+      padding: 18px 14px;
+      transform: translateX(-100%);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform 0.24s ease, opacity 0.2s ease;
+      z-index: 1202;
+      box-shadow: 4px 0 18px rgba(0, 0, 0, 0.07);
+    }
+
+    .sidebar-submenu-panel.open {
+      transform: translateX(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .submenu-title {
+      font-size: 24px;
+      color: #111827;
+      margin-bottom: 14px;
+    }
+
+    .submenu-item {
+      display: block;
+      color: #374151;
+      text-decoration: none;
+      padding: 10px 10px;
+      margin-bottom: 6px;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .submenu-item:hover {
+      background: #f3f4f6;
+    }
+
+    .submenu-item.active {
+      background: #eef2ff;
+      color: #2563eb;
+      font-weight: 600;
+    }
+
+    .sidebar-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(17, 24, 39, 0.32);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+      z-index: 1190;
+    }
+
+    .app-layout.submenu-open .sidebar-backdrop {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .main-content {
+      flex: 1;
+      min-height: 100vh;
+      margin-left: 88px;
+      background: #f5f7fa;
+    }
+
+    .page-wrap {
+      padding: 16px 20px 24px;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar-submenu-panel,
+      .sidebar-backdrop {
+        display: none;
+      }
+    }
+
+    .panel {
+      background: #fff;
+      border-radius: 4px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+      border: 1px solid #ebeef5;
+    }
+
+    .panel-body {
+      padding: 20px 20px 16px;
+    }
+
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .filter-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .filter-label {
+      font-size: 13px;
+      color: #606266;
+      white-space: nowrap;
+    }
+
+    .filter-control {
+      height: 32px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      padding: 0 10px;
+      font-size: 13px;
+      color: #606266;
+      background: #fff;
+      outline: none;
+      min-width: 0;
+    }
+
+    .filter-control:focus {
+      border-color: #409eff;
+    }
+
+    .w-200 { width: 200px; }
+    .w-160 { width: 160px; }
+
+    .btn {
+      height: 32px;
+      padding: 0 14px;
+      border-radius: 4px;
+      border: 1px solid #dcdfe6;
+      font-size: 13px;
+      cursor: pointer;
+      background: #fff;
+      color: #606266;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn:hover {
+      border-color: #c0c4cc;
+      color: #303133;
+    }
+
+    .btn-primary {
+      background: #409eff;
+      border-color: #409eff;
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: #66b1ff;
+      border-color: #66b1ff;
+      color: #fff;
+    }
+
+    .filter-actions {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .action-row {
+      margin-bottom: 14px;
+    }
+
+    .table-wrap {
+      border: 1px solid #ebeef5;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .data-table th,
+    .data-table td {
+      padding: 12px 14px;
+      font-size: 13px;
+      color: #606266;
+      border-bottom: 1px solid #ebeef5;
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    .data-table th {
+      background: #f5f7fa;
+      color: #303133;
+      font-weight: 500;
+    }
+
+    .data-table tbody tr:hover {
+      background: #fafafa;
+    }
+
+    .data-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .link-name {
+      color: #409eff;
+      text-decoration: none;
+      cursor: default;
+    }
+
+    .link-name:hover {
+      color: #66b1ff;
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 40px;
+      height: 20px;
+      vertical-align: middle;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .switch-slider {
+      position: absolute;
+      cursor: pointer;
+      inset: 0;
+      background: #dcdfe6;
+      border-radius: 20px;
+      transition: 0.2s;
+    }
+
+    .switch-slider::before {
+      content: "";
+      position: absolute;
+      height: 16px;
+      width: 16px;
+      left: 2px;
+      bottom: 2px;
+      background: #fff;
+      border-radius: 50%;
+      transition: 0.2s;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+    }
+
+    .switch input:checked + .switch-slider {
+      background: #67c23a;
+    }
+
+    .switch input:checked + .switch-slider::before {
+      transform: translateX(20px);
+    }
+
+    .pagination-bar {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 4px 4px;
+      font-size: 13px;
+      color: #606266;
+    }
+
+    .pagination-pages {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .page-num {
+      min-width: 28px;
+      height: 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      font-size: 13px;
+      color: #606266;
+    }
+
+    .page-num:hover {
+      color: #409eff;
+    }
+
+    .page-num.active {
+      background: #409eff;
+      color: #fff;
+      border-color: #409eff;
+    }
+
+    /* ===== 新增规则抽屉 ===== */
+    .rule-drawer-mask {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.35);
+      z-index: 1250;
+    }
+
+    .rule-drawer-mask.show {
+      display: block;
+    }
+
+    .rule-drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 1120px;
+      max-width: 98vw;
+      height: 100vh;
+      background: #fff;
+      z-index: 1260;
+      display: flex;
+      flex-direction: column;
+      box-shadow: -4px 0 24px rgba(0, 0, 0, 0.12);
+      transform: translateX(100%);
+      transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .rule-drawer.open {
+      transform: translateX(0);
+    }
+
+    .rule-drawer-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 16px 20px;
+      border-bottom: 1px solid #ebeef5;
+      flex-shrink: 0;
+    }
+
+    .rule-drawer-title {
+      font-size: 17px;
+      font-weight: 600;
+      color: #303133;
+    }
+
+    .rule-drawer-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .rule-drawer-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 24px 28px;
+    }
+
+    .drawer-section {
+      margin-bottom: 8px;
+    }
+
+    .drawer-section-head {
+      font-size: 15px;
+      font-weight: 600;
+      color: #303133;
+      margin: 22px 0 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #ebeef5;
+    }
+
+    .drawer-section:first-child .drawer-section-head {
+      margin-top: 0;
+    }
+
+    .drawer-form-row {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+
+    .drawer-label {
+      width: 100px;
+      flex-shrink: 0;
+      text-align: right;
+      padding-right: 12px;
+      line-height: 32px;
+      font-size: 14px;
+      color: #606266;
+    }
+
+    .drawer-label.required::before {
+      content: "*";
+      color: #f56c6c;
+      margin-right: 4px;
+    }
+
+    .drawer-field {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .drawer-input {
+      flex: 1;
+      min-width: 120px;
+      height: 32px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      padding: 0 10px;
+      font-size: 14px;
+      color: #606266;
+      outline: none;
+    }
+
+    .drawer-input:focus {
+      border-color: #409eff;
+    }
+
+    .drawer-input--readonly {
+      background: #f5f7fa;
+      color: #909399;
+    }
+
+    .drawer-placeholder {
+      margin-top: 4px;
+      padding: 36px 20px;
+      text-align: center;
+      font-size: 13px;
+      color: #909399;
+      background: #fafafa;
+      border: 1px dashed #dcdfe6;
+      border-radius: 4px;
+      line-height: 1.6;
+    }
+
+    /* ===== 日销规则：时间段权重 ===== */
+    .sf-daily-wrap {
+      margin-top: 4px;
+      border: 1px solid #ebeef5;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+
+    .sf-daily-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      min-width: 640px;
+    }
+
+    .sf-daily-table th,
+    .sf-daily-table td {
+      border: 1px solid #ebeef5;
+      padding: 10px 8px;
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    .sf-daily-table thead th {
+      background: #f5f7fa;
+      color: #303133;
+      font-weight: 500;
+    }
+
+    .sf-daily-corner {
+      width: 96px;
+      background: #eef2f6;
+    }
+
+    .sf-daily-total-col {
+      background: #eef2f6;
+      min-width: 72px;
+    }
+
+    .sf-daily-row-label {
+      background: #eef2f6;
+      color: #606266;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .sf-daily-cell {
+      background: #fff;
+    }
+
+    .sf-daily-input-wrap {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+    }
+
+    .sf-daily-weight {
+      width: 56px;
+      height: 30px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      text-align: center;
+      font-size: 13px;
+      color: #606266;
+      outline: none;
+    }
+
+    .sf-daily-weight:focus {
+      border-color: #409eff;
+    }
+
+    .sf-daily-weight::-webkit-outer-spin-button,
+    .sf-daily-weight::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    .sf-daily-weight[type="number"] {
+      appearance: textfield;
+      -moz-appearance: textfield;
+    }
+
+    .sf-daily-suffix {
+      font-size: 13px;
+      color: #606266;
+    }
+
+    .sf-daily-total-cell {
+      background: #fafafa;
+      font-weight: 600;
+      color: #303133;
+    }
+
+    .sf-daily-total-cell.sf-daily-total-cell--invalid {
+      color: #f56c6c;
+      background: #fef0f0;
+    }
+
+    /* 日销权重 / 促销销量 下的灰色说明文案 */
+    .sf-rule-hint {
+      font-size: 12px;
+      color: #909399;
+      margin: 0 0 10px;
+      line-height: 1.6;
+    }
+
+    /* 抽屉内二级小标题：日销权重、促销销量、各影响系数子块、销量去噪子块（规范见 .cursor/skills/drawer-subhead-style） */
+    .sf-daily-subhead,
+    .sf-promo-subhead,
+    .sf-coeff-subhead,
+    .sf-denoise-subhead {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .sf-daily-subhead-bar,
+    .sf-promo-subhead-bar,
+    .sf-coeff-subhead-bar,
+    .sf-denoise-subhead-bar {
+      width: 3px;
+      height: 13px;
+      border-radius: 2px;
+      background: #a0cfff;
+      flex-shrink: 0;
+    }
+
+    .sf-daily-subhead-text,
+    .sf-promo-subhead-text,
+    .sf-coeff-subhead-text,
+    .sf-denoise-subhead-text {
+      font-size: 13px;
+      font-weight: 500;
+      color: #606266;
+      letter-spacing: 0.02em;
+    }
+
+    .sf-denoise-block {
+      margin-top: 4px;
+    }
+
+    .sf-coeff-block--sep,
+    .sf-denoise-block--sep {
+      margin-top: 22px;
+      padding-top: 18px;
+      border-top: 1px dashed #e4e7ed;
+    }
+
+    .sf-denoise-stockout-formula {
+      padding: 12px 16px;
+      background: #fdf6ec;
+      border-radius: 4px;
+      margin-bottom: 12px;
+    }
+
+    .sf-denoise-stockout-formula-title {
+      font-size: 13px;
+      color: #e6a23c;
+      font-weight: 500;
+      margin-bottom: 6px;
+    }
+
+    .sf-denoise-stockout-formula-body {
+      font-size: 12px;
+      color: #606266;
+      line-height: 1.8;
+      font-family: "Courier New", Consolas, monospace;
+    }
+
+    .sf-denoise-stockout-formula-note {
+      font-size: 12px;
+      color: #909399;
+      margin-top: 6px;
+    }
+
+    .sf-denoise-auto-table tr.auto-denoise-row-off .auto-denoise-rule-cell {
+      opacity: 0.45;
+      pointer-events: none;
+    }
+
+    .sf-denoise-stockout-formula + .sf-rule-hint {
+      margin-top: 0;
+    }
+
+    .sf-denoise-auto-rule-line {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-start;
+      text-align: left;
+    }
+
+    /* ===== 促销销量表格 ===== */
+    .sf-promo-block {
+      margin-top: 22px;
+      padding-top: 18px;
+      border-top: 1px dashed #e4e7ed;
+    }
+
+    .sf-promo-table-wrap {
+      border: 1px solid #ebeef5;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+
+    .sf-promo-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      min-width: 720px;
+    }
+
+    .sf-promo-table th,
+    .sf-promo-table td {
+      border: 1px solid #ebeef5;
+      padding: 10px 8px;
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    .sf-promo-table thead th {
+      background: #f0f7ff;
+      color: #303133;
+      font-weight: 500;
+    }
+
+    .sf-promo-table tbody td {
+      background: #fff;
+      color: #606266;
+    }
+
+    .sf-promo-name {
+      width: 100%;
+      max-width: 200px;
+      height: 32px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      padding: 0 10px;
+      font-size: 13px;
+      outline: none;
+    }
+
+    .sf-promo-name:focus {
+      border-color: #409eff;
+    }
+
+    .sf-promo-dates {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .sf-promo-date {
+      height: 32px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      padding: 0 6px;
+      font-size: 12px;
+      color: #606266;
+      outline: none;
+    }
+
+    .sf-promo-date:focus {
+      border-color: #409eff;
+    }
+
+    .sf-promo-sep {
+      font-size: 13px;
+      color: #909399;
+    }
+
+    .sf-promo-daily-wrap {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    .sf-promo-daily {
+      width: 88px;
+      height: 32px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      padding: 0 6px;
+      font-size: 13px;
+      text-align: center;
+      outline: none;
+    }
+
+    .sf-promo-daily:focus {
+      border-color: #409eff;
+    }
+
+    .sf-promo-unit {
+      font-size: 12px;
+      color: #909399;
+      white-space: nowrap;
+    }
+
+    .sf-promo-total {
+      font-size: 13px;
+      color: #303133;
+      font-weight: 500;
+      min-width: 72px;
+      display: inline-block;
+    }
+
+    .sf-promo-total.is-empty {
+      color: #c0c4cc;
+      font-weight: 400;
+    }
+
+    .sf-promo-del {
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 16px;
+      padding: 4px 8px;
+      color: #909399;
+      line-height: 1;
+    }
+
+    .sf-promo-del:hover {
+      color: #f56c6c;
+    }
+
+    .sf-promo-del svg {
+      display: block;
+      margin: 0 auto;
+    }
+
+    .sf-promo-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 12px;
+      padding: 0 2px;
+    }
+
+    .sf-promo-count {
+      font-size: 13px;
+      color: #606266;
+    }
+
+    /* ===== 影响系数：季节/市场（按月） ===== */
+    .sf-coeff-block {
+      margin-top: 4px;
+    }
+
+    .sf-coeff-formula {
+      padding: 14px 16px;
+      background: #ecf5ff;
+      border-radius: 4px;
+      border-left: 3px solid #409eff;
+      margin-bottom: 20px;
+    }
+
+    .sf-coeff-formula-title {
+      font-size: 14px;
+      color: #409eff;
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+
+    .sf-coeff-formula-formula {
+      font-size: 13px;
+      color: #303133;
+      font-family: "Courier New", Consolas, monospace;
+      line-height: 1.75;
+    }
+
+    .sf-coeff-formula-note {
+      font-size: 12px;
+      color: #909399;
+      margin-top: 8px;
+    }
+
+    .sf-coeff-part-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #303133;
+      margin: 0 0 14px;
+    }
+
+    .sf-coeff-table-wrap {
+      border: 1px solid #ebeef5;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+
+    .sf-coeff-data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      min-width: 720px;
+    }
+
+    .sf-coeff-data-table th,
+    .sf-coeff-data-table td {
+      border: 1px solid #ebeef5;
+      padding: 10px 8px;
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    .sf-coeff-data-table thead th {
+      background: #f5f7fa;
+      color: #303133;
+      font-weight: 500;
+    }
+
+    .sf-coeff-data-table tbody td {
+      background: #fff;
+      color: #606266;
+    }
+
+    .sf-coeff-dates {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .sf-coeff-inp {
+      height: 32px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      padding: 0 8px;
+      font-size: 13px;
+      color: #606266;
+      outline: none;
+      box-sizing: border-box;
+    }
+
+    .sf-coeff-inp:focus {
+      border-color: #409eff;
+    }
+
+    .sf-coeff-inp--wide {
+      width: 100%;
+      min-width: 120px;
+      max-width: 220px;
+    }
+
+    .sf-coeff-inp--num {
+      width: 80px;
+      text-align: center;
+    }
+
+    .sf-coeff-sel {
+      height: 32px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      padding: 0 8px;
+      font-size: 13px;
+      color: #606266;
+      background: #fff;
+      outline: none;
+      min-width: 100px;
+    }
+
+    .sf-coeff-sel:focus {
+      border-color: #409eff;
+    }
+
+    .sf-coeff-row-del {
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 16px;
+      padding: 4px 8px;
+      color: #909399;
+      line-height: 1;
+    }
+
+    .sf-coeff-row-del:hover {
+      color: #f56c6c;
+    }
+
+    .sf-coeff-add-btn {
+      margin-top: 8px;
+    }
+
+    .sf-coeff-body .sf-coeff-table-wrap + .sf-rule-hint,
+    .sf-coeff-body .sf-coeff-add-btn + .sf-rule-hint {
+      margin: 8px 0 0;
+    }
+
+    /* 增长/衰减列：暂隐藏，保留 DOM 便于恢复 */
+    .sf-coeff-data-table .sf-coeff-col-growth {
+      display: none;
+    }
+
+    .sf-coeff-sublabel {
+      font-size: 13px;
+      color: #606266;
+      margin-bottom: 8px;
+    }
+
+    .sf-season-table-wrap {
+      border: 1px solid #ebeef5;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+
+    .sf-season-month-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      min-width: 880px;
+    }
+
+    .sf-season-month-table th,
+    .sf-season-month-table td {
+      border: 1px solid #ebeef5;
+      padding: 10px 6px;
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    .sf-season-month-table thead th {
+      background: #f5f7fa;
+      color: #303133;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .sf-season-month-table tbody td {
+      background: #fff;
+    }
+
+    .sf-season-month-input {
+      width: 72px;
+      height: 30px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      padding: 0 4px;
+      font-size: 13px;
+      color: #606266;
+      text-align: center;
+      outline: none;
+    }
+
+    .sf-season-month-input:focus {
+      border-color: #409eff;
+    }
+
+    .sf-season-month-input::-webkit-outer-spin-button,
+    .sf-season-month-input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    .sf-season-month-input[type="number"] {
+      appearance: textfield;
+      -moz-appearance: textfield;
+    }
+
+    .sf-coeff-body .sf-season-table-wrap + .sf-rule-hint {
+      margin: 10px 0 0;
+    }
+
+    /* ===== 选择父体弹窗（参考预警页面） ===== */
+    .sf-modal-mask {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      z-index: 1400;
+      justify-content: center;
+      align-items: flex-start;
+      padding-top: 48px;
+    }
+
+    .sf-modal-mask.show {
+      display: flex;
+    }
+
+    .sf-modal {
+      background: #fff;
+      border-radius: 6px;
+      width: 820px;
+      max-width: 90vw;
+      height: 66vh;
+      max-height: 66vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+    }
+
+    .sf-modal.sf-modal-parent {
+      width: 1060px;
+      max-width: 95vw;
+    }
+
+    .sf-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 18px 22px 14px;
+      border-bottom: 1px solid #ebeef5;
+      flex-shrink: 0;
+    }
+
+    .sf-modal-header h3 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #303133;
+    }
+
+    .sf-modal-close {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: #909399;
+      cursor: pointer;
+      border-radius: 4px;
+      border: none;
+      background: none;
+    }
+
+    .sf-modal-close:hover {
+      color: #303133;
+      background: #f5f7fa;
+    }
+
+    .sf-modal-body {
+      flex: 1;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      padding: 16px 20px;
+      min-height: 0;
+    }
+
+    .sf-parent-filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 14px;
+      flex-shrink: 0;
+    }
+
+    .sf-parent-filter-bar input,
+    .sf-parent-filter-bar select {
+      padding: 6px 10px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      font-size: 13px;
+      height: 32px;
+      outline: none;
+      color: #606266;
+    }
+
+    .sf-parent-filter-bar input:focus,
+    .sf-parent-filter-bar select:focus {
+      border-color: #409eff;
+    }
+
+    .sf-filter-btn {
+      padding: 6px 14px;
+      border-radius: 4px;
+      font-size: 13px;
+      cursor: pointer;
+      height: 32px;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .sf-filter-btn-search {
+      background: #409eff;
+      color: #fff;
+    }
+
+    .sf-filter-btn-search:hover {
+      background: #66b1ff;
+    }
+
+    .sf-filter-btn-reset {
+      background: #fff;
+      color: #606266;
+      border: 1px solid #dcdfe6;
+    }
+
+    .sf-filter-btn-reset:hover {
+      border-color: #409eff;
+      color: #409eff;
+    }
+
+    .sf-parent-table-wrap {
+      flex: 1;
+      overflow-y: auto;
+      max-height: 420px;
+    }
+
+    .sf-parent-pick-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .sf-parent-pick-table th,
+    .sf-parent-pick-table td {
+      border: 1px solid #ebeef5;
+      padding: 9px 8px;
+      text-align: center;
+    }
+
+    .sf-parent-pick-table th {
+      background: #f5f7fa;
+      font-weight: 500;
+      color: #303133;
+      white-space: nowrap;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    .sf-parent-pick-table td {
+      color: #606266;
+    }
+
+    .sf-parent-pick-table tbody tr:hover {
+      background: #f5f7fa;
+    }
+
+    .sf-parent-pick-table input[type="checkbox"] {
+      accent-color: #409eff;
+      width: 15px;
+      height: 15px;
+      cursor: pointer;
+    }
+
+    .sf-modal-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 20px;
+      border-top: 1px solid #ebeef5;
+      flex-shrink: 0;
+    }
+
+    .sf-modal-footer-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar-primary">
+        <div class="sidebar-brand">
+          <h2><span class="brand-icon">📦</span><span>OMS</span></h2>
+        </div>
+        <nav class="sidebar-nav">
+          <a class="primary-item" href="./index.html"><span class="item-icon">🏠</span><span class="item-label">首页</span></a>
+          <a class="primary-item" href="#"><span class="item-icon">⚙️</span><span class="item-label">数据决策</span></a>
+          <a class="primary-item" href="#"><span class="item-icon">⚙️</span><span class="item-label">运营工具</span></a>
+          <a class="primary-item" href="#"><span class="item-icon">⚙️</span><span class="item-label">目标</span></a>
+          <a class="primary-item" href="#" data-submenu="replenish"><span class="item-icon">⚙️</span><span class="item-label">补货</span></a>
+          <a class="primary-item active" href="#" data-submenu="system" data-primary-current="true"><span class="item-icon">⚙️</span><span class="item-label">系统配置</span></a>
+        </nav>
+      </div>
+      <div class="sidebar-submenu-panel" id="replenish-submenu">
+        <a class="submenu-item" href="./补货列表.html">补货列表</a>
+        <a class="submenu-item" href="./预测规则配置页面_v1.html">备货规则</a>
+        <a class="submenu-item" href="./预警页面_v1.html">预警模型</a>
+        <a class="submenu-item" href="./预警消息页面_v1.html">预警消息</a>
+      </div>
+      <div class="sidebar-submenu-panel" id="system-submenu">
+        <div class="submenu-title">系统配置</div>
+        <a class="submenu-item active" href="./销量预测规则.html">销量预测规则</a>
+      </div>
+    </aside>
+
+    <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+    <main class="main-content">
+  <div class="page-wrap">
+    <div class="panel">
+      <div class="panel-body">
+        <div class="filter-bar">
+          <div class="filter-item">
+            <span class="filter-label">规则名称</span>
+            <input class="filter-control w-200" type="text" placeholder="请输入规则名称" />
+          </div>
+          <div class="filter-item">
+            <span class="filter-label">是否启用</span>
+            <select class="filter-control w-160">
+              <option value="">全部</option>
+              <option value="1">是</option>
+              <option value="0">否</option>
+            </select>
+          </div>
+          <div class="filter-item">
+            <span class="filter-label">父体编号</span>
+            <input class="filter-control w-200" type="text" placeholder="请输入父体编号" />
+          </div>
+          <div class="filter-actions">
+            <button type="button" class="btn btn-primary">🔍 搜索</button>
+            <button type="button" class="btn">重置</button>
+          </div>
+        </div>
+
+        <div class="action-row">
+          <button type="button" class="btn btn-primary" id="btn-rule-add">+ 新增</button>
+        </div>
+
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th style="width: 120px;">规则编号</th>
+                <th style="min-width: 160px;">规则名称</th>
+                <th style="width: 100px;">是否启用</th>
+                <th style="min-width: 140px;">适用父体</th>
+                <th style="width: 90px;">创建人</th>
+                <th style="width: 160px;">创建时间</th>
+                <th style="width: 90px;">更新人</th>
+                <th style="width: 160px;">更新时间</th>
+              </tr>
+            </thead>
+            <tbody id="sf-rule-list-tbody"></tbody>
+          </table>
+        </div>
+
+        <div class="pagination-bar">
+          <span id="sf-rule-list-count">共 0 条</span>
+          <div class="pagination-pages">
+            <span class="page-num active">1</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+    </main>
+  </div>
+
+  <div class="rule-drawer-mask" id="rule-drawer-mask"></div>
+  <div class="rule-drawer" id="rule-drawer" aria-hidden="true">
+    <div class="rule-drawer-header">
+      <span class="rule-drawer-title">销售预测规则</span>
+      <div class="rule-drawer-actions">
+        <button type="button" class="btn" id="rule-drawer-cancel">取消</button>
+        <button type="button" class="btn btn-primary" id="rule-drawer-submit">提交</button>
+      </div>
+    </div>
+    <div class="rule-drawer-body">
+      <section class="drawer-section">
+        <div class="drawer-section-head">1. 基础信息</div>
+        <div class="drawer-form-row">
+          <label class="drawer-label required" for="rule-name-input">规则名称</label>
+          <div class="drawer-field">
+            <input class="drawer-input" id="rule-name-input" type="text" placeholder="请输入规则名称" />
+          </div>
+        </div>
+        <div class="drawer-form-row">
+          <span class="drawer-label">是否启用</span>
+          <div class="drawer-field">
+            <label class="switch">
+              <input type="checkbox" id="rule-enabled-input" checked />
+              <span class="switch-slider"></span>
+            </label>
+          </div>
+        </div>
+        <div class="drawer-form-row">
+          <span class="drawer-label required">适用父体</span>
+          <div class="drawer-field">
+            <input class="drawer-input drawer-input--readonly" id="rule-parent-display" type="text" readonly placeholder="未选择父体" value="" />
+            <button type="button" class="btn" id="rule-parent-pick">选择父体</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="drawer-section">
+        <div class="drawer-section-head">2. 日均销量规则</div>
+        <div class="sf-daily-subhead" role="heading" aria-level="3">
+          <span class="sf-daily-subhead-bar" aria-hidden="true"></span>
+          <span class="sf-daily-subhead-text">日销权重</span>
+        </div>
+        <p class="sf-rule-hint">按时间段设置权重占比（%），合计须为 100%。</p>
+        <div class="sf-daily-wrap">
+          <table class="sf-daily-table">
+            <thead>
+              <tr>
+                <th class="sf-daily-corner"></th>
+                <th>近3天</th>
+                <th>近7天</th>
+                <th>近14天</th>
+                <th>近30天</th>
+                <th>近60天</th>
+                <th>近90天</th>
+                <th class="sf-daily-total-col">合计</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="sf-daily-row-label">权重设置</td>
+                <td class="sf-daily-cell">
+                  <div class="sf-daily-input-wrap">
+                    <input class="sf-daily-weight" type="number" min="0" max="100" step="0.01" value="0" data-period="3" />
+                    <span class="sf-daily-suffix">%</span>
+                  </div>
+                </td>
+                <td class="sf-daily-cell">
+                  <div class="sf-daily-input-wrap">
+                    <input class="sf-daily-weight" type="number" min="0" max="100" step="0.01" value="70" data-period="7" />
+                    <span class="sf-daily-suffix">%</span>
+                  </div>
+                </td>
+                <td class="sf-daily-cell">
+                  <div class="sf-daily-input-wrap">
+                    <input class="sf-daily-weight" type="number" min="0" max="100" step="0.01" value="30" data-period="14" />
+                    <span class="sf-daily-suffix">%</span>
+                  </div>
+                </td>
+                <td class="sf-daily-cell">
+                  <div class="sf-daily-input-wrap">
+                    <input class="sf-daily-weight" type="number" min="0" max="100" step="0.01" value="0" data-period="30" />
+                    <span class="sf-daily-suffix">%</span>
+                  </div>
+                </td>
+                <td class="sf-daily-cell">
+                  <div class="sf-daily-input-wrap">
+                    <input class="sf-daily-weight" type="number" min="0" max="100" step="0.01" value="0" data-period="60" />
+                    <span class="sf-daily-suffix">%</span>
+                  </div>
+                </td>
+                <td class="sf-daily-cell">
+                  <div class="sf-daily-input-wrap">
+                    <input class="sf-daily-weight" type="number" min="0" max="100" step="0.01" value="0" data-period="90" />
+                    <span class="sf-daily-suffix">%</span>
+                  </div>
+                </td>
+                <td class="sf-daily-total-cell" id="sf-daily-total-cell">
+                  <span id="sf-daily-weight-sum">100</span><span class="sf-daily-suffix">%</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="sf-promo-block">
+          <div class="sf-promo-subhead" role="heading" aria-level="3">
+            <span class="sf-promo-subhead-bar" aria-hidden="true"></span>
+            <span class="sf-promo-subhead-text">促销销量</span>
+          </div>
+          <p class="sf-rule-hint">
+            促销期间的日销量将覆盖上方的默认加权计算值。适用于 Prime Day、Black Friday 等大促场景，由运营人工预估。
+          </p>
+          <div class="sf-promo-table-wrap">
+            <table class="sf-promo-table">
+              <thead>
+                <tr>
+                  <th style="width:56px;">序号</th>
+                  <th style="min-width:160px;">促销名称</th>
+                  <th style="min-width:280px;">时间段</th>
+                  <th style="min-width:140px;">预测日均销量</th>
+                  <th style="min-width:100px;">预测总销量</th>
+                  <th style="width:72px;">操作</th>
+                </tr>
+              </thead>
+              <tbody id="sf-promo-tbody"></tbody>
+            </table>
+          </div>
+          <div class="sf-promo-footer">
+            <span class="sf-promo-count" id="sf-promo-count">共 0 条</span>
+            <button type="button" class="btn btn-primary" id="sf-promo-add">+ 添加促销</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="drawer-section">
+        <div class="drawer-section-head">3. 影响系数</div>
+
+        <div class="sf-coeff-formula">
+          <div class="sf-coeff-formula-title">最终动态日销量公式</div>
+          <div class="sf-coeff-formula-formula">
+            动态日销量 = 基础日销量 × 季节/市场系数 × 促销系数 × 同比销售系数 × 次新品/老品系数 × 竞对价格系数
+          </div>
+          <div class="sf-coeff-formula-note">各系数默认值为 1（不影响），大于1为增量调整，小于1为减量调整</div>
+        </div>
+
+        <div class="sf-coeff-part-title">日销量影响系数</div>
+
+        <div class="sf-coeff-block" id="sf-coeff-season-wrap">
+          <div class="sf-coeff-subhead" role="heading" aria-level="3">
+            <span class="sf-coeff-subhead-bar" aria-hidden="true"></span>
+            <span class="sf-coeff-subhead-text">季节/市场系数</span>
+          </div>
+          <div class="sf-coeff-body">
+            <div class="sf-coeff-sublabel">增长/衰减系数</div>
+            <div class="sf-season-table-wrap">
+              <table class="sf-season-month-table">
+                <thead>
+                  <tr>
+                    <th>1月份</th>
+                    <th>2月份</th>
+                    <th>3月份</th>
+                    <th>4月份</th>
+                    <th>5月份</th>
+                    <th>6月份</th>
+                    <th>7月份</th>
+                    <th>8月份</th>
+                    <th>9月份</th>
+                    <th>10月份</th>
+                    <th>11月份</th>
+                    <th>12月份</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><input type="number" class="sf-season-month-input sf-season-m" id="sf-season-m1" data-month="1" value="1" min="0" step="0.01" /></td>
+                    <td><input type="number" class="sf-season-month-input sf-season-m" id="sf-season-m2" data-month="2" value="1" min="0" step="0.01" /></td>
+                    <td><input type="number" class="sf-season-month-input sf-season-m" id="sf-season-m3" data-month="3" value="1" min="0" step="0.01" /></td>
+                    <td><input type="number" class="sf-season-month-input sf-season-m" id="sf-season-m4" data-month="4" value="1" min="0" step="0.01" /></td>
+                    <td><input type="number" class="sf-season-month-input sf-season-m" id="sf-season-m5" data-month="5" value="1" min="0" step="0.01" /></td>
+                    <td><input type="number" class="sf-season-month-input sf-season-m" id="sf-season-m6" data-month="6" value="1" min="0" step="0.01" /></td>
+                    <td><input type="number" class="sf-season-month-input sf-season-m" id="sf-season-m7" data-month="7" value="1" min="0" step="0.01" /></td>
+                    <td><input type="number" class="sf-season-month-input sf-season-m" id="sf-season-m8" data-month="8" value="1" min="0" step="0.01" /></td>
+                    <td><input type="number" class="sf-season-month-input sf-season-m" id="sf-season-m9" data-month="9" value="1" min="0" step="0.01" /></td>
+                    <td><input type="number" class="sf-season-month-input sf-season-m" id="sf-season-m10" data-month="10" value="1" min="0" step="0.01" /></td>
+                    <td><input type="number" class="sf-season-month-input sf-season-m" id="sf-season-m11" data-month="11" value="1" min="0" step="0.01" /></td>
+                    <td><input type="number" class="sf-season-month-input sf-season-m" id="sf-season-m12" data-month="12" value="1" min="0" step="0.01" /></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="sf-rule-hint">
+              按月维护季节性系数，1 表示无调整，&gt;1 表示旺季增长，&lt;1 表示淡季衰减。例如泳衣夏季（7~8月）可填 1.3，冬季填 0.5。
+            </p>
+          </div>
+        </div>
+
+        <div class="sf-coeff-block sf-coeff-block--sep" id="sf-coeff-yoy-wrap">
+          <div class="sf-coeff-subhead" role="heading" aria-level="3">
+            <span class="sf-coeff-subhead-bar" aria-hidden="true"></span>
+            <span class="sf-coeff-subhead-text">同比销售系数</span>
+          </div>
+          <div class="sf-coeff-body">
+            <div class="sf-coeff-table-wrap">
+              <table class="sf-coeff-data-table">
+                <thead>
+                  <tr>
+                    <th style="width:56px;">序号</th>
+                    <th>时间段</th>
+                    <th class="sf-coeff-col-growth" style="min-width:120px;">增长/衰减</th>
+                    <th style="min-width:100px;">系数值</th>
+                    <th style="min-width:160px;">说明</th>
+                    <th style="width:64px;">操作</th>
+                  </tr>
+                </thead>
+                <tbody id="sf-yoy-coeff-tbody">
+                  <tr>
+                    <td>1</td>
+                    <td>
+                      <div class="sf-coeff-dates">
+                        <input type="date" class="sf-coeff-inp" style="width:130px;" />
+                        <span>至</span>
+                        <input type="date" class="sf-coeff-inp" style="width:130px;" />
+                      </div>
+                    </td>
+                    <td class="sf-coeff-col-growth">
+                      <select class="sf-coeff-sel">
+                        <option value="up" selected>增长 ↑</option>
+                        <option value="down">衰减 ↓</option>
+                      </select>
+                    </td>
+                    <td><input type="number" class="sf-coeff-inp sf-coeff-inp--num" value="1" min="0" step="0.01" /></td>
+                    <td><input type="text" class="sf-coeff-inp sf-coeff-inp--wide" placeholder="如：同比增长20%" /></td>
+                    <td><button type="button" class="sf-coeff-row-del" title="删除" aria-label="删除">🗑️</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <button type="button" class="btn sf-coeff-add-btn" id="sf-coeff-yoy-add"><span>+</span> 添加</button>
+            <p class="sf-rule-hint">参考去年同期的销量趋势，确认增长是否健康且符合预期</p>
+          </div>
+        </div>
+
+        <div class="sf-coeff-block sf-coeff-block--sep" id="sf-coeff-lifecycle-wrap">
+          <div class="sf-coeff-subhead" role="heading" aria-level="3">
+            <span class="sf-coeff-subhead-bar" aria-hidden="true"></span>
+            <span class="sf-coeff-subhead-text">产品生命周期系数（次新品/老品）</span>
+          </div>
+          <div class="sf-coeff-body">
+            <div class="sf-coeff-table-wrap">
+              <table class="sf-coeff-data-table">
+                <thead>
+                  <tr>
+                    <th style="width:56px;">序号</th>
+                    <th style="min-width:120px;">生命周期类型</th>
+                    <th>时间段</th>
+                    <th class="sf-coeff-col-growth" style="min-width:120px;">增长/衰减</th>
+                    <th style="min-width:100px;">比例系数</th>
+                    <th style="width:64px;">操作</th>
+                  </tr>
+                </thead>
+                <tbody id="sf-lifecycle-coeff-tbody">
+                  <tr>
+                    <td>1</td>
+                    <td>
+                      <select class="sf-coeff-sel">
+                        <option selected>次新品</option>
+                        <option>老品</option>
+                      </select>
+                    </td>
+                    <td>
+                      <div class="sf-coeff-dates">
+                        <input type="date" class="sf-coeff-inp" style="width:130px;" />
+                        <span>至</span>
+                        <input type="date" class="sf-coeff-inp" style="width:130px;" />
+                      </div>
+                    </td>
+                    <td class="sf-coeff-col-growth">
+                      <select class="sf-coeff-sel">
+                        <option value="up" selected>同比增长</option>
+                        <option value="down">同比衰减</option>
+                      </select>
+                    </td>
+                    <td><input type="number" class="sf-coeff-inp sf-coeff-inp--num" value="1" min="0" step="0.01" /></td>
+                    <td><button type="button" class="sf-coeff-row-del" title="删除" aria-label="删除">🗑️</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <button type="button" class="btn sf-coeff-add-btn" id="sf-coeff-lifecycle-add"><span>+</span> 添加</button>
+            <p class="sf-rule-hint">次新品处于增长期，系数 &gt; 1；老品处于衰减期，系数 &lt; 1</p>
+          </div>
+        </div>
+
+        <div class="sf-coeff-block sf-coeff-block--sep" id="sf-coeff-competitor-wrap">
+          <div class="sf-coeff-subhead" role="heading" aria-level="3">
+            <span class="sf-coeff-subhead-bar" aria-hidden="true"></span>
+            <span class="sf-coeff-subhead-text">竞对价格系数</span>
+          </div>
+          <div class="sf-coeff-body">
+            <div class="sf-coeff-table-wrap">
+              <table class="sf-coeff-data-table">
+                <thead>
+                  <tr>
+                    <th style="width:56px;">序号</th>
+                    <th>时间段</th>
+                    <th class="sf-coeff-col-growth" style="min-width:120px;">增长/衰减</th>
+                    <th style="min-width:100px;">系数值</th>
+                    <th style="min-width:160px;">说明</th>
+                    <th style="width:64px;">操作</th>
+                  </tr>
+                </thead>
+                <tbody id="sf-competitor-coeff-tbody">
+                  <tr>
+                    <td>1</td>
+                    <td>
+                      <div class="sf-coeff-dates">
+                        <input type="date" class="sf-coeff-inp" style="width:130px;" />
+                        <span>至</span>
+                        <input type="date" class="sf-coeff-inp" style="width:130px;" />
+                      </div>
+                    </td>
+                    <td class="sf-coeff-col-growth">
+                      <select class="sf-coeff-sel">
+                        <option value="up">增长 ↑</option>
+                        <option value="down" selected>衰减 ↓</option>
+                      </select>
+                    </td>
+                    <td><input type="number" class="sf-coeff-inp sf-coeff-inp--num" value="1" min="0" step="0.01" /></td>
+                    <td><input type="text" class="sf-coeff-inp sf-coeff-inp--wide" placeholder="如：竞对降价分流" /></td>
+                    <td><button type="button" class="sf-coeff-row-del" title="删除" aria-label="删除">🗑️</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <button type="button" class="btn sf-coeff-add-btn" id="sf-coeff-competitor-add"><span>+</span> 添加</button>
+            <p class="sf-rule-hint">竞对降价时 &lt; 1（需求被分流），竞对涨价时 &gt; 1（需求流入）</p>
+          </div>
+        </div>
+
+        <div class="sf-coeff-block sf-coeff-block--sep" id="sf-coeff-target-wrap">
+          <div class="sf-coeff-subhead" role="heading" aria-level="3">
+            <span class="sf-coeff-subhead-bar" aria-hidden="true"></span>
+            <span class="sf-coeff-subhead-text">目标系数 / 目标置信率系数</span>
+          </div>
+          <div class="sf-coeff-body">
+            <div class="sf-coeff-table-wrap">
+              <table class="sf-coeff-data-table">
+                <thead>
+                  <tr>
+                    <th style="width:56px;">序号</th>
+                    <th>时间段</th>
+                    <th class="sf-coeff-col-growth" style="min-width:120px;">增长/衰减</th>
+                    <th style="min-width:100px;">系数值</th>
+                    <th style="min-width:160px;">说明</th>
+                    <th style="width:64px;">操作</th>
+                  </tr>
+                </thead>
+                <tbody id="sf-target-coeff-tbody">
+                  <tr>
+                    <td>1</td>
+                    <td>
+                      <div class="sf-coeff-dates">
+                        <input type="date" class="sf-coeff-inp" style="width:130px;" />
+                        <span>至</span>
+                        <input type="date" class="sf-coeff-inp" style="width:130px;" />
+                      </div>
+                    </td>
+                    <td class="sf-coeff-col-growth">
+                      <select class="sf-coeff-sel">
+                        <option value="up" selected>增长 ↑</option>
+                        <option value="down">衰减 ↓</option>
+                      </select>
+                    </td>
+                    <td><input type="number" class="sf-coeff-inp sf-coeff-inp--num" value="1" min="0" step="0.01" /></td>
+                    <td><input type="text" class="sf-coeff-inp sf-coeff-inp--wide" placeholder="如：目标完成率调高" /></td>
+                    <td><button type="button" class="sf-coeff-row-del" title="删除" aria-label="删除">🗑️</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <button type="button" class="btn sf-coeff-add-btn" id="sf-coeff-target-add"><span>+</span> 添加</button>
+            <p class="sf-rule-hint">反映公司销售目标与完成率的牵引力度，目标完成率高时可适当调高</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="drawer-section">
+        <div class="drawer-section-head">4. 销量去噪</div>
+
+        <div class="sf-denoise-block" id="sf-denoise-auto-wrap">
+          <div class="sf-denoise-subhead" role="heading" aria-level="3">
+            <span class="sf-denoise-subhead-bar" aria-hidden="true"></span>
+            <span class="sf-denoise-subhead-text">① 日销量自动去噪（大订单去噪）</span>
+          </div>
+          <p class="sf-rule-hint">
+            当单个订单同一产品销量过大，影响历史平均销量时，将该订单的产品销量按指定值计算，避免拉高日均数据。
+          </p>
+          <div class="sf-coeff-table-wrap">
+            <table class="sf-coeff-data-table sf-denoise-auto-table">
+              <thead>
+                <tr>
+                  <th style="width:100px;">类型</th>
+                  <th>规则</th>
+                  <th style="width:100px;">状态</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr id="sf-auto-denoise-row">
+                  <td style="font-weight:500;">大订单去噪</td>
+                  <td class="auto-denoise-rule-cell">
+                    <div class="sf-denoise-auto-rule-line">
+                      <span>单个订单单个产品销量 ≥</span>
+                      <input type="number" class="sf-coeff-inp sf-coeff-inp--num" id="sf-auto-denoise-x" value="10" min="0" step="1" />
+                      <span>个时，该订单产品销量记为</span>
+                      <input type="number" class="sf-coeff-inp sf-coeff-inp--num" id="sf-auto-denoise-y" value="1" min="0" step="1" />
+                      <span>个</span>
+                    </div>
+                  </td>
+                  <td style="text-align:center;">
+                    <label class="switch" style="display:inline-flex;vertical-align:middle;">
+                      <input type="checkbox" id="sf-auto-denoise-large-enabled" checked />
+                      <span class="switch-slider"></span>
+                    </label>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="sf-rule-hint">示例：X=10, Y=1，如果某订单某产品销量 ≥ 10个，该订单对应产品的销量只按1个计算</p>
+        </div>
+
+        <div class="sf-denoise-block sf-denoise-block--sep" id="sf-denoise-date-wrap">
+          <div class="sf-denoise-subhead" role="heading" aria-level="3">
+            <span class="sf-denoise-subhead-bar" aria-hidden="true"></span>
+            <span class="sf-denoise-subhead-text">② 日销量指定日期去噪</span>
+          </div>
+          <p class="sf-rule-hint">
+            历史某段时间销量存在异常情况（如促销导致暴增、其他原因导致暴跌），支持指定时间修复历史销量数据。
+          </p>
+          <div class="sf-coeff-table-wrap">
+            <table class="sf-coeff-data-table">
+              <thead>
+                <tr>
+                  <th style="width:56px;">序号</th>
+                  <th style="min-width:160px;">去噪类型</th>
+                  <th>时间段</th>
+                  <th style="min-width:100px;">去噪值</th>
+                  <th style="min-width:140px;">名称/说明</th>
+                  <th style="width:64px;">操作</th>
+                </tr>
+              </thead>
+              <tbody id="sf-date-denoise-tbody">
+                <tr>
+                  <td>1</td>
+                  <td>
+                    <select class="sf-coeff-sel">
+                      <option selected>固定值去噪</option>
+                      <option>百分比去噪</option>
+                    </select>
+                  </td>
+                  <td>
+                    <div class="sf-coeff-dates">
+                      <input type="date" class="sf-coeff-inp" style="width:130px;" />
+                      <span>至</span>
+                      <input type="date" class="sf-coeff-inp" style="width:130px;" />
+                    </div>
+                  </td>
+                  <td><input type="number" class="sf-coeff-inp sf-coeff-inp--num" placeholder="值" /></td>
+                  <td><input type="text" class="sf-coeff-inp sf-coeff-inp--wide" placeholder="如：BD促销去噪" /></td>
+                  <td><button type="button" class="sf-denoise-row-del" data-tbody="sf-date-denoise-tbody" title="删除" aria-label="删除">🗑️</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <button type="button" class="btn sf-coeff-add-btn" id="sf-date-denoise-add"><span>+</span> 添加</button>
+          <p class="sf-rule-hint">
+            固定值去噪：将该时段日销量替换为指定数值。百分比去噪：将该时段日销量按百分比缩放（如填50，表示按50%计算）。
+          </p>
+        </div>
+
+        <div class="sf-denoise-block sf-denoise-block--sep" id="sf-denoise-stockout-wrap">
+          <div class="sf-denoise-subhead" role="heading" aria-level="3">
+            <span class="sf-denoise-subhead-bar" aria-hidden="true"></span>
+            <span class="sf-denoise-subhead-text">③ 日销量断货去噪</span>
+          </div>
+          <div class="sf-denoise-stockout-formula">
+            <div class="sf-denoise-stockout-formula-title">系统自动断货去噪公式</div>
+            <div class="sf-denoise-stockout-formula-body">
+              修正后日销量 = 原日销量 × （预计销售天数 / （预计销售天数 - 断货天数））
+            </div>
+            <div class="sf-denoise-stockout-formula-note">
+              断货点定义：系统每日记录 FBA 库存（FBA可售量 + FBA预留中转 + FBA预留处理中），当为0时，标记为断货日。
+            </div>
+          </div>
+          <p class="sf-rule-hint">启用后，系统将自动识别断货时段并按上述公式修正历史日销量</p>
+        </div>
+
+        <div class="sf-denoise-block sf-denoise-block--sep" id="sf-denoise-return-wrap">
+          <div class="sf-denoise-subhead" role="heading" aria-level="3">
+            <span class="sf-denoise-subhead-bar" aria-hidden="true"></span>
+            <span class="sf-denoise-subhead-text">④ 退货量去噪</span>
+          </div>
+          <p class="sf-rule-hint">
+            从历史销量中扣减退货/退款数量，使净销量更准确地反映真实需求。
+          </p>
+          <div class="sf-coeff-table-wrap">
+            <table class="sf-coeff-data-table">
+              <thead>
+                <tr>
+                  <th style="width:56px;">序号</th>
+                  <th style="min-width:160px;">类型</th>
+                  <th>时间段</th>
+                  <th style="min-width:100px;">扣减比例</th>
+                  <th style="min-width:140px;">名称/说明</th>
+                  <th style="width:64px;">操作</th>
+                </tr>
+              </thead>
+              <tbody id="sf-return-denoise-tbody">
+                <tr>
+                  <td>1</td>
+                  <td style="font-weight:500;">退货量去噪</td>
+                  <td>
+                    <div class="sf-coeff-dates">
+                      <input type="date" class="sf-coeff-inp" style="width:130px;" />
+                      <span>至</span>
+                      <input type="date" class="sf-coeff-inp" style="width:130px;" />
+                    </div>
+                  </td>
+                  <td>
+                    <div class="sf-coeff-dates">
+                      <input type="number" class="sf-coeff-inp sf-coeff-inp--num" style="width:70px;" placeholder="%" />
+                      <span>%</span>
+                    </div>
+                  </td>
+                  <td><input type="text" class="sf-coeff-inp sf-coeff-inp--wide" placeholder="如：质量问题退货" /></td>
+                  <td><button type="button" class="sf-denoise-row-del" data-tbody="sf-return-denoise-tbody" title="删除" aria-label="删除">🗑️</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <button type="button" class="btn sf-coeff-add-btn" id="sf-return-denoise-add"><span>+</span> 添加</button>
+          <p class="sf-rule-hint">扣减比例：如填15，表示该时段销量扣减15%的退货量</p>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div class="sf-modal-mask" id="sf-modal-parent-pick">
+    <div class="sf-modal sf-modal-parent">
+      <div class="sf-modal-header">
+        <h3>选择父体</h3>
+        <button type="button" class="sf-modal-close" id="sf-parent-modal-x" aria-label="关闭">×</button>
+      </div>
+      <div class="sf-modal-body">
+        <div class="sf-parent-filter-bar">
+          <input type="text" placeholder="父体编号" id="sf-pf-code" style="width:130px;" />
+          <input type="text" placeholder="父ASIN" id="sf-pf-asin" style="width:130px;" />
+          <select id="sf-pf-platform" style="width:110px;">
+            <option value="">平台</option>
+            <option>Amazon</option>
+          </select>
+          <select id="sf-pf-site" style="width:100px;">
+            <option value="">站点</option>
+            <option>美国</option>
+            <option>英国</option>
+            <option>德国</option>
+          </select>
+          <input type="text" placeholder="店铺" id="sf-pf-store" style="width:140px;" />
+          <input type="text" placeholder="SPU" id="sf-pf-spu" style="width:110px;" />
+          <button type="button" class="sf-filter-btn sf-filter-btn-search" id="sf-parent-search">搜索</button>
+          <button type="button" class="sf-filter-btn sf-filter-btn-reset" id="sf-parent-reset">重置</button>
+        </div>
+        <div class="sf-parent-table-wrap">
+          <table class="sf-parent-pick-table" id="sf-parent-pick-table">
+            <thead>
+              <tr>
+                <th style="width:40px;"><input type="checkbox" id="sf-parent-pick-all" /></th>
+                <th>父体编号</th>
+                <th>父ASIN</th>
+                <th>链接相册</th>
+                <th>平台</th>
+                <th>站点</th>
+                <th>店铺</th>
+                <th>SPU</th>
+                <th>运营负责人</th>
+                <th>库存可售天数</th>
+              </tr>
+            </thead>
+            <tbody id="sf-parent-pick-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="sf-modal-footer">
+        <span style="font-size:13px; color:#606266;">已选择 <strong id="sf-parent-pick-count">0</strong> 个父体</span>
+        <div class="sf-modal-footer-actions">
+          <button type="button" class="btn" id="sf-parent-cancel">取消</button>
+          <button type="button" class="btn btn-primary" id="sf-parent-confirm">确定</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function initSidebarMenu() {
+      var appLayout = document.querySelector('.app-layout');
+      var backdrop = document.getElementById('sidebar-backdrop');
+      var replenishTrigger = document.querySelector('.primary-item[data-submenu="replenish"]');
+      var systemTrigger = document.querySelector('.primary-item[data-submenu="system"]');
+      var replenishPanel = document.getElementById('replenish-submenu');
+      var systemPanel = document.getElementById('system-submenu');
+      if (!appLayout || !backdrop) return;
+
+      function restorePrimaryCurrent() {
+        document.querySelectorAll('.primary-item[data-primary-current]').forEach(function(el) {
+          el.classList.add('active');
+        });
+      }
+
+      function closeAllSubmenus() {
+        appLayout.classList.remove('submenu-open');
+        if (replenishPanel) replenishPanel.classList.remove('open');
+        if (systemPanel) systemPanel.classList.remove('open');
+        if (replenishTrigger) replenishTrigger.classList.remove('active');
+        if (systemTrigger) systemTrigger.classList.remove('active');
+        restorePrimaryCurrent();
+      }
+
+      function bindToggle(trigger, panel) {
+        if (!trigger || !panel) return;
+        trigger.addEventListener('click', function(e) {
+          e.preventDefault();
+          var isOpen = panel.classList.contains('open');
+          if (isOpen) {
+            closeAllSubmenus();
+            return;
+          }
+          appLayout.classList.remove('submenu-open');
+          if (replenishPanel) replenishPanel.classList.remove('open');
+          if (systemPanel) systemPanel.classList.remove('open');
+          if (replenishTrigger) replenishTrigger.classList.remove('active');
+          if (systemTrigger) systemTrigger.classList.remove('active');
+          document.querySelectorAll('.primary-item[data-primary-current]').forEach(function(el) {
+            el.classList.remove('active');
+          });
+          appLayout.classList.add('submenu-open');
+          panel.classList.add('open');
+          trigger.classList.add('active');
+        });
+      }
+
+      bindToggle(replenishTrigger, replenishPanel);
+      bindToggle(systemTrigger, systemPanel);
+
+      backdrop.addEventListener('click', closeAllSubmenus);
+
+      document.querySelectorAll('.sidebar-submenu-panel a.submenu-item').forEach(function(a) {
+        a.addEventListener('click', closeAllSubmenus);
+      });
+
+      document.querySelectorAll('.primary-item[href="#"]:not([data-submenu])').forEach(function(item) {
+        item.addEventListener('click', function(e) {
+          e.preventDefault();
+        });
+      });
+    }
+
+    initSidebarMenu();
+
+    (function initRuleDrawerAndParentPick() {
+      var mask = document.getElementById('rule-drawer-mask');
+      var drawer = document.getElementById('rule-drawer');
+      var btnAdd = document.getElementById('btn-rule-add');
+      var btnCancel = document.getElementById('rule-drawer-cancel');
+      var btnSubmit = document.getElementById('rule-drawer-submit');
+      var parentDisplay = document.getElementById('rule-parent-display');
+      var btnPickParent = document.getElementById('rule-parent-pick');
+      var parentModal = document.getElementById('sf-modal-parent-pick');
+      if (!mask || !drawer || !btnAdd || !btnCancel || !btnSubmit) return;
+
+      /** 与「补货列表」共用：父体主数据存于 localStorage，弹窗选项来自该列表 */
+      var SF_REPLENISH_PARENT_LIST_KEY = 'sf_replenish_parent_list_v1';
+      function sfDefaultReplenishParentList() {
+        return [
+          { code: 'LFT00002261', asin: 'B083J69DSQ', album: '无', platform: 'Amazon', site: '美国', store: 'noorkie Inc-US', spu: 'ST18106', owner: '陈柏宏', days: '0/0' },
+          { code: 'LFT00002260', asin: 'B09K799DH7', album: '无', platform: 'Amazon', site: '美国', store: 'STQWALKING_sandbox-US', spu: 'ST210808', owner: '黄国阳', days: '0/0' },
+          { code: 'LFT00000784', asin: 'B07NV7QK7H', album: '无', platform: 'Amazon', site: '英国', store: 'STEP QUEEN INC-UK', spu: 'HK1839', owner: '黄利萍', days: '0/0' },
+          { code: 'LFT00000783', asin: 'B0F8GGJ7LK', album: '无', platform: 'Amazon', site: '英国', store: 'STEP QUEEN INC-UK', spu: 'STK2527157', owner: '余滢', days: '0/0' },
+          { code: 'LFT00000778', asin: 'B0F8GTKXQK', album: '无', platform: 'Amazon', site: '德国', store: 'STEP QUEEN INC-DE', spu: 'STK2527157', owner: '余滢', days: '0/0' },
+          { code: 'LFT00000755', asin: 'B0GLNK47Y9', album: '无', platform: 'Amazon', site: '美国', store: 'STQ Inc-US', spu: 'WT82527258', owner: '黄利萍', days: '0/5' }
+        ];
+      }
+      function sfGetReplenishParentList() {
+        try {
+          var raw = localStorage.getItem(SF_REPLENISH_PARENT_LIST_KEY);
+          if (raw) {
+            var parsed = JSON.parse(raw);
+            if (Array.isArray(parsed) && parsed.length) return parsed;
+          }
+        } catch (e) {}
+        var def = sfDefaultReplenishParentList();
+        try {
+          localStorage.setItem(SF_REPLENISH_PARENT_LIST_KEY, JSON.stringify(def));
+        } catch (e2) {}
+        return def;
+      }
+      var sfSelectedParents = [];
+
+      var SF_RULES_KEY = 'sf_sales_forecast_rules_v1';
+      var sfRulesRuntimeCache = null;
+      var sfEditingRuleId = null;
+
+      function sfFormatNow() {
+        var d = new Date();
+        function z(n) { return n < 10 ? '0' + n : '' + n; }
+        return d.getFullYear() + '-' + z(d.getMonth() + 1) + '-' + z(d.getDate()) + ' ' + z(d.getHours()) + ':' + z(d.getMinutes()) + ':' + z(d.getSeconds());
+      }
+
+      function sfEscAttr(s) {
+        if (s == null || s === undefined) return '';
+        return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+      }
+
+      function sfEscHtml(s) {
+        if (s == null || s === undefined) return '';
+        return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      }
+
+      function getDefaultFormState() {
+        return {
+          name: '',
+          enabled: true,
+          parentCodes: [],
+          dailyWeights: { '3': 0, '7': 70, '14': 30, '30': 0, '60': 0, '90': 0 },
+          promos: [],
+          season: ['1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1'],
+          yoy: [{ d0: '', d1: '', growth: 'up', coeff: '1', note: '' }],
+          lifecycle: [{ lifeType: '次新品', d0: '', d1: '', growth: 'up', coeff: '1' }],
+          competitor: [{ d0: '', d1: '', growth: 'down', coeff: '1', note: '' }],
+          target: [{ d0: '', d1: '', growth: 'up', coeff: '1', note: '' }],
+          autoDenoise: { x: '10', y: '1', largeEnabled: true },
+          dateDenoise: [{ type: '固定值去噪', d0: '', d1: '', value: '', note: '' }],
+          returnDenoise: [{ d0: '', d1: '', pct: '', note: '' }]
+        };
+      }
+
+      function sfParentLabelFromCodes(codes) {
+        if (!codes || codes.length === 0) return '全部父体';
+        return codes.join('、');
+      }
+
+      function loadRules() {
+        try {
+          var raw = localStorage.getItem(SF_RULES_KEY);
+          if (raw !== null && raw !== '') {
+            var parsed = JSON.parse(raw);
+            if (Array.isArray(parsed)) {
+              sfRulesRuntimeCache = parsed;
+              return parsed;
+            }
+          }
+        } catch (e) {}
+        if (sfRulesRuntimeCache && Array.isArray(sfRulesRuntimeCache)) {
+          return sfRulesRuntimeCache;
+        }
+        return sfSeedInitialRules();
+      }
+
+      function saveRules(rules) {
+        sfRulesRuntimeCache = rules;
+        try {
+          localStorage.setItem(SF_RULES_KEY, JSON.stringify(rules));
+        } catch (e) {
+          console.warn('销量预测规则：localStorage 写入失败（若使用 file:// 打开，请改用本地 http 服务或依赖本会话内存缓存）。', e);
+        }
+      }
+
+      function sfSeedInitialRules() {
+        var d = getDefaultFormState();
+        var rules = [
+          {
+            id: 'SF20260410001',
+            name: '北美站加权预测',
+            enabled: true,
+            parentLabel: 'LFT00002261、LFT00000784',
+            form: (function() {
+              var f = JSON.parse(JSON.stringify(d));
+              f.name = '北美站加权预测';
+              f.parentCodes = ['LFT00002261', 'LFT00000784'];
+              f.dailyWeights = { '3': 10, '7': 35, '14': 25, '30': 20, '60': 10, '90': 0 };
+              f.promos = [
+                { name: 'Prime Day 大促', start: '2026-07-11', end: '2026-07-12', daily: '380' },
+                { name: '黑五网一', start: '2026-11-24', end: '2026-11-30', daily: '520' }
+              ];
+              f.season = ['0.92', '0.95', '1', '1.02', '1.05', '1.08', '1.1', '1.12', '1.05', '1', '0.98', '1.15'];
+              f.yoy = [
+                { d0: '2025-01-01', d1: '2025-06-30', growth: 'up', coeff: '1.08', note: '去年同期活动基数偏低' },
+                { d0: '2025-07-01', d1: '2025-12-31', growth: 'up', coeff: '1.12', note: '促销季同比抬升' }
+              ];
+              f.lifecycle = [
+                { lifeType: '次新品', d0: '2025-09-01', d1: '2026-03-31', growth: 'up', coeff: '1.15' },
+                { lifeType: '老品', d0: '2026-04-01', d1: '', growth: 'down', coeff: '0.95' }
+              ];
+              f.competitor = [
+                { d0: '2026-02-01', d1: '2026-04-30', growth: 'down', coeff: '0.92', note: '竞对降价约 8%' }
+              ];
+              f.target = [
+                { d0: '2026-01-01', d1: '2026-06-30', growth: 'up', coeff: '1.05', note: '渠道目标上调 5%' }
+              ];
+              f.autoDenoise = { x: '12', y: '1.15', largeEnabled: true };
+              f.dateDenoise = [
+                { type: '固定值去噪', d0: '2026-01-15', d1: '2026-01-20', value: '45', note: '仓库盘点停发' },
+                { type: '百分比去噪', d0: '2026-03-01', d1: '2026-03-03', value: '60', note: '抓数异常按 60% 缩放' }
+              ];
+              f.returnDenoise = [
+                { d0: '2025-11-01', d1: '2026-01-31', pct: '8', note: '旺季退货率偏高' }
+              ];
+              return f;
+            })(),
+            createdAt: '2026-04-10 09:30:00',
+            updatedAt: '2026-04-14 16:20:00',
+            createdBy: '张三',
+            updatedBy: '李四'
+          },
+          {
+            id: 'SF20260408001',
+            name: '欧洲站平滑预测',
+            enabled: false,
+            parentLabel: '全部父体',
+            form: (function() {
+              var f = JSON.parse(JSON.stringify(d));
+              f.name = '欧洲站平滑预测';
+              f.parentCodes = [];
+              f.dailyWeights = { '3': 0, '7': 20, '14': 40, '30': 30, '60': 10, '90': 0 };
+              f.promos = [
+                { name: 'Summer Sale EU', start: '2026-06-15', end: '2026-06-22', daily: '210' },
+                { name: '复活节促销', start: '2026-04-05', end: '2026-04-07', daily: '165' }
+              ];
+              f.season = ['1.05', '1.02', '1', '0.98', '1', '1.03', '1.06', '1.04', '1', '0.97', '1.08', '1.1'];
+              f.yoy = [
+                { d0: '2025-04-01', d1: '2025-09-30', growth: 'up', coeff: '1.04', note: '欧洲通胀缓和' }
+              ];
+              f.lifecycle = [
+                { lifeType: '老品', d0: '2024-01-01', d1: '', growth: 'down', coeff: '0.88' }
+              ];
+              f.competitor = [
+                { d0: '2026-01-01', d1: '2026-12-31', growth: 'down', coeff: '0.97', note: '本土卖家低价跟进' }
+              ];
+              f.target = [
+                { d0: '2026-04-01', d1: '2026-09-30', growth: 'up', coeff: '1.03', note: '区域 KPI 温和上调' }
+              ];
+              f.autoDenoise = { x: '15', y: '1.05', largeEnabled: false };
+              f.dateDenoise = [
+                { type: '百分比去噪', d0: '2026-02-10', d1: '2026-02-12', value: '75', note: '承运商罢工延误' }
+              ];
+              f.returnDenoise = [
+                { d0: '2026-01-01', d1: '2026-03-31', pct: '5', note: 'Q1 退货政策收紧前' }
+              ];
+              return f;
+            })(),
+            createdAt: '2026-04-08 11:05:22',
+            updatedAt: '2026-04-08 11:05:22',
+            createdBy: '王五',
+            updatedBy: '王五'
+          },
+          {
+            id: 'SF20260412001',
+            name: '新品爬坡预测',
+            enabled: true,
+            parentLabel: 'HK1839001、HK1839002',
+            form: (function() {
+              var f = JSON.parse(JSON.stringify(d));
+              f.name = '新品爬坡预测';
+              f.parentCodes = ['HK1839001', 'HK1839002'];
+              f.dailyWeights = { '3': 25, '7': 45, '14': 25, '30': 5, '60': 0, '90': 0 };
+              f.promos = [
+                { name: '新品上线推广', start: '2026-04-01', end: '2026-05-15', daily: '85' },
+                { name: '站外红人引流', start: '2026-05-01', end: '2026-05-10', daily: '120' }
+              ];
+              f.season = ['1', '1', '1', '1.08', '1.12', '1.1', '1.06', '1.04', '1', '0.98', '1', '1.02'];
+              f.yoy = [
+                { d0: '2026-04-01', d1: '2026-06-30', growth: 'up', coeff: '1.25', note: '无上一年同期，按爬坡曲线' }
+              ];
+              f.lifecycle = [
+                { lifeType: '次新品', d0: '2026-04-01', d1: '', growth: 'up', coeff: '1.35' }
+              ];
+              f.competitor = [
+                { d0: '2026-04-01', d1: '2026-08-31', growth: 'down', coeff: '0.9', note: '同类新品集中上架' }
+              ];
+              f.target = [
+                { d0: '2026-04-01', d1: '2026-12-31', growth: 'up', coeff: '1.18', note: '新品考核目标' }
+              ];
+              f.autoDenoise = { x: '8', y: '1.2', largeEnabled: true };
+              f.dateDenoise = [
+                { type: '固定值去噪', d0: '2026-04-20', d1: '2026-04-22', value: '12', note: '首批发货断档' }
+              ];
+              f.returnDenoise = [
+                { d0: '2026-04-01', d1: '2026-05-31', pct: '12', note: '试销期退货偏高' }
+              ];
+              return f;
+            })(),
+            createdAt: '2026-04-12 14:00:00',
+            updatedAt: '2026-04-15 10:18:36',
+            createdBy: '赵六',
+            updatedBy: '张三'
+          }
+        ];
+        saveRules(rules);
+        return rules;
+      }
+
+      function sfGenerateRuleId(rules) {
+        var d = new Date();
+        function z(n) {
+          return n < 10 ? '0' + n : '' + n;
+        }
+        var dateStr = '' + d.getFullYear() + z(d.getMonth() + 1) + z(d.getDate());
+        rules = rules || [];
+        var maxSeq = 0;
+        var re = /^SF(\d{8})(\d{3})$/;
+        rules.forEach(function(r) {
+          if (!r || !r.id) return;
+          var m = String(r.id).match(re);
+          if (!m || m[1] !== dateStr) return;
+          var seq = parseInt(m[2], 10);
+          if (!isNaN(seq) && seq > maxSeq) maxSeq = seq;
+        });
+        var next = maxSeq + 1;
+        if (next > 999) {
+          alert('当日规则编号已达上限（999），请明日再建或联系管理员。');
+          return 'SF' + dateStr + '999';
+        }
+        return 'SF' + dateStr + (1000 + next).toString().slice(-3);
+      }
+
+      function sfHtmlCoeffStdRow(row) {
+        var g = row.growth === 'down' ? 'down' : 'up';
+        return (
+          '<td></td>' +
+          '<td><div class="sf-coeff-dates">' +
+          '<input type="date" class="sf-coeff-inp" style="width:130px;" value="' + sfEscAttr(row.d0) + '" />' +
+          '<span>至</span>' +
+          '<input type="date" class="sf-coeff-inp" style="width:130px;" value="' + sfEscAttr(row.d1) + '" />' +
+          '</div></td>' +
+          '<td class="sf-coeff-col-growth"><select class="sf-coeff-sel">' +
+          '<option value="up"' + (g === 'up' ? ' selected' : '') + '>增长 ↑</option>' +
+          '<option value="down"' + (g === 'down' ? ' selected' : '') + '>衰减 ↓</option>' +
+          '</select></td>' +
+          '<td><input type="number" class="sf-coeff-inp sf-coeff-inp--num" value="' + sfEscAttr(row.coeff != null ? row.coeff : '1') + '" min="0" step="0.01" /></td>' +
+          '<td><input type="text" class="sf-coeff-inp sf-coeff-inp--wide" value="' + sfEscAttr(row.note) + '" placeholder="说明" /></td>' +
+          '<td><button type="button" class="sf-coeff-row-del" title="删除" aria-label="删除">🗑️</button></td>'
+        );
+      }
+
+      function sfHtmlCoeffLifecycleRow(row) {
+        var lt = row.lifeType === '老品' ? '老品' : '次新品';
+        var g = row.growth === 'down' ? 'down' : 'up';
+        return (
+          '<td></td>' +
+          '<td><select class="sf-coeff-sel">' +
+          '<option' + (lt === '次新品' ? ' selected' : '') + '>次新品</option>' +
+          '<option' + (lt === '老品' ? ' selected' : '') + '>老品</option></select></td>' +
+          '<td><div class="sf-coeff-dates">' +
+          '<input type="date" class="sf-coeff-inp" style="width:130px;" value="' + sfEscAttr(row.d0) + '" />' +
+          '<span>至</span>' +
+          '<input type="date" class="sf-coeff-inp" style="width:130px;" value="' + sfEscAttr(row.d1) + '" />' +
+          '</div></td>' +
+          '<td class="sf-coeff-col-growth"><select class="sf-coeff-sel">' +
+          '<option value="up"' + (g === 'up' ? ' selected' : '') + '>同比增长</option>' +
+          '<option value="down"' + (g === 'down' ? ' selected' : '') + '>同比衰减</option>' +
+          '</select></td>' +
+          '<td><input type="number" class="sf-coeff-inp sf-coeff-inp--num" value="' + sfEscAttr(row.coeff != null ? row.coeff : '1') + '" min="0" step="0.01" /></td>' +
+          '<td><button type="button" class="sf-coeff-row-del" title="删除" aria-label="删除">🗑️</button></td>'
+        );
+      }
+
+      function sfHtmlDateDenoiseRow(row) {
+        var t = row.type === '百分比去噪' ? '百分比去噪' : '固定值去噪';
+        return (
+          '<td></td>' +
+          '<td><select class="sf-coeff-sel">' +
+          '<option' + (t === '固定值去噪' ? ' selected' : '') + '>固定值去噪</option>' +
+          '<option' + (t === '百分比去噪' ? ' selected' : '') + '>百分比去噪</option></select></td>' +
+          '<td><div class="sf-coeff-dates">' +
+          '<input type="date" class="sf-coeff-inp" style="width:130px;" value="' + sfEscAttr(row.d0) + '" />' +
+          '<span>至</span>' +
+          '<input type="date" class="sf-coeff-inp" style="width:130px;" value="' + sfEscAttr(row.d1) + '" />' +
+          '</div></td>' +
+          '<td><input type="number" class="sf-coeff-inp sf-coeff-inp--num" placeholder="值" value="' + sfEscAttr(row.value) + '" /></td>' +
+          '<td><input type="text" class="sf-coeff-inp sf-coeff-inp--wide" value="' + sfEscAttr(row.note) + '" placeholder="说明" /></td>' +
+          '<td><button type="button" class="sf-denoise-row-del" data-tbody="sf-date-denoise-tbody" title="删除" aria-label="删除">🗑️</button></td>'
+        );
+      }
+
+      function sfHtmlReturnDenoiseRow(row) {
+        return (
+          '<td></td>' +
+          '<td style="font-weight:500;">退货量去噪</td>' +
+          '<td><div class="sf-coeff-dates">' +
+          '<input type="date" class="sf-coeff-inp" style="width:130px;" value="' + sfEscAttr(row.d0) + '" />' +
+          '<span>至</span>' +
+          '<input type="date" class="sf-coeff-inp" style="width:130px;" value="' + sfEscAttr(row.d1) + '" />' +
+          '</div></td>' +
+          '<td><div class="sf-coeff-dates">' +
+          '<input type="number" class="sf-coeff-inp sf-coeff-inp--num" style="width:70px;" placeholder="%" value="' + sfEscAttr(row.pct) + '" />' +
+          '<span>%</span></div></td>' +
+          '<td><input type="text" class="sf-coeff-inp sf-coeff-inp--wide" value="' + sfEscAttr(row.note) + '" placeholder="说明" /></td>' +
+          '<td><button type="button" class="sf-denoise-row-del" data-tbody="sf-return-denoise-tbody" title="删除" aria-label="删除">🗑️</button></td>'
+        );
+      }
+
+      function collectFormState() {
+        var w = {};
+        document.querySelectorAll('.sf-daily-weight').forEach(function(inp) {
+          var p = inp.getAttribute('data-period');
+          w[p] = parseFloat(inp.value);
+          if (isNaN(w[p])) w[p] = 0;
+        });
+        var promos = [];
+        document.querySelectorAll('#sf-promo-tbody tr').forEach(function(tr) {
+          promos.push({
+            name: (tr.querySelector('.sf-promo-name') && tr.querySelector('.sf-promo-name').value) || '',
+            start: (tr.querySelector('.sf-promo-start') && tr.querySelector('.sf-promo-start').value) || '',
+            end: (tr.querySelector('.sf-promo-end') && tr.querySelector('.sf-promo-end').value) || '',
+            daily: (tr.querySelector('.sf-promo-daily') && tr.querySelector('.sf-promo-daily').value) || ''
+          });
+        });
+        var season = [];
+        for (var m = 1; m <= 12; m++) {
+          var el = document.getElementById('sf-season-m' + m);
+          season.push(el ? el.value : '1');
+        }
+        function coeffStdCollect(tbodyId) {
+          var out = [];
+          var tbody = document.getElementById(tbodyId);
+          if (!tbody) return out;
+          tbody.querySelectorAll('tr').forEach(function(tr) {
+            var tds = tr.cells;
+            if (!tds || tds.length < 6) return;
+            var dates = tds[1].querySelectorAll('input[type="date"]');
+            var gSel = tds[2].querySelector('select');
+            out.push({
+              d0: dates[0] ? dates[0].value : '',
+              d1: dates[1] ? dates[1].value : '',
+              growth: gSel ? gSel.value : 'up',
+              coeff: (tds[3].querySelector('input') && tds[3].querySelector('input').value) || '1',
+              note: (tds[4].querySelector('input') && tds[4].querySelector('input').value) || ''
+            });
+          });
+          return out;
+        }
+        function coeffLcCollect() {
+          var out = [];
+          var tbody = document.getElementById('sf-lifecycle-coeff-tbody');
+          if (!tbody) return out;
+          tbody.querySelectorAll('tr').forEach(function(tr) {
+            var tds = tr.cells;
+            if (!tds || tds.length < 6) return;
+            var typeSel = tds[1].querySelector('select');
+            var dates = tds[2].querySelectorAll('input[type="date"]');
+            var gSel = tds[3].querySelector('select');
+            out.push({
+              lifeType: typeSel ? typeSel.value : '次新品',
+              d0: dates[0] ? dates[0].value : '',
+              d1: dates[1] ? dates[1].value : '',
+              growth: gSel ? gSel.value : 'up',
+              coeff: (tds[4].querySelector('input') && tds[4].querySelector('input').value) || '1'
+            });
+          });
+          return out;
+        }
+        var autoX = document.getElementById('sf-auto-denoise-x');
+        var autoY = document.getElementById('sf-auto-denoise-y');
+        var autoEn = document.getElementById('sf-auto-denoise-large-enabled');
+        var dateRows = [];
+        var dtbody = document.getElementById('sf-date-denoise-tbody');
+        if (dtbody) {
+          dtbody.querySelectorAll('tr').forEach(function(tr) {
+            var tds = tr.cells;
+            if (!tds || tds.length < 6) return;
+            var typ = tds[1].querySelector('select');
+            var dates = tds[2].querySelectorAll('input[type="date"]');
+            dateRows.push({
+              type: typ ? typ.value : '固定值去噪',
+              d0: dates[0] ? dates[0].value : '',
+              d1: dates[1] ? dates[1].value : '',
+              value: (tds[3].querySelector('input') && tds[3].querySelector('input').value) || '',
+              note: (tds[4].querySelector('input') && tds[4].querySelector('input').value) || ''
+            });
+          });
+        }
+        var retRows = [];
+        var rtbody = document.getElementById('sf-return-denoise-tbody');
+        if (rtbody) {
+          rtbody.querySelectorAll('tr').forEach(function(tr) {
+            var tds = tr.cells;
+            if (!tds || tds.length < 6) return;
+            var dates = tds[2].querySelectorAll('input[type="date"]');
+            var pctInp = tds[3].querySelector('input');
+            retRows.push({
+              d0: dates[0] ? dates[0].value : '',
+              d1: dates[1] ? dates[1].value : '',
+              pct: pctInp ? pctInp.value : '',
+              note: (tds[4].querySelector('input') && tds[4].querySelector('input').value) || ''
+            });
+          });
+        }
+        return {
+          name: (document.getElementById('rule-name-input') && document.getElementById('rule-name-input').value) || '',
+          enabled: document.getElementById('rule-enabled-input') ? document.getElementById('rule-enabled-input').checked : true,
+          parentCodes: sfSelectedParents.map(function(p) { return p.code; }),
+          dailyWeights: w,
+          promos: promos,
+          season: season,
+          yoy: coeffStdCollect('sf-yoy-coeff-tbody'),
+          lifecycle: coeffLcCollect(),
+          competitor: coeffStdCollect('sf-competitor-coeff-tbody'),
+          target: coeffStdCollect('sf-target-coeff-tbody'),
+          autoDenoise: {
+            x: autoX ? autoX.value : '10',
+            y: autoY ? autoY.value : '1',
+            largeEnabled: autoEn ? autoEn.checked : true
+          },
+          dateDenoise: dateRows,
+          returnDenoise: retRows
+        };
+      }
+
+      function sfApplyFormState(state) {
+        if (!state) state = getDefaultFormState();
+        var nameInp = document.getElementById('rule-name-input');
+        var enInp = document.getElementById('rule-enabled-input');
+        if (nameInp) nameInp.value = state.name || '';
+        if (enInp) enInp.checked = state.enabled !== false;
+        document.querySelectorAll('.sf-daily-weight').forEach(function(inp) {
+          var p = inp.getAttribute('data-period');
+          if (state.dailyWeights && state.dailyWeights[p] != null) inp.value = String(state.dailyWeights[p]);
+        });
+        if (typeof sfUpdateDailyWeightSum === 'function') sfUpdateDailyWeightSum();
+        if (sfPromoTbody) {
+          sfPromoTbody.innerHTML = '';
+          (state.promos || []).forEach(function(row) {
+            var tr = sfCreatePromoRow();
+            if (tr.querySelector('.sf-promo-name')) tr.querySelector('.sf-promo-name').value = row.name || '';
+            if (tr.querySelector('.sf-promo-start')) tr.querySelector('.sf-promo-start').value = row.start || '';
+            if (tr.querySelector('.sf-promo-end')) tr.querySelector('.sf-promo-end').value = row.end || '';
+            if (tr.querySelector('.sf-promo-daily')) tr.querySelector('.sf-promo-daily').value = row.daily || '';
+            sfPromoTbody.appendChild(tr);
+            sfRecalcPromoRow(tr);
+          });
+          sfRenumberPromoRows();
+          sfUpdatePromoCount();
+        }
+        for (var m = 1; m <= 12; m++) {
+          var el = document.getElementById('sf-season-m' + m);
+          if (el && state.season && state.season[m - 1] != null) el.value = state.season[m - 1];
+        }
+        function applyStd(tbodyId, rows, htmlFn) {
+          var tbody = document.getElementById(tbodyId);
+          if (!tbody) return;
+          var list = rows && rows.length ? rows : [{}];
+          tbody.innerHTML = '';
+          list.forEach(function(row) {
+            var tr = document.createElement('tr');
+            tr.innerHTML = htmlFn(row);
+            tbody.appendChild(tr);
+          });
+          sfCoeffRenumberRows(tbody);
+        }
+        applyStd('sf-yoy-coeff-tbody', state.yoy, sfHtmlCoeffStdRow);
+        applyStd('sf-competitor-coeff-tbody', state.competitor, sfHtmlCoeffStdRow);
+        applyStd('sf-target-coeff-tbody', state.target, sfHtmlCoeffStdRow);
+        var lcTbody = document.getElementById('sf-lifecycle-coeff-tbody');
+        if (lcTbody) {
+          var lrows = state.lifecycle && state.lifecycle.length ? state.lifecycle : [{}];
+          lcTbody.innerHTML = '';
+          lrows.forEach(function(row) {
+            var tr = document.createElement('tr');
+            tr.innerHTML = sfHtmlCoeffLifecycleRow(row);
+            lcTbody.appendChild(tr);
+          });
+          sfCoeffRenumberRows(lcTbody);
+        }
+        var ax = document.getElementById('sf-auto-denoise-x');
+        var ay = document.getElementById('sf-auto-denoise-y');
+        var ae = document.getElementById('sf-auto-denoise-large-enabled');
+        if (state.autoDenoise) {
+          if (ax) ax.value = state.autoDenoise.x != null ? String(state.autoDenoise.x) : '10';
+          if (ay) ay.value = state.autoDenoise.y != null ? String(state.autoDenoise.y) : '1';
+          if (ae) ae.checked = state.autoDenoise.largeEnabled !== false;
+        }
+        if (typeof sfSyncAutoDenoiseRowEnabled === 'function') sfSyncAutoDenoiseRowEnabled();
+        var dtbody = document.getElementById('sf-date-denoise-tbody');
+        if (dtbody) {
+          var drows = state.dateDenoise && state.dateDenoise.length ? state.dateDenoise : [{}];
+          dtbody.innerHTML = '';
+          drows.forEach(function(row) {
+            var tr = document.createElement('tr');
+            tr.innerHTML = sfHtmlDateDenoiseRow(row);
+            dtbody.appendChild(tr);
+          });
+          sfDenoiseUpdateRowNumbers(dtbody);
+        }
+        var rtbody = document.getElementById('sf-return-denoise-tbody');
+        if (rtbody) {
+          var rrows = state.returnDenoise && state.returnDenoise.length ? state.returnDenoise : [{}];
+          rtbody.innerHTML = '';
+          rrows.forEach(function(row) {
+            var tr = document.createElement('tr');
+            tr.innerHTML = sfHtmlReturnDenoiseRow(row);
+            rtbody.appendChild(tr);
+          });
+          sfDenoiseUpdateRowNumbers(rtbody);
+        }
+      }
+
+      function renderRuleList(rulesOverride) {
+        var tbody = document.getElementById('sf-rule-list-tbody');
+        var countEl = document.getElementById('sf-rule-list-count');
+        if (!tbody) return;
+        var rules = rulesOverride != null ? rulesOverride : loadRules();
+        tbody.innerHTML = '';
+        rules.forEach(function(r) {
+          var tr = document.createElement('tr');
+          tr.innerHTML =
+            '<td>' + sfEscHtml(r.id) + '</td>' +
+            '<td><a class="link-name" href="javascript:void(0)" data-rule-id="' + sfEscAttr(r.id) + '">' + sfEscHtml(r.name) + '</a></td>' +
+            '<td><label class="switch"><input type="checkbox" data-rule-id="' + sfEscAttr(r.id) + '"' + (r.enabled ? ' checked' : '') + ' /><span class="switch-slider"></span></label></td>' +
+            '<td>' + sfEscHtml(r.parentLabel || '') + '</td>' +
+            '<td>' + sfEscHtml(r.createdBy || '') + '</td>' +
+            '<td>' + sfEscHtml(r.createdAt || '') + '</td>' +
+            '<td>' + sfEscHtml(r.updatedBy || '') + '</td>' +
+            '<td>' + sfEscHtml(r.updatedAt || '') + '</td>';
+          tbody.appendChild(tr);
+        });
+        if (countEl) countEl.textContent = '共 ' + rules.length + ' 条';
+      }
+
+      function showRuleDrawer() {
+        mask.classList.add('show');
+        drawer.classList.add('open');
+        drawer.setAttribute('aria-hidden', 'false');
+      }
+
+      function beginNewRule() {
+        sfEditingRuleId = null;
+        sfSelectedParents = [];
+        sfUpdateParentDisplay();
+        sfApplyFormState(getDefaultFormState());
+        showRuleDrawer();
+      }
+
+      function beginEditRule(ruleId) {
+        var rules = loadRules();
+        var rule = rules.filter(function(x) { return x.id === ruleId; })[0];
+        if (!rule) return;
+        sfEditingRuleId = ruleId;
+        var codes = (rule.form && rule.form.parentCodes) ? rule.form.parentCodes : [];
+        sfSelectedParents = codes.map(function(code) {
+          var m = sfGetReplenishParentList().filter(function(p) { return p.code === code; })[0];
+          return m || { code: code, asin: '', album: '无', platform: '', site: '', store: '', spu: '', owner: '', days: '' };
+        });
+        sfUpdateParentDisplay();
+        sfApplyFormState(rule.form || getDefaultFormState());
+        showRuleDrawer();
+      }
+
+      function openRuleDrawer() {
+        beginNewRule();
+      }
+
+      function closeRuleDrawer() {
+        mask.classList.remove('show');
+        drawer.classList.remove('open');
+        drawer.setAttribute('aria-hidden', 'true');
+      }
+
+      function sfUpdateParentDisplay() {
+        if (!parentDisplay) return;
+        if (sfSelectedParents.length === 0) {
+          parentDisplay.value = '';
+          parentDisplay.placeholder = '未选择父体';
+        } else {
+          parentDisplay.value = sfSelectedParents.map(function(p) { return p.code; }).join('、');
+        }
+      }
+
+      function sfUpdateParentPickCount() {
+        var cnt = document.querySelectorAll('#sf-parent-pick-tbody .sf-parent-pick-cb:checked').length;
+        var el = document.getElementById('sf-parent-pick-count');
+        if (el) el.textContent = cnt;
+      }
+
+      function sfRenderParentPickTable(list) {
+        var tbody = document.getElementById('sf-parent-pick-tbody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        var selectedCodes = sfSelectedParents.map(function(p) { return p.code; });
+        list.forEach(function(p) {
+          var checked = selectedCodes.indexOf(p.code) !== -1;
+          var tr = document.createElement('tr');
+          tr.innerHTML =
+            '<td><input type="checkbox" class="sf-parent-pick-cb" data-code="' + p.code + '"' + (checked ? ' checked' : '') + ' /></td>' +
+            '<td style="color:#409eff; cursor:default;">' + p.code + '</td>' +
+            '<td>' + p.asin + '</td>' +
+            '<td>' + p.album + '</td>' +
+            '<td>' + p.platform + '</td>' +
+            '<td>' + p.site + '</td>' +
+            '<td>' + p.store + '</td>' +
+            '<td>' + p.spu + '</td>' +
+            '<td>' + p.owner + '</td>' +
+            '<td>' + p.days + '</td>';
+          tbody.appendChild(tr);
+        });
+        tbody.querySelectorAll('.sf-parent-pick-cb').forEach(function(cb) {
+          cb.addEventListener('change', sfUpdateParentPickCount);
+        });
+        sfUpdateParentPickCount();
+      }
+
+      function sfOpenParentModal() {
+        if (!parentModal) return;
+        sfRenderParentPickTable(sfGetReplenishParentList());
+        var master = document.getElementById('sf-parent-pick-all');
+        if (master) master.checked = false;
+        sfUpdateParentPickCount();
+        parentModal.classList.add('show');
+      }
+
+      function sfCloseParentModal() {
+        if (parentModal) parentModal.classList.remove('show');
+      }
+
+      function sfCloseParentModalOnMask(e) {
+        if (e.target === e.currentTarget) sfCloseParentModal();
+      }
+
+      function sfToggleParentPickAll(master) {
+        document.querySelectorAll('#sf-parent-pick-tbody .sf-parent-pick-cb').forEach(function(cb) {
+          cb.checked = master.checked;
+        });
+        sfUpdateParentPickCount();
+      }
+
+      function sfConfirmParentPick() {
+        sfSelectedParents = [];
+        document.querySelectorAll('#sf-parent-pick-tbody .sf-parent-pick-cb:checked').forEach(function(cb) {
+          var code = cb.getAttribute('data-code');
+          var match = sfGetReplenishParentList().filter(function(p) { return p.code === code; })[0];
+          if (match) sfSelectedParents.push(match);
+        });
+        sfUpdateParentDisplay();
+        sfCloseParentModal();
+      }
+
+      function sfSearchParents() {
+        var fc = (document.getElementById('sf-pf-code').value || '').toLowerCase();
+        var fa = (document.getElementById('sf-pf-asin').value || '').toLowerCase();
+        var fp = document.getElementById('sf-pf-platform').value;
+        var fs = document.getElementById('sf-pf-site').value;
+        var fst = (document.getElementById('sf-pf-store').value || '').toLowerCase();
+        var fsp = (document.getElementById('sf-pf-spu').value || '').toLowerCase();
+        var filtered = sfGetReplenishParentList().filter(function(p) {
+          if (fc && p.code.toLowerCase().indexOf(fc) === -1) return false;
+          if (fa && p.asin.toLowerCase().indexOf(fa) === -1) return false;
+          if (fp && p.platform !== fp) return false;
+          if (fs && p.site !== fs) return false;
+          if (fst && p.store.toLowerCase().indexOf(fst) === -1) return false;
+          if (fsp && p.spu.toLowerCase().indexOf(fsp) === -1) return false;
+          return true;
+        });
+        sfRenderParentPickTable(filtered);
+        var master = document.getElementById('sf-parent-pick-all');
+        if (master) master.checked = false;
+        sfUpdateParentPickCount();
+      }
+
+      function sfResetParentFilter() {
+        ['sf-pf-code', 'sf-pf-asin', 'sf-pf-store', 'sf-pf-spu'].forEach(function(id) {
+          var el = document.getElementById(id);
+          if (el) el.value = '';
+        });
+        ['sf-pf-platform', 'sf-pf-site'].forEach(function(id) {
+          var el = document.getElementById(id);
+          if (el) el.selectedIndex = 0;
+        });
+        sfRenderParentPickTable(sfGetReplenishParentList());
+        var master = document.getElementById('sf-parent-pick-all');
+        if (master) master.checked = false;
+        sfUpdateParentPickCount();
+      }
+
+      btnAdd.addEventListener('click', function() {
+        openRuleDrawer();
+      });
+      btnCancel.addEventListener('click', function() {
+        sfEditingRuleId = null;
+        closeRuleDrawer();
+      });
+      function sfGetDailyWeightSum() {
+        var sum = 0;
+        document.querySelectorAll('.sf-daily-weight').forEach(function(inp) {
+          var v = parseFloat(inp.value);
+          if (isNaN(v)) v = 0;
+          sum += v;
+        });
+        return sum;
+      }
+
+      function sfUpdateDailyWeightSum() {
+        var sum = sfGetDailyWeightSum();
+        var rounded = Math.round(sum * 100) / 100;
+        var el = document.getElementById('sf-daily-weight-sum');
+        if (el) el.textContent = String(rounded);
+        var cell = document.getElementById('sf-daily-total-cell');
+        if (cell) {
+          cell.classList.toggle('sf-daily-total-cell--invalid', Math.abs(sum - 100) > 0.001);
+        }
+      }
+
+      document.querySelectorAll('.sf-daily-weight').forEach(function(inp) {
+        inp.addEventListener('input', sfUpdateDailyWeightSum);
+        inp.addEventListener('change', sfUpdateDailyWeightSum);
+      });
+      sfUpdateDailyWeightSum();
+
+      btnSubmit.addEventListener('click', function() {
+        var sum = sfGetDailyWeightSum();
+        if (Math.abs(sum - 100) > 0.001) {
+          var show = Math.round(sum * 100) / 100;
+          alert('日销规则权重合计必须为 100%，当前为 ' + show + '%');
+          return;
+        }
+        var state = collectFormState();
+        var nm = (state.name || '').trim();
+        if (!nm) {
+          alert('请输入规则名称');
+          return;
+        }
+        state.name = nm;
+        var rules = loadRules();
+        var now = sfFormatNow();
+        var user = '当前用户';
+        var plabel = sfParentLabelFromCodes(state.parentCodes);
+        if (sfEditingRuleId) {
+          var idx = -1;
+          rules.forEach(function(r, i) {
+            if (r.id === sfEditingRuleId) idx = i;
+          });
+          if (idx >= 0) {
+            rules[idx].form = state;
+            rules[idx].name = state.name;
+            rules[idx].enabled = state.enabled;
+            rules[idx].parentLabel = plabel;
+            rules[idx].updatedAt = now;
+            rules[idx].updatedBy = user;
+          }
+        } else {
+          rules.push({
+            id: sfGenerateRuleId(rules),
+            name: state.name,
+            enabled: state.enabled,
+            parentLabel: plabel,
+            form: state,
+            createdAt: now,
+            updatedAt: now,
+            createdBy: user,
+            updatedBy: user
+          });
+        }
+        saveRules(rules);
+        renderRuleList(rules);
+        sfSaveCheckedParentsToStorage();
+        sfEditingRuleId = null;
+        closeRuleDrawer();
+      });
+      mask.addEventListener('click', function(e) {
+        if (e.target === mask) {
+          sfEditingRuleId = null;
+          closeRuleDrawer();
+        }
+      });
+
+      if (btnPickParent) {
+        btnPickParent.addEventListener('click', function() {
+          sfOpenParentModal();
+        });
+      }
+
+      if (parentModal) {
+        parentModal.addEventListener('click', sfCloseParentModalOnMask);
+      }
+      var sfParentX = document.getElementById('sf-parent-modal-x');
+      if (sfParentX) sfParentX.addEventListener('click', sfCloseParentModal);
+      var sfParentCancel = document.getElementById('sf-parent-cancel');
+      if (sfParentCancel) sfParentCancel.addEventListener('click', sfCloseParentModal);
+      var sfParentConfirm = document.getElementById('sf-parent-confirm');
+      if (sfParentConfirm) sfParentConfirm.addEventListener('click', sfConfirmParentPick);
+      var sfParentSearch = document.getElementById('sf-parent-search');
+      if (sfParentSearch) sfParentSearch.addEventListener('click', sfSearchParents);
+      var sfParentReset = document.getElementById('sf-parent-reset');
+      if (sfParentReset) sfParentReset.addEventListener('click', sfResetParentFilter);
+
+      var sfPickAll = document.getElementById('sf-parent-pick-all');
+      if (sfPickAll) {
+        sfPickAll.addEventListener('change', function() {
+          sfToggleParentPickAll(this);
+        });
+      }
+
+      document.addEventListener('keydown', function(e) {
+        if (e.key !== 'Escape') return;
+        if (parentModal && parentModal.classList.contains('show')) {
+          sfCloseParentModal();
+          return;
+        }
+        if (drawer.classList.contains('open')) {
+          sfEditingRuleId = null;
+          closeRuleDrawer();
+        }
+      });
+
+      /* —— 促销销量（动态表格）—— */
+      var sfPromoTbody = document.getElementById('sf-promo-tbody');
+      var sfPromoCountEl = document.getElementById('sf-promo-count');
+      var sfPromoAddBtn = document.getElementById('sf-promo-add');
+
+      function sfPromoInclusiveDays(startStr, endStr) {
+        if (!startStr || !endStr) return null;
+        var d0 = new Date(startStr + 'T12:00:00');
+        var d1 = new Date(endStr + 'T12:00:00');
+        if (isNaN(d0.getTime()) || isNaN(d1.getTime()) || d1 < d0) return null;
+        return Math.floor((d1 - d0) / 86400000) + 1;
+      }
+
+      function sfRecalcPromoRow(tr) {
+        var totalEl = tr.querySelector('.sf-promo-total');
+        if (!totalEl) return;
+        var s = (tr.querySelector('.sf-promo-start') || {}).value;
+        var e = (tr.querySelector('.sf-promo-end') || {}).value;
+        var dailyInp = tr.querySelector('.sf-promo-daily');
+        var daily = dailyInp ? parseFloat(dailyInp.value) : NaN;
+        var days = sfPromoInclusiveDays(s, e);
+        if (days === null || isNaN(daily) || daily < 0) {
+          totalEl.textContent = '—';
+          totalEl.classList.add('is-empty');
+          return;
+        }
+        var t = days * daily;
+        var text = Math.abs(t - Math.round(t)) < 1e-9 ? String(Math.round(t)) : String(Math.round(t * 10) / 10);
+        totalEl.textContent = text;
+        totalEl.classList.remove('is-empty');
+      }
+
+      function sfRenumberPromoRows() {
+        if (!sfPromoTbody) return;
+        sfPromoTbody.querySelectorAll('tr').forEach(function(row, i) {
+          var idx = row.querySelector('.sf-promo-index');
+          if (idx) idx.textContent = String(i + 1);
+        });
+      }
+
+      function sfUpdatePromoCount() {
+        if (!sfPromoTbody || !sfPromoCountEl) return;
+        sfPromoCountEl.textContent = '共 ' + sfPromoTbody.querySelectorAll('tr').length + ' 条';
+      }
+
+      function sfBindPromoRow(tr) {
+        tr.querySelectorAll('.sf-promo-start, .sf-promo-end, .sf-promo-daily').forEach(function(inp) {
+          inp.addEventListener('input', function() {
+            sfRecalcPromoRow(tr);
+          });
+          inp.addEventListener('change', function() {
+            sfRecalcPromoRow(tr);
+          });
+        });
+      }
+
+      function sfCreatePromoRow() {
+        var tr = document.createElement('tr');
+        tr.innerHTML =
+          '<td><span class="sf-promo-index">1</span></td>' +
+          '<td><input type="text" class="sf-promo-name" placeholder="如 Prime Day" maxlength="120" /></td>' +
+          '<td><div class="sf-promo-dates">' +
+          '<input type="date" class="sf-promo-date sf-promo-start" />' +
+          '<span class="sf-promo-sep">至</span>' +
+          '<input type="date" class="sf-promo-date sf-promo-end" />' +
+          '</div></td>' +
+          '<td><div class="sf-promo-daily-wrap">' +
+          '<input type="number" class="sf-promo-daily" min="0" step="any" />' +
+          '<span class="sf-promo-unit">件/天</span></div></td>' +
+          '<td><span class="sf-promo-total is-empty">—</span></td>' +
+          '<td><button type="button" class="sf-promo-del" title="删除" aria-label="删除">' +
+          '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">' +
+          '<path d="M3 6h18"/><path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/>' +
+          '<path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg></button></td>';
+        sfBindPromoRow(tr);
+        sfRecalcPromoRow(tr);
+        return tr;
+      }
+
+      function sfResetPromoRows() {
+        if (!sfPromoTbody) return;
+        sfPromoTbody.innerHTML = '';
+        sfRenumberPromoRows();
+        sfUpdatePromoCount();
+      }
+
+      if (sfPromoTbody && sfPromoCountEl && sfPromoAddBtn) {
+        sfPromoAddBtn.addEventListener('click', function() {
+          sfPromoTbody.appendChild(sfCreatePromoRow());
+          sfRenumberPromoRows();
+          sfUpdatePromoCount();
+        });
+        sfPromoTbody.addEventListener('click', function(e) {
+          var del = e.target.closest('.sf-promo-del');
+          if (!del) return;
+          e.preventDefault();
+          var tr = del.closest('tr');
+          if (!tr || !sfPromoTbody.contains(tr)) return;
+          tr.remove();
+          sfRenumberPromoRows();
+          sfUpdatePromoCount();
+        });
+        sfResetPromoRows();
+      }
+
+      /* —— 影响系数：表格增删行（与预测规则配置页一致）—— */
+      var sfCoeffDrawerBody = document.querySelector('.rule-drawer-body');
+      function sfCoeffRenumberRows(tbody) {
+        if (!tbody) return;
+        tbody.querySelectorAll('tr').forEach(function(tr, i) {
+          var c0 = tr.cells[0];
+          if (c0) c0.textContent = String(i + 1);
+        });
+      }
+      function sfCoeffStdRowHtml() {
+        return (
+          '<td></td>' +
+          '<td><div class="sf-coeff-dates">' +
+          '<input type="date" class="sf-coeff-inp" style="width:130px;" />' +
+          '<span>至</span>' +
+          '<input type="date" class="sf-coeff-inp" style="width:130px;" />' +
+          '</div></td>' +
+          '<td class="sf-coeff-col-growth"><select class="sf-coeff-sel">' +
+          '<option value="up" selected>增长 ↑</option>' +
+          '<option value="down">衰减 ↓</option>' +
+          '</select></td>' +
+          '<td><input type="number" class="sf-coeff-inp sf-coeff-inp--num" value="1" min="0" step="0.01" /></td>' +
+          '<td><input type="text" class="sf-coeff-inp sf-coeff-inp--wide" placeholder="说明" /></td>' +
+          '<td><button type="button" class="sf-coeff-row-del" title="删除" aria-label="删除">🗑️</button></td>'
+        );
+      }
+      function sfCoeffLifecycleRowHtml() {
+        return (
+          '<td></td>' +
+          '<td><select class="sf-coeff-sel"><option selected>次新品</option><option>老品</option></select></td>' +
+          '<td><div class="sf-coeff-dates">' +
+          '<input type="date" class="sf-coeff-inp" style="width:130px;" />' +
+          '<span>至</span>' +
+          '<input type="date" class="sf-coeff-inp" style="width:130px;" />' +
+          '</div></td>' +
+          '<td class="sf-coeff-col-growth"><select class="sf-coeff-sel">' +
+          '<option value="up" selected>同比增长</option>' +
+          '<option value="down">同比衰减</option>' +
+          '</select></td>' +
+          '<td><input type="number" class="sf-coeff-inp sf-coeff-inp--num" value="1" min="0" step="0.01" /></td>' +
+          '<td><button type="button" class="sf-coeff-row-del" title="删除" aria-label="删除">🗑️</button></td>'
+        );
+      }
+      function sfCoeffAddRow(tbodyId, kind) {
+        var tbody = document.getElementById(tbodyId);
+        if (!tbody) return;
+        var tr = document.createElement('tr');
+        tr.innerHTML = kind === 'lifecycle' ? sfCoeffLifecycleRowHtml() : sfCoeffStdRowHtml();
+        tbody.appendChild(tr);
+        sfCoeffRenumberRows(tbody);
+      }
+      function sfCoeffOnDeleteRow(btn) {
+        var tr = btn.closest('tr');
+        var tbody = tr && tr.parentElement;
+        if (!tbody || tbody.tagName !== 'TBODY') return;
+        if (tbody.querySelectorAll('tr').length <= 1) {
+          alert('至少保留1条记录');
+          return;
+        }
+        tr.remove();
+        sfCoeffRenumberRows(tbody);
+      }
+      if (sfCoeffDrawerBody) {
+        sfCoeffDrawerBody.addEventListener('click', function(e) {
+          var delCoeff = e.target.closest('.sf-coeff-row-del');
+          if (delCoeff) {
+            e.preventDefault();
+            sfCoeffOnDeleteRow(delCoeff);
+            return;
+          }
+          var delDenoise = e.target.closest('.sf-denoise-row-del');
+          if (delDenoise) {
+            e.preventDefault();
+            var dtid = delDenoise.getAttribute('data-tbody');
+            if (dtid) sfDenoiseDeleteRow(dtid, delDenoise);
+          }
+        });
+      }
+      var sfYoyAdd = document.getElementById('sf-coeff-yoy-add');
+      if (sfYoyAdd) sfYoyAdd.addEventListener('click', function() { sfCoeffAddRow('sf-yoy-coeff-tbody', 'std'); });
+      var sfLcAdd = document.getElementById('sf-coeff-lifecycle-add');
+      if (sfLcAdd) sfLcAdd.addEventListener('click', function() { sfCoeffAddRow('sf-lifecycle-coeff-tbody', 'lifecycle'); });
+      var sfCompAdd = document.getElementById('sf-coeff-competitor-add');
+      if (sfCompAdd) sfCompAdd.addEventListener('click', function() { sfCoeffAddRow('sf-competitor-coeff-tbody', 'std'); });
+      var sfTgtAdd = document.getElementById('sf-coeff-target-add');
+      if (sfTgtAdd) sfTgtAdd.addEventListener('click', function() { sfCoeffAddRow('sf-target-coeff-tbody', 'std'); });
+
+      /* —— 销量去噪 —— */
+      function sfDenoiseUpdateRowNumbers(tbody) {
+        if (!tbody) return;
+        tbody.querySelectorAll('tr').forEach(function(row, index) {
+          var cell = row.querySelector('td:first-child');
+          if (cell) cell.textContent = String(index + 1);
+        });
+      }
+      function sfDenoiseDeleteRow(tbodyId, btn) {
+        var tbody = document.getElementById(tbodyId);
+        if (!tbody) return;
+        if (tbody.querySelectorAll('tr').length <= 1) {
+          alert('至少保留1条记录');
+          return;
+        }
+        var tr = btn.closest('tr');
+        if (tr) tr.remove();
+        sfDenoiseUpdateRowNumbers(tbody);
+      }
+      function sfDenoiseAddDateRow() {
+        var tbody = document.getElementById('sf-date-denoise-tbody');
+        if (!tbody) return;
+        var count = tbody.querySelectorAll('tr').length;
+        var tr = document.createElement('tr');
+        tr.innerHTML =
+          '<td>' + (count + 1) + '</td>' +
+          '<td><select class="sf-coeff-sel">' +
+          '<option selected>固定值去噪</option><option>百分比去噪</option></select></td>' +
+          '<td><div class="sf-coeff-dates">' +
+          '<input type="date" class="sf-coeff-inp" style="width:130px;" />' +
+          '<span>至</span>' +
+          '<input type="date" class="sf-coeff-inp" style="width:130px;" />' +
+          '</div></td>' +
+          '<td><input type="number" class="sf-coeff-inp sf-coeff-inp--num" placeholder="值" /></td>' +
+          '<td><input type="text" class="sf-coeff-inp sf-coeff-inp--wide" placeholder="说明" /></td>' +
+          '<td><button type="button" class="sf-denoise-row-del" data-tbody="sf-date-denoise-tbody" title="删除" aria-label="删除">🗑️</button></td>';
+        tbody.appendChild(tr);
+        sfDenoiseUpdateRowNumbers(tbody);
+      }
+      function sfDenoiseAddReturnRow() {
+        var tbody = document.getElementById('sf-return-denoise-tbody');
+        if (!tbody) return;
+        var tr = document.createElement('tr');
+        tr.innerHTML =
+          '<td></td>' +
+          '<td style="font-weight:500;">退货量去噪</td>' +
+          '<td><div class="sf-coeff-dates">' +
+          '<input type="date" class="sf-coeff-inp" style="width:130px;" />' +
+          '<span>至</span>' +
+          '<input type="date" class="sf-coeff-inp" style="width:130px;" />' +
+          '</div></td>' +
+          '<td><div class="sf-coeff-dates">' +
+          '<input type="number" class="sf-coeff-inp sf-coeff-inp--num" style="width:70px;" placeholder="%" />' +
+          '<span>%</span></div></td>' +
+          '<td><input type="text" class="sf-coeff-inp sf-coeff-inp--wide" placeholder="说明" /></td>' +
+          '<td><button type="button" class="sf-denoise-row-del" data-tbody="sf-return-denoise-tbody" title="删除" aria-label="删除">🗑️</button></td>';
+        tbody.appendChild(tr);
+        sfDenoiseUpdateRowNumbers(tbody);
+      }
+      var sfAutoDenoiseEn = document.getElementById('sf-auto-denoise-large-enabled');
+      var sfAutoDenoiseRow = document.getElementById('sf-auto-denoise-row');
+      function sfSyncAutoDenoiseRowEnabled() {
+        if (!sfAutoDenoiseEn || !sfAutoDenoiseRow) return;
+        sfAutoDenoiseRow.classList.toggle('auto-denoise-row-off', !sfAutoDenoiseEn.checked);
+      }
+      if (sfAutoDenoiseEn) {
+        sfAutoDenoiseEn.addEventListener('change', sfSyncAutoDenoiseRowEnabled);
+        sfSyncAutoDenoiseRowEnabled();
+      }
+      var sfDateDenoiseAdd = document.getElementById('sf-date-denoise-add');
+      if (sfDateDenoiseAdd) sfDateDenoiseAdd.addEventListener('click', sfDenoiseAddDateRow);
+      var sfReturnDenoiseAdd = document.getElementById('sf-return-denoise-add');
+      if (sfReturnDenoiseAdd) sfReturnDenoiseAdd.addEventListener('click', sfDenoiseAddReturnRow);
+
+      var sfListPanel = document.querySelector('.page-wrap .panel-body');
+      if (sfListPanel) {
+        sfListPanel.addEventListener('click', function(e) {
+          var link = e.target.closest('a.link-name[data-rule-id]');
+          if (!link) return;
+          e.preventDefault();
+          beginEditRule(link.getAttribute('data-rule-id'));
+        });
+        sfListPanel.addEventListener('change', function(e) {
+          var inp = e.target;
+          if (!inp || !inp.matches || !inp.matches('#sf-rule-list-tbody .switch input[type="checkbox"]')) return;
+          var rid = inp.getAttribute('data-rule-id');
+          if (!rid) return;
+          var rules = loadRules();
+          var r = rules.filter(function(x) { return x.id === rid; })[0];
+          if (!r) return;
+          r.enabled = inp.checked;
+          if (r.form) r.form.enabled = inp.checked;
+          r.updatedAt = sfFormatNow();
+          r.updatedBy = '当前用户';
+          saveRules(rules);
+        });
+      }
+
+      renderRuleList();
+    })();
+  </script>
+</body>
+</html>

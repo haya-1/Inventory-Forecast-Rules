@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>补货详情</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Microsoft YaHei", sans-serif; }
+    body { min-height: 100vh; background: #f5f7fa; color: #303133; }
+
+    .app-layout { display: flex; min-height: 100vh; width: 100%; }
+    .sidebar { width: 88px; position: fixed; top: 0; left: 0; bottom: 0; display: flex; flex-direction: row; overflow: visible; background: transparent; box-shadow: 2px 0 10px rgba(0, 0, 0, 0.08); z-index: 1200; }
+    .sidebar-primary { width: 88px; background: linear-gradient(180deg, #2f47a6 0%, #1f2a78 100%); color: #fff; display: flex; flex-direction: column; align-items: center; padding: 10px 0; }
+    .sidebar-brand { width: 100%; padding: 6px 0 14px; text-align: center; }
+    .sidebar-brand h2 { color: #fff; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 17px; font-weight: 600; }
+    .brand-icon { width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.2); border-radius: 6px; font-size: 13px; flex-shrink: 0; }
+    .sidebar-nav { width: 100%; padding: 4px 0; }
+    .primary-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; height: 58px; margin: 6px 10px; border-radius: 10px; color: rgba(255, 255, 255, 0.8); text-decoration: none; font-size: 12px; }
+    .primary-item:hover, .primary-item.active { background: #0d5bff; color: #fff; }
+    .item-icon { font-size: 16px; }
+    .sidebar-submenu-panel { position: fixed; left: 88px; top: 0; bottom: 0; width: 184px; background: #fff; border-right: 1px solid #e5e7eb; padding: 18px 14px; transform: translateX(-100%); opacity: 0; pointer-events: none; transition: transform 0.24s ease, opacity 0.2s ease; z-index: 1202; box-shadow: 4px 0 18px rgba(0, 0, 0, 0.07); }
+    .sidebar-submenu-panel.open { transform: translateX(0); opacity: 1; pointer-events: auto; }
+    .submenu-title { font-size: 24px; color: #111827; margin-bottom: 14px; }
+    .submenu-item { display: block; color: #374151; text-decoration: none; padding: 10px 10px; margin-bottom: 6px; border-radius: 8px; font-size: 14px; }
+    .submenu-item:hover { background: #f3f4f6; }
+    .submenu-item.active { background: #eef2ff; color: #2563eb; font-weight: 600; }
+    .sidebar-backdrop { position: fixed; inset: 0; background: rgba(17, 24, 39, 0.32); opacity: 0; pointer-events: none; transition: opacity 0.2s ease; z-index: 1190; }
+    .app-layout.submenu-open .sidebar-backdrop { opacity: 1; pointer-events: auto; }
+    .main-content {
+      flex: 1 1 auto;
+      min-height: 100vh;
+      min-width: 0;
+      margin-left: 88px;
+      width: calc(100% - 88px);
+      max-width: calc(100vw - 88px);
+      box-sizing: border-box;
+      background: #f5f7fa;
+    }
+
+    .page-wrap { padding: 16px 20px 24px; width: 100%; max-width: none; box-sizing: border-box; }
+    #rd-root { width: 100%; min-width: 0; }
+    .page-top-card { background: #fff; border-radius: 4px; border: 1px solid #ebeef5; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06); margin-bottom: 12px; }
+    .page-top-card-head { padding: 12px 20px 0; border-bottom: 1px solid #ebeef5; }
+    .page-section-label { font-size: 14px; font-weight: 600; color: #303133; padding-bottom: 10px; }
+    .tabs-strip { display: flex; align-items: flex-end; gap: 8px; padding-bottom: 0; }
+    .tab-chip { display: inline-flex; align-items: center; padding: 8px 16px; font-size: 13px; color: #606266; border-radius: 4px 4px 0 0; border: 1px solid transparent; border-bottom: none; margin-bottom: -1px; background: transparent; cursor: default; }
+    .tab-chip.active { color: #409eff; font-weight: 600; background: #fff; border-color: #ebeef5; border-bottom-color: #fff; }
+    .tab-chip .tab-x, .tab-chip .tab-add { margin-left: 6px; font-size: 14px; color: #909399; }
+    .tab-chip .tab-add { margin-left: 10px; font-weight: 600; }
+
+    .rd-summary { background: #fff; border: 1px solid #ebeef5; border-radius: 4px; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06); padding: 20px 24px; margin-bottom: 12px; display: flex; gap: 24px; align-items: flex-start; }
+    .rd-thumb { width: 96px; height: 96px; flex-shrink: 0; border-radius: 8px; background: #f0f2f5; border: 1px solid #ebeef5; display: flex; align-items: center; justify-content: center; color: #909399; font-size: 12px; text-align: center; line-height: 1.4; padding: 8px; }
+    .rd-summary-main { flex: 1; min-width: 0; }
+    .rd-title-row { font-size: 18px; font-weight: 600; color: #303133; margin-bottom: 14px; word-break: break-all; }
+    .rd-title-row .rd-asin { font-weight: 500; color: #606266; margin-left: 10px; font-size: 16px; }
+    .rd-title-row .rd-asin.muted { color: #c0c4cc; }
+    .rd-meta-rows { display: flex; flex-direction: column; gap: 10px; }
+    .rd-meta-line { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 28px; font-size: 13px; line-height: 1.6; }
+    .rd-kv { display: inline-flex; align-items: baseline; gap: 6px; }
+    .rd-kv .k { color: #909399; white-space: nowrap; }
+    .rd-kv .v { color: #303133; }
+    .rd-kv .v.muted { color: #c0c4cc; }
+
+    .rd-nav-tabs { background: #fff; border: 1px solid #ebeef5; border-radius: 4px 4px 0 0; border-bottom: none; padding: 0 16px; display: flex; gap: 4px; margin-bottom: 0; }
+    .rd-nav-tabs button { padding: 12px 20px; font-size: 14px; border: none; background: transparent; color: #606266; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+    .rd-nav-tabs button.active { color: #409eff; font-weight: 600; border-bottom-color: #409eff; }
+    .rd-nav-tabs button:disabled { cursor: not-allowed; opacity: 0.55; color: #909399; }
+
+    .rd-body-panel { background: #fff; border: 1px solid #ebeef5; border-radius: 0 0 4px 4px; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06); padding: 0; overflow: hidden; }
+
+    .rd-placeholder-wrap { padding: 16px 20px 24px; border: 2px dashed #dcdfe6; border-radius: 4px; margin: 16px 20px 20px; background: #fafbfc; }
+    .rd-placeholder-label { font-size: 12px; color: #909399; margin-bottom: 14px; }
+    .rd-module { background: #fff; border: 1px solid #ebeef5; border-radius: 4px; margin-bottom: 16px; overflow: hidden; }
+    .rd-module:last-child { margin-bottom: 0; }
+    .rd-module-hd { padding: 12px 16px; font-size: 14px; font-weight: 600; color: #303133; border-bottom: 1px solid #ebeef5; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+    .rd-module-bd { padding: 16px; }
+    .rd-inline-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .rd-inline-filters .filter-label { font-size: 13px; color: #606266; }
+    .rd-inline-filters input, .rd-inline-filters button { height: 32px; border: 1px solid #dcdfe6; border-radius: 4px; padding: 0 10px; font-size: 13px; background: #f5f7fa; color: #a8abb2; cursor: not-allowed; }
+    .rd-inline-filters .btn-search { background: #a0cfff; border-color: #a0cfff; color: #fff; }
+    .rd-granularity { display: flex; gap: 0; margin-left: auto; }
+    .rd-granularity span { padding: 6px 14px; font-size: 13px; border: 1px solid #dcdfe6; background: #fff; color: #909399; cursor: default; }
+    .rd-granularity span:first-child { border-radius: 4px 0 0 4px; }
+    .rd-granularity span:last-child { border-radius: 0 4px 4px 0; border-left: none; }
+    .rd-granularity span.active { background: #ecf5ff; border-color: #b3d8ff; color: #409eff; font-weight: 500; }
+    .rd-chart-slot { min-height: 280px; border: 1px dashed #dcdfe6; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #909399; font-size: 13px; background: #fafafa; }
+    .rd-chart-legend { display: flex; flex-wrap: wrap; gap: 12px 20px; margin-top: 12px; font-size: 12px; color: #606266; }
+    .rd-chart-legend i { display: inline-block; width: 10px; height: 3px; border-radius: 1px; margin-right: 6px; vertical-align: middle; }
+    .rd-table-toolbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; }
+    .rd-switch { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: #606266; }
+    .rd-switch .sw { width: 36px; height: 20px; border-radius: 10px; background: #dcdfe6; position: relative; flex-shrink: 0; opacity: 0.6; }
+    .rd-table-slot { min-height: 160px; border: 1px dashed #dcdfe6; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #909399; font-size: 13px; background: #fafafa; }
+
+    #rd-panel-forecast { display: none; }
+    #rd-panel-forecast.rd-panel--visible { display: block; }
+    #rd-panel-detail.rd-panel--hidden { display: none; }
+    .rd-fc-inner { padding: 16px 20px 24px; }
+    #rd-panel-forecast .rd-module { margin-bottom: 16px; }
+    #rd-panel-forecast .rd-module:last-child { margin-bottom: 0; }
+    .rd-fc-hint { font-size: 12px; color: #909399; margin-bottom: 12px; line-height: 1.5; }
+    .rd-fc-chart-host { width: 100%; max-width: 920px; height: 200px; margin: 0 auto; }
+    .rd-fc-chart-fallback { min-height: 120px; display: flex; align-items: center; justify-content: center; color: #909399; font-size: 13px; border: 1px dashed #dcdfe6; border-radius: 4px; background: #fafafa; }
+    .rd-rule-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .rd-rule-table th, .rd-rule-table td { border: 1px solid #ebeef5; padding: 10px 12px; text-align: left; }
+    .rd-rule-table th { background: #f5f7fa; color: #303133; font-weight: 500; }
+    .rd-rule-empty { color: #909399; font-size: 13px; padding: 8px 0; }
+    .rd-parse-flow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 13px; color: #606266; margin-bottom: 16px; }
+    .rd-parse-flow .step { background: #f4f4f5; padding: 6px 12px; border-radius: 4px; border: 1px solid #e4e7ed; }
+    .rd-parse-flow .arrow { color: #c0c4cc; }
+    .rd-parse-placeholder { min-height: 120px; border: 1px dashed #dcdfe6; border-radius: 4px; background: #fafafa; display: flex; align-items: center; justify-content: center; color: #909399; font-size: 13px; text-align: center; padding: 16px; line-height: 1.6; }
+
+    .rd-metro { position: relative; padding-left: 32px; max-width: 920px; }
+    .rd-metro::before { content: ''; position: absolute; left: 11px; top: 18px; bottom: 18px; width: 4px; background: linear-gradient(180deg, #409eff 0%, #67c23a 55%, #e6a23c 100%); border-radius: 2px; opacity: 0.85; }
+    .rd-metro-stop { position: relative; margin-bottom: 28px; }
+    .rd-metro-stop:last-child { margin-bottom: 4px; }
+    .rd-metro-node { position: absolute; left: -26px; top: 2px; width: 16px; height: 16px; border-radius: 50%; background: #409eff; border: 3px solid #fff; box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.45); z-index: 1; }
+    .rd-metro-stop:nth-child(2) .rd-metro-node { background: #67c23a; box-shadow: 0 0 0 2px rgba(103, 194, 58, 0.45); }
+    .rd-metro-stop:nth-child(3) .rd-metro-node { background: #e6a23c; box-shadow: 0 0 0 2px rgba(230, 162, 60, 0.45); }
+    .rd-metro-card { border: 1px solid #ebeef5; border-radius: 8px; padding: 14px 16px; background: #fff; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04); }
+    .rd-metro-h { font-size: 15px; font-weight: 600; color: #303133; margin-bottom: 10px; }
+    .rd-metro-formula { font-size: 12px; color: #606266; line-height: 1.65; margin-bottom: 10px; padding: 10px 12px; background: #f9fafb; border-radius: 6px; border: 1px solid #ebeef5; }
+    .rd-metro-formula code { font-family: ui-monospace, Consolas, monospace; font-size: 11px; color: #303133; background: #f0f2f5; padding: 1px 4px; border-radius: 3px; }
+    .rd-mini-table { width: 100%; border-collapse: collapse; font-size: 12px; margin: 8px 0; }
+    .rd-mini-table th, .rd-mini-table td { border: 1px solid #ebeef5; padding: 8px 10px; text-align: left; vertical-align: top; }
+    .rd-mini-table th { background: #f5f7fa; color: #606266; font-weight: 500; }
+    .rd-metro-result { margin-top: 10px; padding: 10px 12px; background: #ecf5ff; border-radius: 6px; font-size: 13px; color: #409eff; font-weight: 600; }
+    .rd-metro-sub { margin-top: 12px; padding-top: 12px; border-top: 1px dashed #dcdfe6; }
+    .rd-metro-sub h4 { font-size: 13px; color: #606266; margin-bottom: 8px; font-weight: 600; }
+
+    .rd-empty { padding: 48px 24px; text-align: center; color: #909399; font-size: 14px; }
+    .rd-empty a { color: #409eff; text-decoration: none; }
+    .rd-empty a:hover { text-decoration: underline; }
+
+    .filter-control { height: 32px; border: 1px solid #dcdfe6; border-radius: 4px; padding: 0 10px; font-size: 13px; }
+
+    @media (max-width: 768px) {
+      .sidebar-submenu-panel, .sidebar-backdrop { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar-primary">
+        <div class="sidebar-brand">
+          <h2><span class="brand-icon">📦</span><span>OMS</span></h2>
+        </div>
+        <nav class="sidebar-nav">
+          <a class="primary-item" href="./index.html"><span class="item-icon">🏠</span><span class="item-label">首页</span></a>
+          <a class="primary-item" href="#"><span class="item-icon">⚙️</span><span class="item-label">数据决策</span></a>
+          <a class="primary-item" href="#"><span class="item-icon">⚙️</span><span class="item-label">运营工具</span></a>
+          <a class="primary-item" href="#"><span class="item-icon">⚙️</span><span class="item-label">目标</span></a>
+          <a class="primary-item active" href="#" data-submenu="replenish" data-primary-current="true"><span class="item-icon">⚙️</span><span class="item-label">补货</span></a>
+          <a class="primary-item" href="#" data-submenu="system"><span class="item-icon">⚙️</span><span class="item-label">系统配置</span></a>
+        </nav>
+      </div>
+      <div class="sidebar-submenu-panel" id="replenish-submenu">
+        <a class="submenu-item" href="./补货列表.html">补货列表</a>
+        <a class="submenu-item" href="./预测规则配置页面_v1.html">备货规则</a>
+        <a class="submenu-item" href="./预警页面_v1.html">预警模型</a>
+        <a class="submenu-item" href="./预警消息页面_v1.html">预警消息</a>
+      </div>
+      <div class="sidebar-submenu-panel" id="system-submenu">
+        <div class="submenu-title">系统配置</div>
+        <a class="submenu-item" href="./销量预测规则.html">销量预测规则</a>
+      </div>
+    </aside>
+
+    <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+    <main class="main-content">
+      <div class="page-wrap">
+        <div id="rd-root">
+          <div class="rd-empty" id="rd-missing">正在加载…</div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+  <script>
+    var SF_REPLENISH_PARENT_LIST_KEY = 'sf_replenish_parent_list_v1';
+    var SF_SALES_FORECAST_RULES_KEY = 'sf_sales_forecast_rules_v1';
+
+    function rdEsc(s) {
+      if (s == null || s === undefined) return '';
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function rdGetQueryCode() {
+      var q = window.location.search || '';
+      var m = q.match(/[?&]code=([^&]*)/);
+      if (!m) return '';
+      try {
+        return decodeURIComponent(m[1].replace(/\+/g, ' ')).trim();
+      } catch (e) {
+        return '';
+      }
+    }
+
+    function rdLoadParentByCode(code) {
+      if (!code) return null;
+      try {
+        var raw = localStorage.getItem(SF_REPLENISH_PARENT_LIST_KEY);
+        if (raw) {
+          var list = JSON.parse(raw);
+          if (Array.isArray(list)) {
+            var found = list.filter(function(p) { return p && p.code === code; })[0];
+            if (found) return found;
+          }
+        }
+      } catch (e) {}
+      return { code: code, asin: '', album: '无', platform: '', site: '', store: '', spu: '', owner: '', days: '' };
+    }
+
+    function rdLoadSalesForecastRules() {
+      try {
+        var raw = localStorage.getItem(SF_SALES_FORECAST_RULES_KEY);
+        if (!raw) return [];
+        var parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    /** 启用且适用当前父体的规则：parentCodes 为空表示全部父体，否则需包含当前编号 */
+    function rdFindApplicableForecastRules(parentCode) {
+      var all = rdLoadSalesForecastRules();
+      var out = [];
+      all.forEach(function(r) {
+        if (!r || r.enabled === false) return;
+        var codes = (r.form && r.form.parentCodes) ? r.form.parentCodes : [];
+        if (codes.length === 0 || codes.indexOf(parentCode) !== -1) {
+          out.push(r);
+        }
+      });
+      return out;
+    }
+
+    function rdHashStr(s) {
+      var h = 0;
+      s = String(s || '');
+      for (var i = 0; i < s.length; i++) {
+        h = ((h << 5) - h) + s.charCodeAt(i) | 0;
+      }
+      return Math.abs(h) + 1;
+    }
+
+    var rdForecastChartInstance = null;
+
+    function rdResizeForecastChart() {
+      if (typeof echarts === 'undefined') return;
+      var host = document.getElementById('rd-fc-chart-host');
+      if (!host) return;
+      var c = echarts.getInstanceByDom(host);
+      if (c) c.resize();
+    }
+
+    function rdPaintForecastChart(parentCode, rules) {
+      var host = document.getElementById('rd-fc-chart-host');
+      if (!host) return;
+      if (rdForecastChartInstance) {
+        rdForecastChartInstance.dispose();
+        rdForecastChartInstance = null;
+      }
+      host.innerHTML = '';
+
+      var rid = (rules && rules[0] && rules[0].id) ? rules[0].id : '';
+      var seed = rdHashStr(parentCode + '|' + rid);
+      var n = 30;
+      var pred = [];
+      var yoy = [];
+      var categories = [];
+      for (var i = 0; i < n; i++) {
+        var t = (i / n) * Math.PI * 2;
+        var base = 60 + (seed % 50) + Math.sin(t + seed * 0.01) * 28 + i * 1.15;
+        pred.push(Math.round(base * 10) / 10);
+        yoy.push(Math.round((base * 0.9 + Math.cos(t * 1.2 + 0.5) * 22) * 10) / 10);
+        categories.push(String(i + 1));
+      }
+
+      if (typeof echarts === 'undefined') {
+        host.innerHTML = '<div class="rd-fc-chart-fallback">ECharts 未加载，请检查网络后刷新页面</div>';
+        return;
+      }
+
+      rdForecastChartInstance = echarts.init(host);
+      rdForecastChartInstance.setOption({
+        color: ['#409eff', '#67c23a'],
+        textStyle: { fontFamily: 'inherit', fontSize: 11 },
+        grid: { left: 44, right: 20, top: 36, bottom: 24, containLabel: false },
+        tooltip: { trigger: 'axis', axisPointer: { type: 'cross' } },
+        legend: {
+          data: ['预测销量', '同比实际销量'],
+          top: 4,
+          left: 'center',
+          itemWidth: 22,
+          itemHeight: 8,
+          textStyle: { fontSize: 12, color: '#606266' }
+        },
+        xAxis: {
+          type: 'category',
+          boundaryGap: false,
+          data: categories,
+          axisLine: { lineStyle: { color: '#dcdfe6' } },
+          axisLabel: { color: '#909399', fontSize: 10 }
+        },
+        yAxis: {
+          type: 'value',
+          splitLine: { lineStyle: { color: '#ebeef5', type: 'dashed' } },
+          axisLabel: { color: '#909399', fontSize: 10 }
+        },
+        series: [
+          {
+            name: '预测销量',
+            type: 'line',
+            smooth: true,
+            symbol: 'circle',
+            symbolSize: 5,
+            data: pred,
+            lineStyle: { width: 2 }
+          },
+          {
+            name: '同比实际销量',
+            type: 'line',
+            smooth: true,
+            symbol: 'circle',
+            symbolSize: 4,
+            data: yoy,
+            lineStyle: { width: 2, type: 'dashed' },
+            emphasis: { focus: 'series' }
+          }
+        ]
+      });
+
+      if (!window._rdChartResizeBound) {
+        window._rdChartResizeBound = true;
+        window.addEventListener('resize', function() {
+          rdResizeForecastChart();
+        });
+      }
+    }
+
+    function rdForecastRulesTableHtml(rules) {
+      if (!rules || !rules.length) {
+        return '<p class="rd-rule-empty">当前父体未匹配到启用中的销量预测规则。请在「销量预测规则」中配置适用范围包含本父体、且已启用的规则。</p>';
+      }
+      var rows = rules.map(function(r) {
+        return '<tr><td>' + rdEsc(r.id || '') + '</td><td>' + rdEsc(r.name || '') + '</td></tr>';
+      }).join('');
+      return '<table class="rd-rule-table"><thead><tr><th style="min-width:140px;">规则编号</th><th>规则名称</th></tr></thead><tbody>' + rows + '</tbody></table>';
+    }
+
+    /** 与种子规则 SF20260410001 一致，供 localStorage 无数据时演示 */
+    var RD_FALLBACK_FORM_SF20260410001 = {
+      dailyWeights: { '3': 10, '7': 35, '14': 25, '30': 20, '60': 10, '90': 0 },
+      autoDenoise: { x: '12', y: '1.15', largeEnabled: true },
+      dateDenoise: [
+        { type: '固定值去噪', d0: '2026-01-15', d1: '2026-01-20', value: '45', note: '仓库盘点停发' },
+        { type: '百分比去噪', d0: '2026-03-01', d1: '2026-03-03', value: '60', note: '抓数异常按 60% 缩放' }
+      ],
+      returnDenoise: [{ d0: '2025-11-01', d1: '2026-01-31', pct: '8', note: '旺季退货率偏高' }],
+      season: ['0.92', '0.95', '1', '1.02', '1.05', '1.08', '1.1', '1.12', '1.05', '1', '0.98', '1.15'],
+      yoy: [
+        { d0: '2025-01-01', d1: '2025-06-30', growth: 'up', coeff: '1.08', note: '去年同期活动基数偏低' },
+        { d0: '2025-07-01', d1: '2025-12-31', growth: 'up', coeff: '1.12', note: '促销季同比抬升' }
+      ],
+      lifecycle: [
+        { lifeType: '次新品', d0: '2025-09-01', d1: '2026-03-31', growth: 'up', coeff: '1.15' },
+        { lifeType: '老品', d0: '2026-04-01', d1: '', growth: 'down', coeff: '0.95' }
+      ],
+      competitor: [{ d0: '2026-02-01', d1: '2026-04-30', growth: 'down', coeff: '0.92', note: '竞对降价约 8%' }],
+      target: [{ d0: '2026-01-01', d1: '2026-06-30', growth: 'up', coeff: '1.05', note: '渠道目标上调 5%' }]
+    };
+
+    function rdGetFormForLftDemo() {
+      try {
+        var rules = rdLoadSalesForecastRules();
+        var r = rules.filter(function(x) { return x && x.id === 'SF20260410001'; })[0];
+        if (r && r.form) return r.form;
+      } catch (e) {}
+      return RD_FALLBACK_FORM_SF20260410001;
+    }
+
+    function rdBuildCalcProcessHtml(parentCode) {
+      if (parentCode !== 'LFT00002261') {
+        return (
+          '<div class="rd-parse-placeholder">当前仅对父体 <strong>LFT00002261</strong> 与规则 <strong>SF20260410001</strong>（北美站加权预测）展示完整计算过程示例。其它父体暂时放空，后续接入。</div>'
+        );
+      }
+      var f = rdGetFormForLftDemo();
+      var w = f.dailyWeights || {};
+      var ad = f.autoDenoise || { x: '12', y: '1.15', largeEnabled: true };
+      var dd = (f.dateDenoise && f.dateDenoise.length >= 2) ? f.dateDenoise : RD_FALLBACK_FORM_SF20260410001.dateDenoise;
+      var rd = (f.returnDenoise && f.returnDenoise.length) ? f.returnDenoise : RD_FALLBACK_FORM_SF20260410001.returnDenoise;
+      if (!dd[1]) dd[1] = RD_FALLBACK_FORM_SF20260410001.dateDenoise[1];
+
+      var winStart = '2026-01-18';
+      var winEnd = '2026-04-16';
+
+      var mu3 = 122.4;
+      var mu7 = 119.8;
+      var mu14 = 116.2;
+      var mu30 = 114.0;
+      var mu60 = 110.5;
+      var w3 = (parseFloat(w['3']) || 0) / 100;
+      var w7 = (parseFloat(w['7']) || 0) / 100;
+      var w14 = (parseFloat(w['14']) || 0) / 100;
+      var w30 = (parseFloat(w['30']) || 0) / 100;
+      var w60 = (parseFloat(w['60']) || 0) / 100;
+      var X = w3 * mu3 + w7 * mu7 + w14 * mu14 + w30 * mu30 + w60 * mu60;
+      X = Math.round(X * 100) / 100;
+
+      var kSeason = 0.995;
+      var kYoy = 1.096;
+      var kLife = 1.118;
+      var kComp = 0.936;
+      var kTarget = 1.05;
+      var K = kSeason * kYoy * kLife * kComp * kTarget;
+      K = Math.round(K * 10000) / 10000;
+      var dailyFinal = Math.round(X * K * 100) / 100;
+
+      var h = '';
+
+      h += '<div class="rd-metro">';
+      h += '<div class="rd-metro-stop"><span class="rd-metro-node" aria-hidden="true"></span><div class="rd-metro-card">';
+      h += '<div class="rd-metro-h">① 销量去噪（得到近 90 天每日销量集合 A）</div>';
+      h += '<div class="rd-metro-formula">对滑动窗口 <code>[' + rdEsc(winStart) + ' ~ ' + rdEsc(winEnd) + ']</code> 内每日<strong>原始实际销量</strong>依次套用以下去噪规则；若同一天命中多条，按「自动大额 → 日期去噪 → 退货去噪」顺序覆盖。最终结果记为集合 <code>A = {a<sub>1</sub>…a<sub>90</sub>}</code>。</div>';
+
+      h += '<div class="rd-metro-sub"><h4>规则1 · 自动大额去噪</h4>';
+      h += '<div class="rd-metro-formula">若某日销量 <code>&gt; 近' + rdEsc(ad.x) + '日算术平均 × ' + rdEsc(ad.y) + '</code>（大额阈值），将该日销量替换为 <code>均值 × ' + rdEsc(ad.y) + '</code>；元数据：大额检测 ' + (ad.largeEnabled !== false ? '开启' : '关闭') + '。</div>';
+      h += '<table class="rd-mini-table"><thead><tr><th>元数据</th><th>本例计算结果（示意）</th></tr></thead><tbody>';
+      h += '<tr><td>近' + rdEsc(ad.x) + '日均（去噪前粗算）≈ 105.2</td><td>命中 2 天触发截断，该 2 天修正后分别 118.6、121.0</td></tr></tbody></table></div>';
+
+      h += '<div class="rd-metro-sub"><h4>规则2 · 日期固定值去噪</h4>';
+      h += '<div class="rd-metro-formula">区间 <code>[' + rdEsc(dd[0].d0) + ' ~ ' + rdEsc(dd[0].d1) + ']</code> 内日销量替换为 <code>' + rdEsc(dd[0].value) + '</code>（与近 90 天交集共 6 天）。</div>';
+      h += '<table class="rd-mini-table"><thead><tr><th>元数据</th><th>计算结果</th></tr></thead><tbody>';
+      h += '<tr><td>原因：' + rdEsc(dd[0].note || '') + '</td><td>交集 6 天均置为 ' + rdEsc(dd[0].value) + '</td></tr></tbody></table></div>';
+
+      h += '<div class="rd-metro-sub"><h4>规则3 · 日期百分比去噪</h4>';
+      h += '<div class="rd-metro-formula">区间 <code>[' + rdEsc(dd[1].d0) + ' ~ ' + rdEsc(dd[1].d1) + ']</code> 内日销量 × <code>' + rdEsc(dd[1].value) + '%</code>。</div>';
+      h += '<table class="rd-mini-table"><thead><tr><th>元数据</th><th>计算结果</th></tr></thead><tbody>';
+      h += '<tr><td>' + rdEsc(dd[1].note || '') + '</td><td>交集 3 天按 ' + rdEsc(dd[1].value) + '% 缩放</td></tr></tbody></table></div>';
+
+      h += '<div class="rd-metro-sub"><h4>规则4 · 退货量去噪</h4>';
+      h += '<div class="rd-metro-formula">在 <code>[' + rdEsc(rd[0].d0) + ' ~ ' + rdEsc(rd[0].d1) + ']</code> 内，按退货率 <code>' + rdEsc(rd[0].pct) + '%</code> 对日销做平滑（示例：有效影响近 90 天中 73 天）。</div>';
+      h += '<table class="rd-mini-table"><thead><tr><th>元数据</th><th>计算结果</th></tr></thead><tbody>';
+      h += '<tr><td>' + rdEsc(rd[0].note || '') + '</td><td>受影响天次均额外折扣系数约 0.992</td></tr></tbody></table></div>';
+
+      h += '<div class="rd-metro-result">集合 A：共 90 个日销量；去噪后窗口日均 <strong>115.8</strong>（示例汇总，用于下一步窗口统计）</div>';
+      h += '</div></div>';
+
+      h += '<div class="rd-metro-stop"><span class="rd-metro-node" aria-hidden="true"></span><div class="rd-metro-card">';
+      h += '<div class="rd-metro-h">② 日销量规则：加权基础日均 X（暂不含促销）</div>';
+      h += '<div class="rd-metro-formula">在集合 A 上分别统计近 3/7/14/30/60 日日均 <code>μ<sub>3</sub>…μ<sub>60</sub></code>，再按权重加权：<code>X = Σ<sub>k∈{3,7,14,30,60}</sub> w<sub>k</sub>·μ<sub>k</sub></code>，其中 <code>Σw<sub>k</sub>=100%</code>（-promo）。</div>';
+      h += '<table class="rd-mini-table"><thead><tr><th>窗口</th><th>权重 w（元数据）</th><th>μ（基于 A 的示意值）</th><th>贡献 w·μ</th></tr></thead><tbody>';
+      h += '<tr><td>近3日</td><td>' + rdEsc(String(w['3'] != null ? w['3'] : 0)) + '%</td><td>' + mu3 + '</td><td>' + (Math.round(w3 * mu3 * 100) / 100) + '</td></tr>';
+      h += '<tr><td>近7日</td><td>' + rdEsc(String(w['7'] != null ? w['7'] : 0)) + '%</td><td>' + mu7 + '</td><td>' + (Math.round(w7 * mu7 * 100) / 100) + '</td></tr>';
+      h += '<tr><td>近14日</td><td>' + rdEsc(String(w['14'] != null ? w['14'] : 0)) + '%</td><td>' + mu14 + '</td><td>' + (Math.round(w14 * mu14 * 100) / 100) + '</td></tr>';
+      h += '<tr><td>近30日</td><td>' + rdEsc(String(w['30'] != null ? w['30'] : 0)) + '%</td><td>' + mu30 + '</td><td>' + (Math.round(w30 * mu30 * 100) / 100) + '</td></tr>';
+      h += '<tr><td>近60日</td><td>' + rdEsc(String(w['60'] != null ? w['60'] : 0)) + '%</td><td>' + mu60 + '</td><td>' + (Math.round(w60 * mu60 * 100) / 100) + '</td></tr>';
+      h += '</tbody></table>';
+      h += '<div class="rd-metro-result">基础日均 X = <strong>' + X + '</strong></div>';
+      h += '</div></div>';
+
+      h += '<div class="rd-metro-stop"><span class="rd-metro-node" aria-hidden="true"></span><div class="rd-metro-card">';
+      h += '<div class="rd-metro-h">③ 影响系数连乘（未覆盖区间系数=1；多段覆盖先按天加权平均）</div>';
+      h += '<div class="rd-metro-formula">预测日均 <code>≈ X × K<sub>季节</sub> × K<sub>同比</sub> × K<sub>生命周期</sub> × K<sub>竞对</sub> × K<sub>目标</sub></code>。各 K 在近 90 天内有配置区间时，按<strong>重合天数加权</strong>得到有效系数；无重合则为 1。</div>';
+
+      h += '<table class="rd-mini-table"><thead><tr><th>系数类型</th><th>规则元数据摘要</th><th>近90天有效 K（示意）</th></tr></thead><tbody>';
+      h += '<tr><td>季节</td><td>12 个月系数配置</td><td>' + kSeason + '（1–4 月加权）</td></tr>';
+      h += '<tr><td>同比</td><td>两段日期系数 1.08 / 1.12</td><td>' + kYoy + '（与窗口重合分段加权）</td></tr>';
+      h += '<tr><td>生命周期</td><td>次新品 1.15 / 老品 0.95</td><td>' + kLife + '</td></tr>';
+      h += '<tr><td>竞对</td><td>' + rdEsc((f.competitor && f.competitor[0] && f.competitor[0].d0) || '') + ' ~ ' + rdEsc((f.competitor && f.competitor[0] && f.competitor[0].d1) || '') + '，系数 0.92</td><td>' + kComp + '（部分覆盖）</td></tr>';
+      h += '<tr><td>目标</td><td>' + rdEsc((f.target && f.target[0] && f.target[0].d0) || '') + ' ~ ' + rdEsc((f.target && f.target[0] && f.target[0].d1) || '') + '，系数 1.05</td><td>' + kTarget + '</td></tr>';
+      h += '</tbody></table>';
+      h += '<div class="rd-metro-formula">连乘：<code>K = ' + kSeason + ' × ' + kYoy + ' × ' + kLife + ' × ' + kComp + ' × ' + kTarget + ' ≈ ' + K + '</code></div>';
+      h += '<div class="rd-metro-result">示意预测日均 ≈ X × K = ' + X + ' × ' + K + ' ≈ <strong>' + dailyFinal + '</strong>（不含促销与其它业务校正）</div>';
+      h += '</div></div>';
+
+      h += '</div>';
+      return h;
+    }
+
+    function rdRender() {
+      var code = rdGetQueryCode();
+      var root = document.getElementById('rd-root');
+      if (!root) return;
+
+      if (!code) {
+        root.innerHTML =
+          '<div class="rd-empty">未指定父体编号。请从<a href="./补货列表.html">补货列表</a>点击父体编号进入。</div>';
+        return;
+      }
+
+      var p = rdLoadParentByCode(code);
+      var applicableForecast = rdFindApplicableForecastRules(code);
+      var asin = (p.asin || '').trim();
+      var titleExtra = asin ? '<span class="rd-asin">' + rdEsc(asin) + '</span>' : '<span class="rd-asin muted">—</span>';
+
+      var chartHint = applicableForecast.length
+        ? '根据当前适配的销量预测规则估算的预测销量曲线（示意）；绿色虚线为同比实际销量。实际以服务端计算为准。'
+        : '当前未匹配到启用规则，下方为示意曲线；在「销量预测规则」中启用并适用本父体后将按规则重算。';
+
+      var ph = '<span class="v muted">—</span>';
+      root.innerHTML =
+        '<div class="rd-summary">' +
+        '<div class="rd-thumb" title="商品主图">主图<br />占位</div>' +
+        '<div class="rd-summary-main">' +
+        '<div class="rd-title-row">' + rdEsc(p.code) + titleExtra + '</div>' +
+        '<div class="rd-meta-rows">' +
+        '<div class="rd-meta-line">' +
+        '<span class="rd-kv"><span class="k">派送地</span>' + (p.site ? '<span class="v">' + rdEsc(p.site) + '</span>' : ph) + '</span>' +
+        '<span class="rd-kv"><span class="k">平台</span>' + (p.platform ? '<span class="v">' + rdEsc(p.platform) + '</span>' : ph) + '</span>' +
+        '<span class="rd-kv"><span class="k">业务类型</span>' + ph + '</span>' +
+        '<span class="rd-kv"><span class="k">店铺</span>' + (p.store ? '<span class="v">' + rdEsc(p.store) + '</span>' : ph) + '</span>' +
+        '<span class="rd-kv"><span class="k">站点</span>' + (p.site ? '<span class="v">' + rdEsc(p.site) + '</span>' : ph) + '</span>' +
+        '<span class="rd-kv"><span class="k">负责人</span>' + (p.owner ? '<span class="v">' + rdEsc(p.owner) + '</span>' : ph) + '</span>' +
+        '</div>' +
+        '<div class="rd-meta-line">' +
+        '<span class="rd-kv"><span class="k">平台分</span>' + ph + '</span>' +
+        '<span class="rd-kv"><span class="k">评论数</span>' + ph + '</span>' +
+        '<span class="rd-kv"><span class="k">上架天数</span>' + ph + '</span>' +
+        '<span class="rd-kv"><span class="k">在途数量</span>' + ph + '</span>' +
+        '<span class="rd-kv"><span class="k">销量</span>' + ph + '</span>' +
+        '<span class="rd-kv"><span class="k">日均</span>' + ph + '</span>' +
+        '<span class="rd-kv"><span class="k">退货量</span>' + ph + '</span>' +
+        '<span class="rd-kv"><span class="k">退货率</span>' + ph + '</span>' +
+        '</div>' +
+        '<div class="rd-meta-line">' +
+        '<span class="rd-kv"><span class="k">年度销量目标</span>' + ph + '</span>' +
+        '</div>' +
+        '</div></div></div>' +
+
+        '<div class="rd-nav-tabs" id="rd-nav-tabs">' +
+        '<button type="button" class="active" data-rd-tab="detail">详情信息</button>' +
+        '<button type="button" disabled title="待开发">库存预测</button>' +
+        '<button type="button" disabled title="待开发">年规目标</button>' +
+        '<button type="button" data-rd-tab="forecast">销量预测</button>' +
+        '</div>' +
+
+        '<div class="rd-body-panel">' +
+        '<div id="rd-panel-detail">' +
+        '<div class="rd-placeholder-wrap">' +
+        '<div class="rd-placeholder-label">以下为「销售走势」内容占位，可接入图表与明细表组件</div>' +
+
+        '<div class="rd-module">' +
+        '<div class="rd-module-hd"><span>销量走势</span>' +
+        '<div class="rd-granularity" aria-hidden="true"><span class="active">日</span><span>周</span><span>月</span></div></div>' +
+        '<div class="rd-module-bd">' +
+        '<div class="rd-inline-filters">' +
+        '<span class="filter-label">日期</span>' +
+        '<input type="text" disabled placeholder="YYYY-MM-DD" value="" style="width:120px;" />' +
+        '<span style="color:#909399;font-size:13px;">~</span>' +
+        '<input type="text" disabled placeholder="YYYY-MM-DD" value="" style="width:120px;" />' +
+        '<input type="text" disabled placeholder="搜索" style="width:160px;" />' +
+        '<button type="button" class="btn-search" disabled>搜索</button>' +
+        '</div>' +
+        '<div class="rd-chart-slot">图表占位（折线图、缩略轴等组件可在此挂载）</div>' +
+        '<div class="rd-chart-legend" aria-hidden="true">' +
+        '<span><i style="background:#409eff;"></i>销量</span>' +
+        '<span><i style="background:#67c23a;"></i>去年同期</span>' +
+        '<span><i style="background:#e6a23c;"></i>去年同期销量</span>' +
+        '<span><i style="background:#dcdfe6;"></i>目标区间</span>' +
+        '</div>' +
+        '</div></div>' +
+
+        '<div class="rd-module">' +
+        '<div class="rd-module-hd"><span>明细数据</span>' +
+        '<div class="rd-switch"><span>网络合并</span><span class="sw"></span></div></div>' +
+        '<div class="rd-module-bd">' +
+        '<div class="rd-table-toolbar">' +
+        '<div class="rd-inline-filters" style="margin-bottom:0;">' +
+        '<span class="filter-label">日期</span>' +
+        '<input type="text" disabled placeholder="YYYY-MM-DD" value="" style="width:120px;" />' +
+        '<span style="color:#909399;font-size:13px;">~</span>' +
+        '<input type="text" disabled placeholder="YYYY-MM-DD" value="" style="width:120px;" />' +
+        '<input type="text" disabled placeholder="搜索" style="width:160px;" />' +
+        '<button type="button" class="btn-search" disabled>搜索</button>' +
+        '</div></div>' +
+        '<div class="rd-table-slot">SKU 明细表格占位（多列销量、库存等可在此挂载）</div>' +
+        '</div></div>' +
+
+        '</div>' +
+        '</div>' +
+        '<div id="rd-panel-forecast">' +
+        '<div class="rd-fc-inner">' +
+
+        '<div class="rd-module">' +
+        '<div class="rd-module-hd">销量预测结果</div>' +
+        '<div class="rd-module-bd">' +
+        '<p class="rd-fc-hint">' + rdEsc(chartHint) + '</p>' +
+        '<div class="rd-fc-chart-host" id="rd-fc-chart-host"></div>' +
+        '</div></div>' +
+
+        '<div class="rd-module">' +
+        '<div class="rd-module-hd">预测规则</div>' +
+        '<div class="rd-module-bd">' + rdForecastRulesTableHtml(applicableForecast) + '</div></div>' +
+
+        '<div class="rd-module">' +
+        '<div class="rd-module-hd">计算过程解析</div>' +
+        '<div class="rd-module-bd">' +
+        rdBuildCalcProcessHtml(code) +
+        '</div></div>' +
+
+        '</div>' +
+        '</div>' +
+        '</div>';
+      rdPaintForecastChart(code, applicableForecast);
+    }
+
+    function rdSetTab(name) {
+      var panelD = document.getElementById('rd-panel-detail');
+      var panelF = document.getElementById('rd-panel-forecast');
+      if (!panelD || !panelF) return;
+      document.querySelectorAll('#rd-nav-tabs [data-rd-tab]').forEach(function(b) {
+        b.classList.toggle('active', b.getAttribute('data-rd-tab') === name);
+      });
+      if (name === 'detail') {
+        panelD.classList.remove('rd-panel--hidden');
+        panelF.classList.remove('rd-panel--visible');
+      } else if (name === 'forecast') {
+        panelD.classList.add('rd-panel--hidden');
+        panelF.classList.add('rd-panel--visible');
+        requestAnimationFrame(function() {
+          setTimeout(rdResizeForecastChart, 0);
+        });
+      }
+    }
+
+    function rdBindDetailTabs() {
+      document.querySelectorAll('#rd-nav-tabs [data-rd-tab]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var t = btn.getAttribute('data-rd-tab');
+          if (t === 'detail' || t === 'forecast') rdSetTab(t);
+        });
+      });
+    }
+
+    rdRender();
+    rdBindDetailTabs();
+
+    function initSidebarMenu() {
+      var appLayout = document.querySelector('.app-layout');
+      var backdrop = document.getElementById('sidebar-backdrop');
+      var replenishTrigger = document.querySelector('.primary-item[data-submenu="replenish"]');
+      var systemTrigger = document.querySelector('.primary-item[data-submenu="system"]');
+      var replenishPanel = document.getElementById('replenish-submenu');
+      var systemPanel = document.getElementById('system-submenu');
+      if (!appLayout || !backdrop) return;
+
+      function restorePrimaryCurrent() {
+        document.querySelectorAll('.primary-item[data-primary-current]').forEach(function(el) {
+          el.classList.add('active');
+        });
+      }
+
+      function closeAllSubmenus() {
+        appLayout.classList.remove('submenu-open');
+        if (replenishPanel) replenishPanel.classList.remove('open');
+        if (systemPanel) systemPanel.classList.remove('open');
+        if (replenishTrigger) replenishTrigger.classList.remove('active');
+        if (systemTrigger) systemTrigger.classList.remove('active');
+        restorePrimaryCurrent();
+      }
+
+      function bindToggle(trigger, panel) {
+        if (!trigger || !panel) return;
+        trigger.addEventListener('click', function(e) {
+          e.preventDefault();
+          if (panel.classList.contains('open')) {
+            closeAllSubmenus();
+            return;
+          }
+          appLayout.classList.remove('submenu-open');
+          if (replenishPanel) replenishPanel.classList.remove('open');
+          if (systemPanel) systemPanel.classList.remove('open');
+          if (replenishTrigger) replenishTrigger.classList.remove('active');
+          if (systemTrigger) systemTrigger.classList.remove('active');
+          document.querySelectorAll('.primary-item[data-primary-current]').forEach(function(el) {
+            el.classList.remove('active');
+          });
+          appLayout.classList.add('submenu-open');
+          panel.classList.add('open');
+          trigger.classList.add('active');
+        });
+      }
+
+      bindToggle(replenishTrigger, replenishPanel);
+      bindToggle(systemTrigger, systemPanel);
+      backdrop.addEventListener('click', closeAllSubmenus);
+      document.querySelectorAll('.sidebar-submenu-panel a.submenu-item').forEach(function(a) {
+        a.addEventListener('click', closeAllSubmenus);
+      });
+      document.querySelectorAll('.primary-item[href="#"]:not([data-submenu])').forEach(function(item) {
+        item.addEventListener('click', function(e) { e.preventDefault(); });
+      });
+    }
+
+    initSidebarMenu();
+  </script>
+</body>
+</html>

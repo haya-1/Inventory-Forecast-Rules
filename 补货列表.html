@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>补货列表</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Microsoft YaHei", sans-serif; }
+    body { min-height: 100vh; background: #f5f7fa; color: #303133; }
+
+    .app-layout { display: flex; min-height: 100vh; }
+    .sidebar { width: 88px; position: fixed; top: 0; left: 0; bottom: 0; display: flex; flex-direction: row; overflow: visible; background: transparent; box-shadow: 2px 0 10px rgba(0, 0, 0, 0.08); z-index: 1200; }
+    .sidebar-primary { width: 88px; background: linear-gradient(180deg, #2f47a6 0%, #1f2a78 100%); color: #fff; display: flex; flex-direction: column; align-items: center; padding: 10px 0; }
+    .sidebar-brand { width: 100%; padding: 6px 0 14px; text-align: center; }
+    .sidebar-brand h2 { color: #fff; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 17px; font-weight: 600; }
+    .brand-icon { width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.2); border-radius: 6px; font-size: 13px; flex-shrink: 0; }
+    .sidebar-nav { width: 100%; padding: 4px 0; }
+    .primary-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; height: 58px; margin: 6px 10px; border-radius: 10px; color: rgba(255, 255, 255, 0.8); text-decoration: none; font-size: 12px; }
+    .primary-item:hover, .primary-item.active { background: #0d5bff; color: #fff; }
+    .item-icon { font-size: 16px; }
+    .sidebar-submenu-panel { position: fixed; left: 88px; top: 0; bottom: 0; width: 184px; background: #fff; border-right: 1px solid #e5e7eb; padding: 18px 14px; transform: translateX(-100%); opacity: 0; pointer-events: none; transition: transform 0.24s ease, opacity 0.2s ease; z-index: 1202; box-shadow: 4px 0 18px rgba(0, 0, 0, 0.07); }
+    .sidebar-submenu-panel.open { transform: translateX(0); opacity: 1; pointer-events: auto; }
+    .submenu-title { font-size: 24px; color: #111827; margin-bottom: 14px; }
+    .submenu-item { display: block; color: #374151; text-decoration: none; padding: 10px 10px; margin-bottom: 6px; border-radius: 8px; font-size: 14px; }
+    .submenu-item:hover { background: #f3f4f6; }
+    .submenu-item.active { background: #eef2ff; color: #2563eb; font-weight: 600; }
+    .sidebar-backdrop { position: fixed; inset: 0; background: rgba(17, 24, 39, 0.32); opacity: 0; pointer-events: none; transition: opacity 0.2s ease; z-index: 1190; }
+    .app-layout.submenu-open .sidebar-backdrop { opacity: 1; pointer-events: auto; }
+    .main-content { flex: 1; min-height: 100vh; margin-left: 88px; background: #f5f7fa; }
+
+    .page-wrap { padding: 16px 20px 24px; }
+    .page-top-card { background: #fff; border-radius: 4px; border: 1px solid #ebeef5; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06); margin-bottom: 12px; }
+    .page-top-card-head { padding: 12px 20px 0; border-bottom: 1px solid #ebeef5; }
+    .page-section-label { font-size: 14px; font-weight: 600; color: #303133; padding-bottom: 10px; }
+    .tabs-strip { display: flex; gap: 8px; padding-bottom: 0; }
+    .tab-chip { display: inline-flex; align-items: center; padding: 8px 16px; font-size: 13px; color: #606266; border-radius: 4px 4px 0 0; border: 1px solid transparent; border-bottom: none; margin-bottom: -1px; background: transparent; cursor: default; }
+    .tab-chip.active { color: #409eff; font-weight: 600; background: #fff; border-color: #ebeef5; border-bottom-color: #fff; }
+
+    .panel { background: #fff; border-radius: 4px; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06); border: 1px solid #ebeef5; }
+    .panel-body { padding: 20px 20px 16px; }
+
+    .filter-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 16px; }
+    .filter-item { display: flex; align-items: center; gap: 8px; }
+    .filter-label { font-size: 13px; color: #606266; white-space: nowrap; }
+    .filter-control { height: 32px; border: 1px solid #dcdfe6; border-radius: 4px; padding: 0 10px; font-size: 13px; color: #606266; background: #fff; outline: none; min-width: 0; }
+    .filter-control:disabled { background: #f5f7fa; color: #a8abb2; cursor: not-allowed; }
+    .w-120 { width: 120px; }
+    .w-140 { width: 140px; }
+    .w-160 { width: 160px; }
+    .w-200 { width: 200px; }
+
+    .btn { height: 32px; padding: 0 14px; border-radius: 4px; border: 1px solid #dcdfe6; font-size: 13px; cursor: default; background: #fff; color: #606266; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-primary { background: #409eff; border-color: #409eff; color: #fff; }
+    .filter-actions { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+
+    .toolbar-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 10px; }
+    .toolbar-left { display: flex; align-items: center; gap: 10px; }
+    .toolbar-right { display: flex; align-items: center; gap: 12px; color: #909399; font-size: 18px; }
+    .toolbar-right span { cursor: default; opacity: 0.85; }
+
+    .table-outer { border: 1px solid #ebeef5; border-radius: 4px; overflow: auto; max-width: 100%; }
+    .data-table { width: max-content; min-width: 100%; border-collapse: collapse; }
+    .data-table th, .data-table td { padding: 10px 12px; font-size: 13px; color: #606266; border-bottom: 1px solid #ebeef5; text-align: left; vertical-align: middle; white-space: nowrap; }
+    .data-table th { background: #f5f7fa; color: #303133; font-weight: 500; position: sticky; top: 0; z-index: 1; }
+    .data-table tbody tr:hover { background: #fafafa; }
+    .data-table tfoot td { background: #fafafa; font-weight: 500; color: #303133; }
+    .cell-link { color: #409eff; cursor: pointer; text-decoration: none; }
+    .cell-link:hover { text-decoration: underline; }
+    .cell-placeholder { color: #c0c4cc; }
+
+    .filter-tags { display: flex; flex-wrap: wrap; gap: 8px; margin: -4px 0 14px; }
+    .filter-tag { display: inline-flex; align-items: center; padding: 4px 10px; font-size: 12px; color: #606266; background: #f4f4f5; border: 1px solid #e4e7ed; border-radius: 4px; }
+
+    .tabs-strip { align-items: flex-end; }
+    .tab-chip .tab-x, .tab-chip .tab-add { margin-left: 6px; font-size: 14px; color: #909399; opacity: 0.85; }
+    .tab-chip .tab-add { margin-left: 10px; font-weight: 600; }
+
+    .toolbar-link { font-size: 13px; color: #409eff; cursor: default; text-decoration: none; margin-right: 8px; }
+    .toolbar-right-tools { display: flex; align-items: center; gap: 14px; }
+
+    .data-table tbody tr:nth-child(even) { background: #fafafa; }
+    .data-table tbody tr:nth-child(even):hover { background: #f5f5f5; }
+    .cell-hint { display: inline-flex; margin-left: 4px; color: #c0c4cc; font-size: 12px; cursor: default; vertical-align: middle; }
+
+    .rl-heat { display: inline-flex; align-items: flex-end; gap: 2px; height: 18px; vertical-align: middle; }
+    .rl-heat i { display: block; width: 5px; border-radius: 1px; background: #e4e7ed; opacity: 0.85; }
+
+    .pagination-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; padding: 14px 4px 4px; font-size: 13px; color: #606266; }
+    .pagination-pages { display: flex; align-items: center; gap: 4px; }
+    .page-num { min-width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; border-radius: 4px; border: 1px solid #dcdfe6; cursor: default; background: #fff; }
+    .page-num.active { border-color: #409eff; color: #409eff; font-weight: 500; }
+    .page-ellipsis { padding: 0 4px; color: #909399; }
+
+    @media (max-width: 768px) {
+      .sidebar-submenu-panel, .sidebar-backdrop { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar-primary">
+        <div class="sidebar-brand">
+          <h2><span class="brand-icon">📦</span><span>OMS</span></h2>
+        </div>
+        <nav class="sidebar-nav">
+          <a class="primary-item" href="./index.html"><span class="item-icon">🏠</span><span class="item-label">首页</span></a>
+          <a class="primary-item" href="#"><span class="item-icon">⚙️</span><span class="item-label">数据决策</span></a>
+          <a class="primary-item" href="#"><span class="item-icon">⚙️</span><span class="item-label">运营工具</span></a>
+          <a class="primary-item" href="#"><span class="item-icon">⚙️</span><span class="item-label">目标</span></a>
+          <a class="primary-item active" href="#" data-submenu="replenish" data-primary-current="true"><span class="item-icon">⚙️</span><span class="item-label">补货</span></a>
+          <a class="primary-item" href="#" data-submenu="system"><span class="item-icon">⚙️</span><span class="item-label">系统配置</span></a>
+        </nav>
+      </div>
+      <div class="sidebar-submenu-panel" id="replenish-submenu">
+      
+        <a class="submenu-item active" href="./补货列表.html">补货列表</a>
+        <a class="submenu-item" href="./预测规则配置页面_v1.html">备货规则</a>
+        <a class="submenu-item" href="./预警页面_v1.html">预警模型</a>
+        <a class="submenu-item" href="./预警消息页面_v1.html">预警消息</a>
+      </div>
+      <div class="sidebar-submenu-panel" id="system-submenu">
+        <div class="submenu-title">系统配置</div>
+        <a class="submenu-item" href="./销量预测规则.html">销量预测规则</a>
+      </div>
+    </aside>
+
+    <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+    <main class="main-content">
+      
+
+        <div class="panel">
+          <div class="panel-body">
+            <div class="filter-bar">
+              <div class="filter-item">
+                <span class="filter-label">日期</span>
+                <input class="filter-control w-140" type="text" placeholder="起始年月" disabled value="" />
+                <span style="font-size:13px;color:#909399;">~</span>
+                <input class="filter-control w-140" type="text" placeholder="结束年月" disabled value="" />
+              </div>
+              <div class="filter-item">
+                <span class="filter-label">父SKU编号/SPU</span>
+                <input class="filter-control w-200" type="text" placeholder="请输入" disabled />
+              </div>
+              <div class="filter-item">
+                <span class="filter-label">父asin</span>
+                <input class="filter-control w-160" type="text" placeholder="请输入" disabled />
+              </div>
+              <div class="filter-item">
+                <span class="filter-label">平台</span>
+                <select class="filter-control w-120" disabled><option>全部</option></select>
+              </div>
+              <div class="filter-item">
+                <span class="filter-label">站点</span>
+                <select class="filter-control w-120" disabled><option>全部</option></select>
+              </div>
+              <div class="filter-item">
+                <span class="filter-label">店铺</span>
+                <select class="filter-control w-140" disabled><option>全部</option></select>
+              </div>
+              <div class="filter-item">
+                <span class="filter-label">链接级别</span>
+                <select class="filter-control w-120" disabled><option>全部</option></select>
+              </div>
+              <div class="filter-item">
+                <span class="filter-label">负责人</span>
+                <select class="filter-control w-120" disabled><option>全部</option></select>
+              </div>
+              <div class="filter-item">
+                <span class="filter-label">年度异常</span>
+                <select class="filter-control w-120" disabled><option>全部</option></select>
+              </div>
+              <div class="filter-actions">
+                <button type="button" class="btn btn-primary" disabled>🔍 搜索</button>
+                <button type="button" class="btn" disabled>重置</button>
+              </div>
+            </div>
+
+            <div class="filter-tags" aria-hidden="true">
+              <span class="filter-tag">年月：未选择范围</span>
+            </div>
+
+            <div class="toolbar-row">
+              <div class="toolbar-left">
+                <button type="button" class="btn btn-primary" disabled>参数配置</button>
+                <button type="button" class="btn" disabled>导出</button>
+                <span class="toolbar-link">导出历史</span>
+              </div>
+              <div class="toolbar-right toolbar-right-tools" aria-hidden="true">
+                <span title="刷新">↻</span>
+                <span title="列设置">☰</span>
+                <span title="全屏">⛶</span>
+              </div>
+            </div>
+
+            <div class="table-outer">
+              <table class="data-table" id="replenish-main-table">
+                <thead>
+                  <tr>
+                    <th style="width:40px;"><input type="checkbox" disabled title="结构展示" /></th>
+                    <th>父体编号</th>
+                    <th>父asin</th>
+                    <th>链接级别</th>
+                    <th>平台</th>
+                    <th>站点</th>
+                    <th>店铺</th>
+                    <th>SPU</th>
+                    <th>运营负责人</th>
+                    <th>平台在途</th>
+                    <th>物流在途</th>
+                    <th>本地仓</th>
+                    <th>采购在途</th>
+                    <th>总库存</th>
+                    <th>库存可售天数</th>
+                    <th>年度异常</th>
+                    <th style="min-width:88px;">趋势</th>
+                  </tr>
+                </thead>
+                <tbody id="replenish-list-tbody"></tbody>
+                <tfoot id="replenish-list-tfoot"></tfoot>
+              </table>
+            </div>
+
+            <div class="pagination-bar">
+              <span id="replenish-total-label">共 0 条</span>
+              <div class="pagination-pages">
+                <span class="page-num" title="上一页" style="opacity:.5;">‹</span>
+                <span class="page-num active">1</span>
+                <span class="page-num" title="下一页" style="opacity:.5;">›</span>
+                <span style="margin-left:8px;">跳至</span>
+                <input class="filter-control" style="width:48px;text-align:center;" type="text" value="1" disabled />
+                <span>页</span>
+                <select class="filter-control w-120" disabled style="margin-left:8px;"><option>20 条/页</option></select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    /** 与「销量预测规则」选择父体弹窗共用同一数据源（本页为权威存储，首次访问写入默认种子） */
+    var SF_REPLENISH_PARENT_LIST_KEY = 'sf_replenish_parent_list_v1';
+    function rlDefaultParentList() {
+      return [
+        { code: 'LFT00002261', asin: 'B083J69DSQ', album: '无', platform: 'Amazon', site: '美国', store: 'noorkie Inc-US', spu: 'ST18106', owner: '陈柏宏', days: '0/0' },
+        { code: 'LFT00002260', asin: 'B09K799DH7', album: '无', platform: 'Amazon', site: '美国', store: 'STQWALKING_sandbox-US', spu: 'ST210808', owner: '黄国阳', days: '0/0' },
+        { code: 'LFT00000784', asin: 'B07NV7QK7H', album: '无', platform: 'Amazon', site: '英国', store: 'STEP QUEEN INC-UK', spu: 'HK1839', owner: '黄利萍', days: '0/0' },
+        { code: 'LFT00000783', asin: 'B0F8GGJ7LK', album: '无', platform: 'Amazon', site: '英国', store: 'STEP QUEEN INC-UK', spu: 'STK2527157', owner: '余滢', days: '0/0' },
+        { code: 'LFT00000778', asin: 'B0F8GTKXQK', album: '无', platform: 'Amazon', site: '德国', store: 'STEP QUEEN INC-DE', spu: 'STK2527157', owner: '余滢', days: '0/0' },
+        { code: 'LFT00000755', asin: 'B0GLNK47Y9', album: '无', platform: 'Amazon', site: '美国', store: 'STQ Inc-US', spu: 'WT82527258', owner: '黄利萍', days: '0/5' }
+      ];
+    }
+    function rlLoadReplenishParentList() {
+      try {
+        var raw = localStorage.getItem(SF_REPLENISH_PARENT_LIST_KEY);
+        if (raw) {
+          var parsed = JSON.parse(raw);
+          if (Array.isArray(parsed) && parsed.length) return parsed;
+        }
+      } catch (e) {}
+      var def = rlDefaultParentList();
+      try {
+        localStorage.setItem(SF_REPLENISH_PARENT_LIST_KEY, JSON.stringify(def));
+      } catch (e2) {}
+      return def;
+    }
+
+    function rlEsc(s) {
+      if (s == null || s === undefined) return '';
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function rlHeatPlaceholder() {
+      var h = [4, 7, 5, 9, 6, 8, 5, 7, 6, 9];
+      var html = '<span class="rl-heat" aria-hidden="true">';
+      for (var i = 0; i < h.length; i++) {
+        html += '<i style="height:' + h[i] + 'px;"></i>';
+      }
+      html += '</span>';
+      return html;
+    }
+
+    function rlRenderTable() {
+      var list = rlLoadReplenishParentList();
+      var tbody = document.getElementById('replenish-list-tbody');
+      var tfoot = document.getElementById('replenish-list-tfoot');
+      var totalEl = document.getElementById('replenish-total-label');
+      tbody.innerHTML = '';
+      if (totalEl) totalEl.textContent = '共 ' + list.length + ' 条';
+
+      var ph = '<span class="cell-placeholder">—</span>';
+      if (list.length === 0) {
+        var tr = document.createElement('tr');
+        tr.innerHTML = '<td colspan="17" style="text-align:center;padding:28px;color:#909399;">暂无父体数据。可在控制台或后续接入接口维护「补货列表」主数据。</td>';
+        tbody.appendChild(tr);
+        tfoot.innerHTML = '';
+        return;
+      }
+
+      list.forEach(function(p) {
+        var tr = document.createElement('tr');
+        var daysCell = rlEsc(p.days || '');
+        tr.innerHTML =
+          '<td><input type="checkbox" disabled /></td>' +
+          '<td><a class="cell-link" href="./补货详情.html?code=' + encodeURIComponent(p.code) + '">' + rlEsc(p.code) + '</a></td>' +
+          '<td>' + rlEsc(p.asin) + '</td>' +
+          '<td>' + rlEsc(p.album) + '</td>' +
+          '<td>' + rlEsc(p.platform) + '</td>' +
+          '<td>' + rlEsc(p.site) + '</td>' +
+          '<td>' + rlEsc(p.store) + '</td>' +
+          '<td>' + rlEsc(p.spu) + '</td>' +
+          '<td>' + rlEsc(p.owner) + '</td>' +
+          '<td>' + ph + '</td><td>' + ph + '</td><td>' + ph + '</td><td>' + ph + '</td><td>' + ph + '</td>' +
+          '<td><span>' + daysCell + '</span><span class="cell-hint" title="说明">ⓘ</span></td>' +
+          '<td>' + ph + '<span class="cell-hint" title="说明">ⓘ</span></td>' +
+          '<td>' + rlHeatPlaceholder() + '</td>';
+        tbody.appendChild(tr);
+      });
+
+      tfoot.innerHTML =
+        '<tr>' +
+        '<td></td>' +
+        '<td colspan="8">合计</td>' +
+        '<td>' + ph + '</td><td>' + ph + '</td><td>' + ph + '</td><td>' + ph + '</td><td>' + ph + '</td>' +
+        '<td>' + ph + '</td><td>' + ph + '</td>' +
+        '<td></td>' +
+        '</tr>';
+    }
+
+    rlRenderTable();
+
+    window.addEventListener('pageshow', function() {
+      rlRenderTable();
+    });
+    window.addEventListener('storage', function(e) {
+      if (e.key === SF_REPLENISH_PARENT_LIST_KEY) rlRenderTable();
+    });
+
+    function initSidebarMenu() {
+      var appLayout = document.querySelector('.app-layout');
+      var backdrop = document.getElementById('sidebar-backdrop');
+      var replenishTrigger = document.querySelector('.primary-item[data-submenu="replenish"]');
+      var systemTrigger = document.querySelector('.primary-item[data-submenu="system"]');
+      var replenishPanel = document.getElementById('replenish-submenu');
+      var systemPanel = document.getElementById('system-submenu');
+      if (!appLayout || !backdrop) return;
+
+      function restorePrimaryCurrent() {
+        document.querySelectorAll('.primary-item[data-primary-current]').forEach(function(el) {
+          el.classList.add('active');
+        });
+      }
+
+      function closeAllSubmenus() {
+        appLayout.classList.remove('submenu-open');
+        if (replenishPanel) replenishPanel.classList.remove('open');
+        if (systemPanel) systemPanel.classList.remove('open');
+        if (replenishTrigger) replenishTrigger.classList.remove('active');
+        if (systemTrigger) systemTrigger.classList.remove('active');
+        restorePrimaryCurrent();
+      }
+
+      function bindToggle(trigger, panel) {
+        if (!trigger || !panel) return;
+        trigger.addEventListener('click', function(e) {
+          e.preventDefault();
+          if (panel.classList.contains('open')) {
+            closeAllSubmenus();
+            return;
+          }
+          appLayout.classList.remove('submenu-open');
+          if (replenishPanel) replenishPanel.classList.remove('open');
+          if (systemPanel) systemPanel.classList.remove('open');
+          if (replenishTrigger) replenishTrigger.classList.remove('active');
+          if (systemTrigger) systemTrigger.classList.remove('active');
+          document.querySelectorAll('.primary-item[data-primary-current]').forEach(function(el) {
+            el.classList.remove('active');
+          });
+          appLayout.classList.add('submenu-open');
+          panel.classList.add('open');
+          trigger.classList.add('active');
+        });
+      }
+
+      bindToggle(replenishTrigger, replenishPanel);
+      bindToggle(systemTrigger, systemPanel);
+      backdrop.addEventListener('click', closeAllSubmenus);
+      document.querySelectorAll('.sidebar-submenu-panel a.submenu-item').forEach(function(a) {
+        a.addEventListener('click', closeAllSubmenus);
+      });
+      document.querySelectorAll('.primary-item[href="#"]:not([data-submenu])').forEach(function(item) {
+        item.addEventListener('click', function(e) { e.preventDefault(); });
+      });
+    }
+
+    initSidebarMenu();
+  </script>
+</body>
+</html>
