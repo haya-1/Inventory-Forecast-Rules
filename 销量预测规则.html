@@ -281,6 +281,34 @@
 
     .action-row {
       margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .btn-cache-clear {
+      color: #909399;
+      border-color: #dcdfe6;
+    }
+
+    .btn-cache-clear:hover {
+      color: #f56c6c;
+      border-color: #fbc4c4;
+      background: #fef0f0;
+    }
+
+    .sf-rule-del-btn {
+      font-size: 12px;
+      padding: 4px 10px;
+      color: #f56c6c;
+      border-color: #fde2e2;
+      background: #fff;
+    }
+
+    .sf-rule-del-btn:hover {
+      background: #fef0f0;
+      border-color: #fbc4c4;
     }
 
     .table-wrap {
@@ -1329,18 +1357,23 @@
           <a class="primary-item" href="#"><span class="item-icon">⚙️</span><span class="item-label">目标</span></a>
           <a class="primary-item" href="#" data-submenu="replenish"><span class="item-icon">⚙️</span><span class="item-label">补货</span></a>
           <a class="primary-item active" href="#" data-submenu="system" data-primary-current="true"><span class="item-icon">⚙️</span><span class="item-label">系统配置</span></a>
+          <a class="primary-item" href="#" data-submenu="proto"><span class="item-icon">⚙️</span><span class="item-label">初始原型</span></a>
         </nav>
       </div>
       <div class="sidebar-submenu-panel" id="replenish-submenu">
         <a class="submenu-item" href="./补货列表.html">补货列表</a>
-        <a class="submenu-item" href="./预测规则配置页面_v1.html">备货规则</a>
-        <a class="submenu-item" href="./预警页面_v1.html">预警模型</a>
-        <a class="submenu-item" href="./预警消息页面_v1.html">预警消息</a>
       </div>
       <div class="sidebar-submenu-panel" id="system-submenu">
         <div class="submenu-title">系统配置</div>
         <a class="submenu-item active" href="./销量预测规则.html">销量预测规则</a>
       </div>
+      <div class="sidebar-submenu-panel" id="proto-submenu">
+        <div class="submenu-title">初始原型</div>
+        <a class="submenu-item" href="./预测规则配置页面_v1.html">备货规则</a>
+        <a class="submenu-item" href="./预警页面_v1.html">预警模型</a>
+        <a class="submenu-item" href="./预警消息页面_v1.html">预警消息</a>
+      </div>
+      
     </aside>
 
     <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
@@ -1374,6 +1407,7 @@
 
         <div class="action-row">
           <button type="button" class="btn btn-primary" id="btn-rule-add">+ 新增</button>
+          <button type="button" class="btn btn-cache-clear" id="btn-clear-prototype-cache" title="清除浏览器中本原型写入的 localStorage（父体列表、销量预测规则、预警规则等），页面将刷新">清除本地缓存</button>
         </div>
 
         <div class="table-wrap">
@@ -1388,6 +1422,7 @@
                 <th style="width: 160px;">创建时间</th>
                 <th style="width: 90px;">更新人</th>
                 <th style="width: 160px;">更新时间</th>
+                <th style="width: 72px; text-align: center;">操作</th>
               </tr>
             </thead>
             <tbody id="sf-rule-list-tbody"></tbody>
@@ -1558,8 +1593,10 @@
             <span class="sf-coeff-subhead-bar" aria-hidden="true"></span>
             <span class="sf-coeff-subhead-text">季节/市场系数</span>
           </div>
-          <div class="sf-coeff-body">
-            <div class="sf-coeff-sublabel">增长/衰减系数</div>
+          <div class="sf-coeff-body"> 
+            <p class="sf-rule-hint">
+              按月维护季节性系数，1 表示无调整，&gt;1 表示旺季增长，&lt;1 表示淡季衰减。例如泳衣夏季（7~8月）可填 1.3，冬季填 0.5。
+            </p>
             <div class="sf-season-table-wrap">
               <table class="sf-season-month-table">
                 <thead>
@@ -1596,9 +1633,6 @@
                 </tbody>
               </table>
             </div>
-            <p class="sf-rule-hint">
-              按月维护季节性系数，1 表示无调整，&gt;1 表示旺季增长，&lt;1 表示淡季衰减。例如泳衣夏季（7~8月）可填 1.3，冬季填 0.5。
-            </p>
           </div>
         </div>
 
@@ -1608,6 +1642,7 @@
             <span class="sf-coeff-subhead-text">同比销售系数</span>
           </div>
           <div class="sf-coeff-body">
+            <p class="sf-rule-hint">参考去年同期的销量趋势，确认增长是否健康且符合预期</p>
             <div class="sf-coeff-table-wrap">
               <table class="sf-coeff-data-table">
                 <thead>
@@ -1644,7 +1679,7 @@
               </table>
             </div>
             <button type="button" class="btn sf-coeff-add-btn" id="sf-coeff-yoy-add"><span>+</span> 添加</button>
-            <p class="sf-rule-hint">参考去年同期的销量趋势，确认增长是否健康且符合预期</p>
+            
           </div>
         </div>
 
@@ -1654,6 +1689,7 @@
             <span class="sf-coeff-subhead-text">产品生命周期系数（次新品/老品）</span>
           </div>
           <div class="sf-coeff-body">
+            <p class="sf-rule-hint">次新品处于增长期，系数 &gt; 1；老品处于衰减期，系数 &lt; 1</p>
             <div class="sf-coeff-table-wrap">
               <table class="sf-coeff-data-table">
                 <thead>
@@ -1695,7 +1731,6 @@
               </table>
             </div>
             <button type="button" class="btn sf-coeff-add-btn" id="sf-coeff-lifecycle-add"><span>+</span> 添加</button>
-            <p class="sf-rule-hint">次新品处于增长期，系数 &gt; 1；老品处于衰减期，系数 &lt; 1</p>
           </div>
         </div>
 
@@ -1705,6 +1740,7 @@
             <span class="sf-coeff-subhead-text">竞对价格系数</span>
           </div>
           <div class="sf-coeff-body">
+            <p class="sf-rule-hint">竞对降价时 &lt; 1（需求被分流），竞对涨价时 &gt; 1（需求流入）</p>
             <div class="sf-coeff-table-wrap">
               <table class="sf-coeff-data-table">
                 <thead>
@@ -1741,7 +1777,6 @@
               </table>
             </div>
             <button type="button" class="btn sf-coeff-add-btn" id="sf-coeff-competitor-add"><span>+</span> 添加</button>
-            <p class="sf-rule-hint">竞对降价时 &lt; 1（需求被分流），竞对涨价时 &gt; 1（需求流入）</p>
           </div>
         </div>
 
@@ -1751,6 +1786,7 @@
             <span class="sf-coeff-subhead-text">目标系数 / 目标置信率系数</span>
           </div>
           <div class="sf-coeff-body">
+            <p class="sf-rule-hint">反映公司销售目标与完成率的牵引力度，目标完成率高时可适当调高</p>
             <div class="sf-coeff-table-wrap">
               <table class="sf-coeff-data-table">
                 <thead>
@@ -1787,7 +1823,6 @@
               </table>
             </div>
             <button type="button" class="btn sf-coeff-add-btn" id="sf-coeff-target-add"><span>+</span> 添加</button>
-            <p class="sf-rule-hint">反映公司销售目标与完成率的牵引力度，目标完成率高时可适当调高</p>
           </div>
         </div>
       </section>
@@ -2013,8 +2048,10 @@
       var appLayout = document.querySelector('.app-layout');
       var backdrop = document.getElementById('sidebar-backdrop');
       var replenishTrigger = document.querySelector('.primary-item[data-submenu="replenish"]');
+      var protoTrigger = document.querySelector('.primary-item[data-submenu="proto"]');
       var systemTrigger = document.querySelector('.primary-item[data-submenu="system"]');
       var replenishPanel = document.getElementById('replenish-submenu');
+      var protoPanel = document.getElementById('proto-submenu');
       var systemPanel = document.getElementById('system-submenu');
       if (!appLayout || !backdrop) return;
 
@@ -2027,8 +2064,10 @@
       function closeAllSubmenus() {
         appLayout.classList.remove('submenu-open');
         if (replenishPanel) replenishPanel.classList.remove('open');
+        if (protoPanel) protoPanel.classList.remove('open');
         if (systemPanel) systemPanel.classList.remove('open');
         if (replenishTrigger) replenishTrigger.classList.remove('active');
+        if (protoTrigger) protoTrigger.classList.remove('active');
         if (systemTrigger) systemTrigger.classList.remove('active');
         restorePrimaryCurrent();
       }
@@ -2044,8 +2083,10 @@
           }
           appLayout.classList.remove('submenu-open');
           if (replenishPanel) replenishPanel.classList.remove('open');
+          if (protoPanel) protoPanel.classList.remove('open');
           if (systemPanel) systemPanel.classList.remove('open');
           if (replenishTrigger) replenishTrigger.classList.remove('active');
+          if (protoTrigger) protoTrigger.classList.remove('active');
           if (systemTrigger) systemTrigger.classList.remove('active');
           document.querySelectorAll('.primary-item[data-primary-current]').forEach(function(el) {
             el.classList.remove('active');
@@ -2057,6 +2098,7 @@
       }
 
       bindToggle(replenishTrigger, replenishPanel);
+      bindToggle(protoTrigger, protoPanel);
       bindToggle(systemTrigger, systemPanel);
 
       backdrop.addEventListener('click', closeAllSubmenus);
@@ -2214,7 +2256,7 @@
               f.target = [
                 { d0: '2026-01-01', d1: '2026-06-30', growth: 'up', coeff: '1.05', note: '渠道目标上调 5%' }
               ];
-              f.autoDenoise = { x: '12', y: '1.15', largeEnabled: true };
+              f.autoDenoise = { x: '4', y: '2', largeEnabled: true };
               f.dateDenoise = [
                 { type: '固定值去噪', d0: '2026-01-15', d1: '2026-01-20', value: '45', note: '仓库盘点停发' },
                 { type: '百分比去噪', d0: '2026-03-01', d1: '2026-03-03', value: '60', note: '抓数异常按 60% 缩放' }
@@ -2233,11 +2275,11 @@
             id: 'SF20260408001',
             name: '欧洲站平滑预测',
             enabled: false,
-            parentLabel: '全部父体',
+            parentLabel: 'LFT00000784、LFT00000783',
             form: (function() {
               var f = JSON.parse(JSON.stringify(d));
               f.name = '欧洲站平滑预测';
-              f.parentCodes = [];
+              f.parentCodes = ['LFT00000784','LFT00000783'];
               f.dailyWeights = { '3': 0, '7': 20, '14': 40, '30': 30, '60': 10, '90': 0 };
               f.promos = [
                 { name: 'Summer Sale EU', start: '2026-06-15', end: '2026-06-22', daily: '210' },
@@ -2274,11 +2316,11 @@
             id: 'SF20260412001',
             name: '新品爬坡预测',
             enabled: true,
-            parentLabel: 'HK1839001、HK1839002',
+            parentLabel: 'LFT00000778、LFT00000755',
             form: (function() {
               var f = JSON.parse(JSON.stringify(d));
               f.name = '新品爬坡预测';
-              f.parentCodes = ['HK1839001', 'HK1839002'];
+              f.parentCodes = ['LFT00000778','LFT00000755'];
               f.dailyWeights = { '3': 25, '7': 45, '14': 25, '30': 5, '60': 0, '90': 0 };
               f.promos = [
                 { name: '新品上线推广', start: '2026-04-01', end: '2026-05-15', daily: '85' },
@@ -2637,7 +2679,11 @@
             '<td>' + sfEscHtml(r.createdBy || '') + '</td>' +
             '<td>' + sfEscHtml(r.createdAt || '') + '</td>' +
             '<td>' + sfEscHtml(r.updatedBy || '') + '</td>' +
-            '<td>' + sfEscHtml(r.updatedAt || '') + '</td>';
+            '<td>' + sfEscHtml(r.updatedAt || '') + '</td>' +
+            '<td style="text-align:center;white-space:nowrap;">' +
+            '<button type="button" class="btn sf-rule-del-btn" data-rule-id="' +
+            sfEscAttr(r.id) +
+            '" aria-label="删除">删除</button></td>';
           tbody.appendChild(tr);
         });
         if (countEl) countEl.textContent = '共 ' + rules.length + ' 条';
@@ -2845,6 +2891,10 @@
           return;
         }
         state.name = nm;
+        if (!state.parentCodes || !state.parentCodes.length) {
+          alert('请选择适用父体');
+          return;
+        }
         var rules = loadRules();
         var now = sfFormatNow();
         var user = '当前用户';
@@ -2877,7 +2927,6 @@
         }
         saveRules(rules);
         renderRuleList(rules);
-        sfSaveCheckedParentsToStorage();
         sfEditingRuleId = null;
         closeRuleDrawer();
       });
@@ -3196,6 +3245,28 @@
       var sfListPanel = document.querySelector('.page-wrap .panel-body');
       if (sfListPanel) {
         sfListPanel.addEventListener('click', function(e) {
+          var delBtn = e.target.closest('button.sf-rule-del-btn[data-rule-id]');
+          if (delBtn) {
+            e.preventDefault();
+            var ridDel = delBtn.getAttribute('data-rule-id');
+            if (!ridDel) return;
+            var rulesDel = loadRules();
+            var ruleDel = rulesDel.filter(function(x) {
+              return x.id === ridDel;
+            })[0];
+            if (!ruleDel) return;
+            if (!confirm('确定删除规则「' + (ruleDel.name || ridDel) + '」？')) return;
+            var nextRules = rulesDel.filter(function(x) {
+              return x.id !== ridDel;
+            });
+            saveRules(nextRules);
+            renderRuleList(nextRules);
+            if (sfEditingRuleId === ridDel) {
+              sfEditingRuleId = null;
+              closeRuleDrawer();
+            }
+            return;
+          }
           var link = e.target.closest('a.link-name[data-rule-id]');
           if (!link) return;
           e.preventDefault();
@@ -3218,6 +3289,33 @@
       }
 
       renderRuleList();
+    })();
+  </script>
+  <script>
+    (function () {
+      var PROTOTYPE_LS_KEYS = [
+        'sf_replenish_parent_list_v1',
+        'sf_sales_forecast_rules_v1',
+        'alertRules',
+        'alertRuleIdCounter'
+      ];
+      var btn = document.getElementById('btn-clear-prototype-cache');
+      if (!btn) return;
+      btn.addEventListener('click', function () {
+        if (
+          !confirm(
+            '确定清除浏览器本地缓存？\n将移除父体列表、销量预测规则、预警规则等原型数据，页面会刷新恢复为默认种子数据。'
+          )
+        ) {
+          return;
+        }
+        PROTOTYPE_LS_KEYS.forEach(function (k) {
+          try {
+            localStorage.removeItem(k);
+          } catch (e) {}
+        });
+        location.reload();
+      });
     })();
   </script>
 </body>

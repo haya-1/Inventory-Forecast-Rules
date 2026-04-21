@@ -110,18 +110,21 @@
           <a class="primary-item" href="#"><span class="item-icon">⚙️</span><span class="item-label">目标</span></a>
           <a class="primary-item active" href="#" data-submenu="replenish" data-primary-current="true"><span class="item-icon">⚙️</span><span class="item-label">补货</span></a>
           <a class="primary-item" href="#" data-submenu="system"><span class="item-icon">⚙️</span><span class="item-label">系统配置</span></a>
+          <a class="primary-item" href="#" data-submenu="proto"><span class="item-icon">⚙️</span><span class="item-label">初始原型</span></a>
         </nav>
       </div>
       <div class="sidebar-submenu-panel" id="replenish-submenu">
-      
         <a class="submenu-item active" href="./补货列表.html">补货列表</a>
-        <a class="submenu-item" href="./预测规则配置页面_v1.html">备货规则</a>
-        <a class="submenu-item" href="./预警页面_v1.html">预警模型</a>
-        <a class="submenu-item" href="./预警消息页面_v1.html">预警消息</a>
       </div>
       <div class="sidebar-submenu-panel" id="system-submenu">
         <div class="submenu-title">系统配置</div>
         <a class="submenu-item" href="./销量预测规则.html">销量预测规则</a>
+      </div>
+      <div class="sidebar-submenu-panel" id="proto-submenu">
+        <div class="submenu-title">初始原型</div>
+        <a class="submenu-item" href="./预测规则配置页面_v1.html">备货规则</a>
+        <a class="submenu-item" href="./预警页面_v1.html">预警模型</a>
+        <a class="submenu-item" href="./预警消息页面_v1.html">预警消息</a>
       </div>
     </aside>
 
@@ -343,8 +346,10 @@
       var appLayout = document.querySelector('.app-layout');
       var backdrop = document.getElementById('sidebar-backdrop');
       var replenishTrigger = document.querySelector('.primary-item[data-submenu="replenish"]');
+      var protoTrigger = document.querySelector('.primary-item[data-submenu="proto"]');
       var systemTrigger = document.querySelector('.primary-item[data-submenu="system"]');
       var replenishPanel = document.getElementById('replenish-submenu');
+      var protoPanel = document.getElementById('proto-submenu');
       var systemPanel = document.getElementById('system-submenu');
       if (!appLayout || !backdrop) return;
 
@@ -357,8 +362,10 @@
       function closeAllSubmenus() {
         appLayout.classList.remove('submenu-open');
         if (replenishPanel) replenishPanel.classList.remove('open');
+        if (protoPanel) protoPanel.classList.remove('open');
         if (systemPanel) systemPanel.classList.remove('open');
         if (replenishTrigger) replenishTrigger.classList.remove('active');
+        if (protoTrigger) protoTrigger.classList.remove('active');
         if (systemTrigger) systemTrigger.classList.remove('active');
         restorePrimaryCurrent();
       }
@@ -373,8 +380,10 @@
           }
           appLayout.classList.remove('submenu-open');
           if (replenishPanel) replenishPanel.classList.remove('open');
+          if (protoPanel) protoPanel.classList.remove('open');
           if (systemPanel) systemPanel.classList.remove('open');
           if (replenishTrigger) replenishTrigger.classList.remove('active');
+          if (protoTrigger) protoTrigger.classList.remove('active');
           if (systemTrigger) systemTrigger.classList.remove('active');
           document.querySelectorAll('.primary-item[data-primary-current]').forEach(function(el) {
             el.classList.remove('active');
@@ -386,6 +395,7 @@
       }
 
       bindToggle(replenishTrigger, replenishPanel);
+      bindToggle(protoTrigger, protoPanel);
       bindToggle(systemTrigger, systemPanel);
       backdrop.addEventListener('click', closeAllSubmenus);
       document.querySelectorAll('.sidebar-submenu-panel a.submenu-item').forEach(function(a) {

@@ -173,6 +173,48 @@
       background: #fff;
     }
 
+    .home-cache-card {
+      margin: 24px;
+      max-width: 520px;
+      padding: 20px 22px;
+      background: #fff;
+      border: 1px solid #ebeef5;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+    }
+
+    .home-cache-card h1 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #303133;
+      margin-bottom: 8px;
+    }
+
+    .home-cache-card p {
+      font-size: 13px;
+      color: #909399;
+      line-height: 1.6;
+      margin-bottom: 14px;
+    }
+
+    .home-cache-btn {
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 16px;
+      font-size: 13px;
+      color: #606266;
+      background: #fff;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .home-cache-btn:hover {
+      color: #f56c6c;
+      border-color: #fbc4c4;
+      background: #fef0f0;
+    }
+
     @media (max-width: 768px) {
       .sidebar-submenu-panel,
       .sidebar-backdrop {
@@ -195,32 +237,70 @@
           <a class="primary-item" href="#"><span class="item-icon">⚙️</span><span class="item-label">目标</span></a>
           <a class="primary-item" href="#" data-submenu="replenish"><span class="item-icon">⚙️</span><span class="item-label">补货</span></a>
           <a class="primary-item" href="#" data-submenu="system"><span class="item-icon">⚙️</span><span class="item-label">系统配置</span></a>
+          <a class="primary-item" href="#" data-submenu="proto"><span class="item-icon">⚙️</span><span class="item-label">初始原型</span></a>
         </nav>
       </div>
       <div class="sidebar-submenu-panel" id="replenish-submenu">
         <a class="submenu-item" href="./补货列表.html">补货列表</a>
-        <a class="submenu-item" href="./预测规则配置页面_v1.html">备货规则</a>
-        <a class="submenu-item" href="./预警页面_v1.html">预警模型</a>
-        <a class="submenu-item" href="./预警消息页面_v1.html">预警消息</a>
       </div>
       <div class="sidebar-submenu-panel" id="system-submenu">
         <div class="submenu-title">系统配置</div>
         <a class="submenu-item" href="./销量预测规则.html">销量预测规则</a>
       </div>
+      <div class="sidebar-submenu-panel" id="proto-submenu">
+        <div class="submenu-title">初始原型</div>
+        <a class="submenu-item" href="./预测规则配置页面_v1.html">备货规则</a>
+        <a class="submenu-item" href="./预警页面_v1.html">预警模型</a>
+        <a class="submenu-item" href="./预警消息页面_v1.html">预警消息</a>
+      </div>
     </aside>
 
     <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
 
-    <main class="main-content"></main>
+    <main class="main-content">
+      <div class="home-cache-card">
+        <h1>原型调试</h1>
+        <p>一键清除本原型在浏览器中保存的 localStorage（父体列表、销量预测规则、预警规则等），刷新后恢复默认种子数据。</p>
+        <button type="button" class="home-cache-btn" id="home-btn-clear-cache">清除本地缓存</button>
+      </div>
+    </main>
   </div>
 
   <script>
+    (function () {
+      var PROTOTYPE_LS_KEYS = [
+        'sf_replenish_parent_list_v1',
+        'sf_sales_forecast_rules_v1',
+        'alertRules',
+        'alertRuleIdCounter'
+      ];
+      var btn = document.getElementById('home-btn-clear-cache');
+      if (!btn) return;
+      btn.addEventListener('click', function () {
+        if (
+          !confirm(
+            '确定清除浏览器本地缓存？\n将移除父体列表、销量预测规则、预警规则等原型数据，页面会刷新。'
+          )
+        ) {
+          return;
+        }
+        PROTOTYPE_LS_KEYS.forEach(function (k) {
+          try {
+            localStorage.removeItem(k);
+          } catch (e) {}
+        });
+        location.reload();
+      });
+    })();
+
     function initSidebarMenu() {
       var appLayout = document.querySelector('.app-layout');
       var backdrop = document.getElementById('sidebar-backdrop');
       var replenishTrigger = document.querySelector('.primary-item[data-submenu="replenish"]');
+      var protoTrigger = document.querySelector('.primary-item[data-submenu="proto"]');
       var systemTrigger = document.querySelector('.primary-item[data-submenu="system"]');
       var replenishPanel = document.getElementById('replenish-submenu');
+      var protoPanel = document.getElementById('proto-submenu');
       var systemPanel = document.getElementById('system-submenu');
       if (!appLayout || !backdrop) return;
 
@@ -233,8 +313,10 @@
       function closeAllSubmenus() {
         appLayout.classList.remove('submenu-open');
         if (replenishPanel) replenishPanel.classList.remove('open');
+        if (protoPanel) protoPanel.classList.remove('open');
         if (systemPanel) systemPanel.classList.remove('open');
         if (replenishTrigger) replenishTrigger.classList.remove('active');
+        if (protoTrigger) protoTrigger.classList.remove('active');
         if (systemTrigger) systemTrigger.classList.remove('active');
         restorePrimaryCurrent();
       }
@@ -250,8 +332,10 @@
           }
           appLayout.classList.remove('submenu-open');
           if (replenishPanel) replenishPanel.classList.remove('open');
+          if (protoPanel) protoPanel.classList.remove('open');
           if (systemPanel) systemPanel.classList.remove('open');
           if (replenishTrigger) replenishTrigger.classList.remove('active');
+          if (protoTrigger) protoTrigger.classList.remove('active');
           if (systemTrigger) systemTrigger.classList.remove('active');
           document.querySelectorAll('.primary-item[data-primary-current]').forEach(function(el) {
             el.classList.remove('active');
@@ -263,6 +347,7 @@
       }
 
       bindToggle(replenishTrigger, replenishPanel);
+      bindToggle(protoTrigger, protoPanel);
       bindToggle(systemTrigger, systemPanel);
 
       backdrop.addEventListener('click', closeAllSubmenus);

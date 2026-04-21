@@ -104,6 +104,10 @@
     .rd-rule-table th, .rd-rule-table td { border: 1px solid #ebeef5; padding: 10px 12px; text-align: left; }
     .rd-rule-table th { background: #f5f7fa; color: #303133; font-weight: 500; }
     .rd-rule-empty { color: #909399; font-size: 13px; padding: 8px 0; }
+    .rd-fc-rule-fields { display: flex; flex-wrap: wrap; align-items: center; gap: 20px 28px; margin-bottom: 4px; }
+    .rd-fc-rule-fields label { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: #606266; }
+    .rd-fc-rule-fields select.filter-control { min-width: 200px; cursor: pointer; background: #fff; color: #303133; }
+    .rd-fc-rule-fields input[readonly].filter-control { min-width: 240px; background: #f5f7fa; color: #303133; cursor: default; }
     .rd-parse-flow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 13px; color: #606266; margin-bottom: 16px; }
     .rd-parse-flow .step { background: #f4f4f5; padding: 6px 12px; border-radius: 4px; border: 1px solid #e4e7ed; }
     .rd-parse-flow .arrow { color: #c0c4cc; }
@@ -152,17 +156,21 @@
           <a class="primary-item" href="#"><span class="item-icon">⚙️</span><span class="item-label">目标</span></a>
           <a class="primary-item active" href="#" data-submenu="replenish" data-primary-current="true"><span class="item-icon">⚙️</span><span class="item-label">补货</span></a>
           <a class="primary-item" href="#" data-submenu="system"><span class="item-icon">⚙️</span><span class="item-label">系统配置</span></a>
+          <a class="primary-item" href="#" data-submenu="proto"><span class="item-icon">⚙️</span><span class="item-label">初始原型</span></a>
         </nav>
       </div>
       <div class="sidebar-submenu-panel" id="replenish-submenu">
         <a class="submenu-item" href="./补货列表.html">补货列表</a>
-        <a class="submenu-item" href="./预测规则配置页面_v1.html">备货规则</a>
-        <a class="submenu-item" href="./预警页面_v1.html">预警模型</a>
-        <a class="submenu-item" href="./预警消息页面_v1.html">预警消息</a>
       </div>
       <div class="sidebar-submenu-panel" id="system-submenu">
         <div class="submenu-title">系统配置</div>
         <a class="submenu-item" href="./销量预测规则.html">销量预测规则</a>
+      </div>
+      <div class="sidebar-submenu-panel" id="proto-submenu">
+        <div class="submenu-title">初始原型</div>
+        <a class="submenu-item" href="./预测规则配置页面_v1.html">备货规则</a>
+        <a class="submenu-item" href="./预警页面_v1.html">预警模型</a>
+        <a class="submenu-item" href="./预警消息页面_v1.html">预警消息</a>
       </div>
     </aside>
 
@@ -185,6 +193,11 @@
     function rdEsc(s) {
       if (s == null || s === undefined) return '';
       return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function rdEscAttr(s) {
+      if (s == null || s === undefined) return '';
+      return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
     }
 
     function rdGetQueryCode() {
@@ -257,7 +270,7 @@
       if (c) c.resize();
     }
 
-    function rdPaintForecastChart(parentCode, rules) {
+    function rdPaintForecastChart(parentCode, selectedRule) {
       var host = document.getElementById('rd-fc-chart-host');
       if (!host) return;
       if (rdForecastChartInstance) {
@@ -266,7 +279,7 @@
       }
       host.innerHTML = '';
 
-      var rid = (rules && rules[0] && rules[0].id) ? rules[0].id : '';
+      var rid = selectedRule && selectedRule.id ? selectedRule.id : '';
       var seed = rdHashStr(parentCode + '|' + rid);
       var n = 30;
       var pred = [];
@@ -342,20 +355,46 @@
       }
     }
 
-    function rdForecastRulesTableHtml(rules) {
-      if (!rules || !rules.length) {
-        return '<p class="rd-rule-empty">当前父体未匹配到启用中的销量预测规则。请在「销量预测规则」中配置适用范围包含本父体、且已启用的规则。</p>';
+    function rdGetSalesRuleById(ruleId) {
+      if (!ruleId) return null;
+      var all = rdLoadSalesForecastRules();
+      return all.filter(function(r) {
+        return r && r.id === ruleId;
+      })[0] || null;
+    }
+
+    /** 销量预测 Tab 顶部：规则编号下拉 + 只读规则名称 */
+    function rdBuildForecastRuleFieldsHtml(applicable) {
+      if (!applicable || !applicable.length) {
+        return (
+          '<p class="rd-rule-empty">当前父体未匹配到启用中的销量预测规则。请在「销量预测规则」中配置适用范围包含本父体、且已启用的规则。</p>' +
+            '<div class="rd-fc-rule-fields" style="display:none;" aria-hidden="true">' +
+            '<label>规则编号 <select id="rd-fc-rule-select" class="filter-control" disabled><option value="">—</option></select></label>' +
+            '<label>规则名称 <input type="text" id="rd-fc-rule-name" class="filter-control" readonly value="" placeholder="—" /></label></div>'
+        );
       }
-      var rows = rules.map(function(r) {
-        return '<tr><td>' + rdEsc(r.id || '') + '</td><td>' + rdEsc(r.name || '') + '</td></tr>';
+      var first = applicable[0];
+      var opts = applicable.map(function(r) {
+        return '<option value="' + rdEscAttr(r.id) + '"' + (r.id === first.id ? ' selected' : '') + '>' + rdEsc(r.id) + '</option>';
       }).join('');
-      return '<table class="rd-rule-table"><thead><tr><th style="min-width:140px;">规则编号</th><th>规则名称</th></tr></thead><tbody>' + rows + '</tbody></table>';
+      return (
+        '<div class="rd-fc-rule-fields">' +
+          '<label for="rd-fc-rule-select">规则编号</label>' +
+          '<select id="rd-fc-rule-select" class="filter-control" title="切换当前父体适用的预测规则">' +
+          opts +
+          '</select>' +
+          '<label for="rd-fc-rule-name">规则名称</label>' +
+          '<input type="text" id="rd-fc-rule-name" class="filter-control" readonly value="' +
+          rdEscAttr(first.name || '') +
+          '" placeholder="—" />' +
+          '</div>'
+      );
     }
 
     /** 与种子规则 SF20260410001 一致，供 localStorage 无数据时演示 */
     var RD_FALLBACK_FORM_SF20260410001 = {
       dailyWeights: { '3': 10, '7': 35, '14': 25, '30': 20, '60': 10, '90': 0 },
-      autoDenoise: { x: '12', y: '1.15', largeEnabled: true },
+      autoDenoise: { x: '4', y: '2', largeEnabled: true },
       dateDenoise: [
         { type: '固定值去噪', d0: '2026-01-15', d1: '2026-01-20', value: '45', note: '仓库盘点停发' },
         { type: '百分比去噪', d0: '2026-03-01', d1: '2026-03-03', value: '60', note: '抓数异常按 60% 缩放' }
@@ -374,36 +413,36 @@
       target: [{ d0: '2026-01-01', d1: '2026-06-30', growth: 'up', coeff: '1.05', note: '渠道目标上调 5%' }]
     };
 
-    function rdGetFormForLftDemo() {
-      try {
-        var rules = rdLoadSalesForecastRules();
-        var r = rules.filter(function(x) { return x && x.id === 'SF20260410001'; })[0];
-        if (r && r.form) return r.form;
-      } catch (e) {}
-      return RD_FALLBACK_FORM_SF20260410001;
-    }
-
-    function rdBuildCalcProcessHtml(parentCode) {
-      if (parentCode !== 'LFT00002261') {
-        return (
-          '<div class="rd-parse-placeholder">当前仅对父体 <strong>LFT00002261</strong> 与规则 <strong>SF20260410001</strong>（北美站加权预测）展示完整计算过程示例。其它父体暂时放空，后续接入。</div>'
-        );
+    /** 根据当前选中的规则展示计算过程；元数据来自规则表单，示意数字随父体+规则略变以示区分 */
+    function rdBuildCalcProcessHtml(parentCode, ruleId) {
+      var rule = rdGetSalesRuleById(ruleId);
+      var f = rule && rule.form ? rule.form : null;
+      if (!f) {
+        return '<div class="rd-parse-placeholder">未选择规则，或所选规则无完整配置。请在上方选择一条适用于本父体的销量预测规则。</div>';
       }
-      var f = rdGetFormForLftDemo();
       var w = f.dailyWeights || {};
-      var ad = f.autoDenoise || { x: '12', y: '1.15', largeEnabled: true };
-      var dd = (f.dateDenoise && f.dateDenoise.length >= 2) ? f.dateDenoise : RD_FALLBACK_FORM_SF20260410001.dateDenoise;
-      var rd = (f.returnDenoise && f.returnDenoise.length) ? f.returnDenoise : RD_FALLBACK_FORM_SF20260410001.returnDenoise;
+      var ad = f.autoDenoise || { x: '4', y: '2', largeEnabled: true };
+      var dd =
+        f.dateDenoise && f.dateDenoise.length >= 2
+          ? f.dateDenoise
+          : RD_FALLBACK_FORM_SF20260410001.dateDenoise.slice();
+      var rd =
+        f.returnDenoise && f.returnDenoise.length
+          ? f.returnDenoise
+          : RD_FALLBACK_FORM_SF20260410001.returnDenoise.slice();
+      if (!dd[0]) dd[0] = RD_FALLBACK_FORM_SF20260410001.dateDenoise[0];
       if (!dd[1]) dd[1] = RD_FALLBACK_FORM_SF20260410001.dateDenoise[1];
+      if (!rd[0]) rd[0] = RD_FALLBACK_FORM_SF20260410001.returnDenoise[0];
 
       var winStart = '2026-01-18';
       var winEnd = '2026-04-16';
 
-      var mu3 = 122.4;
-      var mu7 = 119.8;
-      var mu14 = 116.2;
-      var mu30 = 114.0;
-      var mu60 = 110.5;
+      var jitter = (rdHashStr(String(parentCode) + '|' + String(ruleId)) % 17) * 0.35;
+      var mu3 = Math.round((122.4 + jitter) * 10) / 10;
+      var mu7 = Math.round((119.8 + jitter * 0.9) * 10) / 10;
+      var mu14 = Math.round((116.2 + jitter * 0.8) * 10) / 10;
+      var mu30 = Math.round((114.0 + jitter * 0.7) * 10) / 10;
+      var mu60 = Math.round((110.5 + jitter * 0.6) * 10) / 10;
       var w3 = (parseFloat(w['3']) || 0) / 100;
       var w7 = (parseFloat(w['7']) || 0) / 100;
       var w14 = (parseFloat(w['14']) || 0) / 100;
@@ -415,8 +454,18 @@
       var kSeason = 0.995;
       var kYoy = 1.096;
       var kLife = 1.118;
-      var kComp = 0.936;
-      var kTarget = 1.05;
+      var kCompRaw =
+        f.competitor && f.competitor[0] && f.competitor[0].coeff != null && f.competitor[0].coeff !== ''
+          ? parseFloat(f.competitor[0].coeff)
+          : NaN;
+      var kComp = !isNaN(kCompRaw) ? kCompRaw : 0.936;
+      kComp = Math.round(kComp * 1000) / 1000;
+      var kTargetRaw =
+        f.target && f.target[0] && f.target[0].coeff != null && f.target[0].coeff !== ''
+          ? parseFloat(f.target[0].coeff)
+          : NaN;
+      var kTarget = !isNaN(kTargetRaw) ? kTargetRaw : 1.05;
+      kTarget = Math.round(kTarget * 1000) / 1000;
       var K = kSeason * kYoy * kLife * kComp * kTarget;
       K = Math.round(K * 10000) / 10000;
       var dailyFinal = Math.round(X * K * 100) / 100;
@@ -426,12 +475,12 @@
       h += '<div class="rd-metro">';
       h += '<div class="rd-metro-stop"><span class="rd-metro-node" aria-hidden="true"></span><div class="rd-metro-card">';
       h += '<div class="rd-metro-h">① 销量去噪（得到近 90 天每日销量集合 A）</div>';
-      h += '<div class="rd-metro-formula">对滑动窗口 <code>[' + rdEsc(winStart) + ' ~ ' + rdEsc(winEnd) + ']</code> 内每日<strong>原始实际销量</strong>依次套用以下去噪规则；若同一天命中多条，按「自动大额 → 日期去噪 → 退货去噪」顺序覆盖。最终结果记为集合 <code>A = {a<sub>1</sub>…a<sub>90</sub>}</code>。</div>';
+      h += '<div class="rd-metro-formula">对滑动窗口 <code>[' + rdEsc(winStart) + ' ~ ' + rdEsc(winEnd) + ']</code> 内每日<strong>原始实际销量</strong>依次套用以下去噪规则；若同一天命中多条，按「大订单去噪 → 日期去噪 → 退货去噪」顺序覆盖。最终结果记为集合 <code>A = {a<sub>1</sub>…a<sub>90</sub>}</code>。</div>';
 
-      h += '<div class="rd-metro-sub"><h4>规则1 · 自动大额去噪</h4>';
-      h += '<div class="rd-metro-formula">若某日销量 <code>&gt; 近' + rdEsc(ad.x) + '日算术平均 × ' + rdEsc(ad.y) + '</code>（大额阈值），将该日销量替换为 <code>均值 × ' + rdEsc(ad.y) + '</code>；元数据：大额检测 ' + (ad.largeEnabled !== false ? '开启' : '关闭') + '。</div>';
+      h += '<div class="rd-metro-sub"><h4>规则1 · 大订单去噪</h4>';
+      h += '<div class="rd-metro-formula">在<strong>订单粒度</strong>判断：若某笔订单某产品销量 <code>≥ ' + rdEsc(ad.x) + '</code>（阈值），则该笔该产品在计入日销量时改为 <code>' + rdEsc(ad.y) + '</code>（固定值）；逐笔处理后再汇总到自然日。元数据：大订单去噪 ' + (ad.largeEnabled !== false ? '开启' : '关闭') + '。</div>';
       h += '<table class="rd-mini-table"><thead><tr><th>元数据</th><th>本例计算结果（示意）</th></tr></thead><tbody>';
-      h += '<tr><td>近' + rdEsc(ad.x) + '日均（去噪前粗算）≈ 105.2</td><td>命中 2 天触发截断，该 2 天修正后分别 118.6、121.0</td></tr></tbody></table></div>';
+      h += '<tr><td>阈值 <code>' + rdEsc(ad.x) + '</code>，固定替换 <code>' + rdEsc(ad.y) + '</code></td><td>窗口内若干笔 ≥ 阈值的订单先按固定值再汇总至日销，削峰。</td></tr></tbody></table></div>';
 
       h += '<div class="rd-metro-sub"><h4>规则2 · 日期固定值去噪</h4>';
       h += '<div class="rd-metro-formula">区间 <code>[' + rdEsc(dd[0].d0) + ' ~ ' + rdEsc(dd[0].d1) + ']</code> 内日销量替换为 <code>' + rdEsc(dd[0].value) + '</code>（与近 90 天交集共 6 天）。</div>';
@@ -472,8 +521,26 @@
       h += '<tr><td>季节</td><td>12 个月系数配置</td><td>' + kSeason + '（1–4 月加权）</td></tr>';
       h += '<tr><td>同比</td><td>两段日期系数 1.08 / 1.12</td><td>' + kYoy + '（与窗口重合分段加权）</td></tr>';
       h += '<tr><td>生命周期</td><td>次新品 1.15 / 老品 0.95</td><td>' + kLife + '</td></tr>';
-      h += '<tr><td>竞对</td><td>' + rdEsc((f.competitor && f.competitor[0] && f.competitor[0].d0) || '') + ' ~ ' + rdEsc((f.competitor && f.competitor[0] && f.competitor[0].d1) || '') + '，系数 0.92</td><td>' + kComp + '（部分覆盖）</td></tr>';
-      h += '<tr><td>目标</td><td>' + rdEsc((f.target && f.target[0] && f.target[0].d0) || '') + ' ~ ' + rdEsc((f.target && f.target[0] && f.target[0].d1) || '') + '，系数 1.05</td><td>' + kTarget + '</td></tr>';
+      h +=
+        '<tr><td>竞对</td><td>' +
+        rdEsc((f.competitor && f.competitor[0] && f.competitor[0].d0) || '') +
+        ' ~ ' +
+        rdEsc((f.competitor && f.competitor[0] && f.competitor[0].d1) || '') +
+        '，系数 ' +
+        rdEsc((f.competitor && f.competitor[0] && f.competitor[0].coeff) || String(kComp)) +
+        '</td><td>' +
+        kComp +
+        '（部分覆盖）</td></tr>';
+      h +=
+        '<tr><td>目标</td><td>' +
+        rdEsc((f.target && f.target[0] && f.target[0].d0) || '') +
+        ' ~ ' +
+        rdEsc((f.target && f.target[0] && f.target[0].d1) || '') +
+        '，系数 ' +
+        rdEsc((f.target && f.target[0] && f.target[0].coeff) || String(kTarget)) +
+        '</td><td>' +
+        kTarget +
+        '</td></tr>';
       h += '</tbody></table>';
       h += '<div class="rd-metro-formula">连乘：<code>K = ' + kSeason + ' × ' + kYoy + ' × ' + kLife + ' × ' + kComp + ' × ' + kTarget + ' ≈ ' + K + '</code></div>';
       h += '<div class="rd-metro-result">示意预测日均 ≈ X × K = ' + X + ' × ' + K + ' ≈ <strong>' + dailyFinal + '</strong>（不含促销与其它业务校正）</div>';
@@ -481,6 +548,30 @@
 
       h += '</div>';
       return h;
+    }
+
+    function rdInitForecastRuleSelector(parentCode, applicableForecast) {
+      var sel = document.getElementById('rd-fc-rule-select');
+      var nameInp = document.getElementById('rd-fc-rule-name');
+      var calcHost = document.getElementById('rd-fc-calc-process');
+
+      function applyByRuleId(rid) {
+        var rule = applicableForecast.filter(function(r) {
+          return r && r.id === rid;
+        })[0];
+        if (nameInp) nameInp.value = rule ? rule.name || '' : '';
+        rdPaintForecastChart(parentCode, rule || null);
+        if (calcHost) calcHost.innerHTML = rdBuildCalcProcessHtml(parentCode, rid);
+      }
+
+      if (!sel || sel.disabled || !applicableForecast || !applicableForecast.length) {
+        rdPaintForecastChart(parentCode, null);
+        return;
+      }
+      sel.addEventListener('change', function() {
+        applyByRuleId(sel.value);
+      });
+      applyByRuleId(sel.value);
     }
 
     function rdRender() {
@@ -496,6 +587,8 @@
 
       var p = rdLoadParentByCode(code);
       var applicableForecast = rdFindApplicableForecastRules(code);
+      var defaultRuleId =
+        applicableForecast && applicableForecast[0] && applicableForecast[0].id ? applicableForecast[0].id : '';
       var asin = (p.asin || '').trim();
       var titleExtra = asin ? '<span class="rd-asin">' + rdEsc(asin) + '</span>' : '<span class="rd-asin muted">—</span>';
 
@@ -588,6 +681,12 @@
         '<div class="rd-fc-inner">' +
 
         '<div class="rd-module">' +
+        '<div class="rd-module-hd">预测规则</div>' +
+        '<div class="rd-module-bd">' +
+        rdBuildForecastRuleFieldsHtml(applicableForecast) +
+        '</div></div>' +
+
+        '<div class="rd-module">' +
         '<div class="rd-module-hd">销量预测结果</div>' +
         '<div class="rd-module-bd">' +
         '<p class="rd-fc-hint">' + rdEsc(chartHint) + '</p>' +
@@ -595,19 +694,16 @@
         '</div></div>' +
 
         '<div class="rd-module">' +
-        '<div class="rd-module-hd">预测规则</div>' +
-        '<div class="rd-module-bd">' + rdForecastRulesTableHtml(applicableForecast) + '</div></div>' +
-
-        '<div class="rd-module">' +
         '<div class="rd-module-hd">计算过程解析</div>' +
         '<div class="rd-module-bd">' +
-        rdBuildCalcProcessHtml(code) +
-        '</div></div>' +
+        '<div id="rd-fc-calc-process">' +
+        rdBuildCalcProcessHtml(code, defaultRuleId) +
+        '</div></div></div>' +
 
         '</div>' +
         '</div>' +
         '</div>';
-      rdPaintForecastChart(code, applicableForecast);
+      rdInitForecastRuleSelector(code, applicableForecast);
     }
 
     function rdSetTab(name) {
@@ -645,8 +741,10 @@
       var appLayout = document.querySelector('.app-layout');
       var backdrop = document.getElementById('sidebar-backdrop');
       var replenishTrigger = document.querySelector('.primary-item[data-submenu="replenish"]');
+      var protoTrigger = document.querySelector('.primary-item[data-submenu="proto"]');
       var systemTrigger = document.querySelector('.primary-item[data-submenu="system"]');
       var replenishPanel = document.getElementById('replenish-submenu');
+      var protoPanel = document.getElementById('proto-submenu');
       var systemPanel = document.getElementById('system-submenu');
       if (!appLayout || !backdrop) return;
 
@@ -659,8 +757,10 @@
       function closeAllSubmenus() {
         appLayout.classList.remove('submenu-open');
         if (replenishPanel) replenishPanel.classList.remove('open');
+        if (protoPanel) protoPanel.classList.remove('open');
         if (systemPanel) systemPanel.classList.remove('open');
         if (replenishTrigger) replenishTrigger.classList.remove('active');
+        if (protoTrigger) protoTrigger.classList.remove('active');
         if (systemTrigger) systemTrigger.classList.remove('active');
         restorePrimaryCurrent();
       }
@@ -675,8 +775,10 @@
           }
           appLayout.classList.remove('submenu-open');
           if (replenishPanel) replenishPanel.classList.remove('open');
+          if (protoPanel) protoPanel.classList.remove('open');
           if (systemPanel) systemPanel.classList.remove('open');
           if (replenishTrigger) replenishTrigger.classList.remove('active');
+          if (protoTrigger) protoTrigger.classList.remove('active');
           if (systemTrigger) systemTrigger.classList.remove('active');
           document.querySelectorAll('.primary-item[data-primary-current]').forEach(function(el) {
             el.classList.remove('active');
@@ -688,6 +790,7 @@
       }
 
       bindToggle(replenishTrigger, replenishPanel);
+      bindToggle(protoTrigger, protoPanel);
       bindToggle(systemTrigger, systemPanel);
       backdrop.addEventListener('click', closeAllSubmenus);
       document.querySelectorAll('.sidebar-submenu-panel a.submenu-item').forEach(function(a) {
