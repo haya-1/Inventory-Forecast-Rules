@@ -287,14 +287,19 @@
       }
     }
 
-    /** 启用且适用当前父体的规则：parentCodes 为空表示全部父体，否则需包含当前编号 */
+    /**
+     * 已启用且**显式**包含本父体编号的规则。不再支持「全量父体」占位（空 parentCodes 不匹配任何父体）。
+     * 正常数据下每个父体只应对应 0 或 1 条；若出现多条，详情页会提示并取首条展示。
+     */
     function rdFindApplicableForecastRules(parentCode) {
+      if (!parentCode) return [];
       var all = rdLoadSalesForecastRules();
       var out = [];
       all.forEach(function(r) {
         if (!r || r.enabled === false) return;
         var codes = (r.form && r.form.parentCodes) ? r.form.parentCodes : [];
-        if (codes.length === 0 || codes.indexOf(parentCode) !== -1) {
+        if (codes.length === 0) return;
+        if (codes.indexOf(parentCode) !== -1) {
           out.push(r);
         }
       });
@@ -397,11 +402,18 @@
       };
     }
 
+    function rdDefaultDenoiseBlockEnabled() {
+      return { date: true };
+    }
+
     function rdMergeForecastForm(f) {
       var b = RD_FALLBACK_FORM_SF20260410001;
+      var dbe = rdDefaultDenoiseBlockEnabled();
+      if (f && f.denoiseBlockEnabled && f.denoiseBlockEnabled.date === false) dbe.date = false;
       var o = {
         dailyWeights: (f && f.dailyWeights) ? f.dailyWeights : b.dailyWeights,
         autoDenoise: (f && f.autoDenoise) ? f.autoDenoise : b.autoDenoise,
+        denoiseBlockEnabled: dbe,
         dateDenoise:
           f && f.dateDenoise && f.dateDenoise.length >= 2
             ? f.dateDenoise
@@ -414,7 +426,9 @@
         yoy: (f && f.yoy && f.yoy.length) ? f.yoy : b.yoy.slice(),
         lifecycle: (f && f.lifecycle && f.lifecycle.length) ? f.lifecycle : b.lifecycle.slice(),
         competitor: (f && f.competitor && f.competitor.length) ? f.competitor : b.competitor.slice(),
-        target: (f && f.target && f.target.length) ? f.target : b.target.slice()
+        target: (f && f.target && f.target.length) ? f.target : b.target.slice(),
+        /* 促销销量：暂时不从规则带入预测，始终空数组。 */
+        promos: []
       };
       return o;
     }
@@ -535,7 +549,9 @@
       var afterLarge = 0;
       for (var o = 0; o < orders.length; o++) afterLarge += orders[o];
 
-      var afterDate = rdApplyDateDenoiseRows(afterLarge, ds, form.dateDenoise || []);
+      var dbeD = (form.denoiseBlockEnabled || rdDefaultDenoiseBlockEnabled());
+      var datePass = dbeD.date === false ? [] : (form.dateDenoise || []);
+      var afterDate = rdApplyDateDenoiseRows(afterLarge, ds, datePass);
       var afterReturn = rdApplyReturnRows(afterDate, ds, form.returnDenoise || []);
 
       return {
@@ -837,8 +853,8 @@
         var panel = document.getElementById('rd-panel-forecast');
         var parentCode = panel && panel.getAttribute('data-parent-code');
         if (!parentCode) return;
-        var sel = document.getElementById('rd-fc-rule-select');
-        var rid = sel && sel.value ? sel.value : '';
+        var ridInp = document.getElementById('rd-fc-rule-id');
+        var rid = ridInp && ridInp.value ? ridInp.value : '';
         var rules = rdFindApplicableForecastRules(parentCode);
         var rule = rid ? rules.filter(function(r) { return r && r.id === rid; })[0] : null;
         var calcHost2 = document.getElementById('rd-fc-calc-process');
@@ -960,31 +976,41 @@
       })[0] || null;
     }
 
-    /** 销量预测 Tab 顶部：规则编号下拉 + 只读规则名称 */
+    /** 销量预测 Tab 顶部：规则编号 + 只读规则名称（不支持下拉，一父体对应展示一条命中规则） */
     function rdBuildForecastRuleFieldsHtml(applicable) {
-      if (!applicable || !applicable.length) {
+      applicable = applicable || [];
+      if (!applicable.length) {
         return (
-          '<p class="rd-rule-empty">当前父体未匹配到启用中的销量预测规则。请在「销量预测规则」中配置适用范围包含本父体、且已启用的规则。</p>' +
+          '<p class="rd-rule-empty">当前父体未匹配到已启用、且显式圈选本父体编号的规则。请在「销量预测规则」中编辑模板，在适用父体中勾选本父体并保存（每个父体仅能被一条规则占用）。</p>' +
             '<div class="rd-fc-rule-fields" style="display:none;" aria-hidden="true">' +
-            '<label>规则编号 <select id="rd-fc-rule-select" class="filter-control" disabled><option value="">—</option></select></label>' +
-            '<label>规则名称 <input type="text" id="rd-fc-rule-name" class="filter-control" readonly value="" placeholder="—" /></label></div>'
+            '<input type="hidden" id="rd-fc-rule-id" value="" />' +
+            '</div>'
         );
       }
-      var first = applicable[0];
-      var opts = applicable.map(function(r) {
-        return '<option value="' + rdEscAttr(r.id) + '"' + (r.id === first.id ? ' selected' : '') + '>' + rdEsc(r.id) + '</option>';
-      }).join('');
+      var r0 = applicable[0];
+      var warn =
+        applicable.length > 1
+          ? '<p class="rd-rule-warn" style="color:#e6a23c;font-size:13px;margin:0 0 10px;line-height:1.5;">数据异常：本父体同时出现在 <strong>' +
+            applicable.length +
+            '</strong> 条已启用规则的适用父体中（应唯一）。已按首条 <code>' +
+            rdEsc(r0.id) +
+            '</code> 展示。请在「销量预测规则」中各父体只保留一条规则。</p>'
+          : '';
       return (
+        warn +
         '<div class="rd-fc-rule-fields">' +
-          '<label for="rd-fc-rule-select">规则编号</label>' +
-          '<select id="rd-fc-rule-select" class="filter-control" title="切换当前父体适用的预测规则">' +
-          opts +
-          '</select>' +
-          '<label for="rd-fc-rule-name">规则名称</label>' +
-          '<input type="text" id="rd-fc-rule-name" class="filter-control" readonly value="' +
-          rdEscAttr(first.name || '') +
-          '" placeholder="—" />' +
-          '</div>'
+        '<input type="hidden" id="rd-fc-rule-id" value="' +
+        rdEscAttr(r0.id) +
+        '" />' +
+        '<label for="rd-fc-rule-id-display">规则编号</label>' +
+        '<input type="text" id="rd-fc-rule-id-display" class="filter-control" readonly value="' +
+        rdEscAttr(r0.id) +
+        '" title="当前命中的预测规则编号" />' +
+        '<label for="rd-fc-rule-name">规则名称</label>' +
+        '<input type="text" id="rd-fc-rule-name" class="filter-control" readonly value="' +
+        rdEscAttr(r0.name || '') +
+        '" placeholder="—" />' +
+        '</div>'
       );
     }
 
@@ -992,7 +1018,7 @@
     function rdBuildCalcProcessHtml(parentCode, ruleId) {
       var rule = ruleId ? rdGetSalesRuleById(ruleId) : null;
       if (ruleId && (!rule || !rule.form)) {
-        return '<div class="rd-parse-placeholder">未选择规则，或所选规则无完整配置。请在上方选择一条适用于本父体的销量预测规则。</div>';
+        return '<div class="rd-parse-placeholder">未选择规则，或所选规则无完整配置。请确认本父体在「销量预测规则」的适用父体中仅绑定一条已启用规则。</div>';
       }
       var form = rdMergeForecastForm(rule && rule.form ? rule.form : null);
       var seed = rdHashStr(String(parentCode) + '|' + String(ruleId));
@@ -1307,21 +1333,24 @@
     }
 
     function rdInitForecastRuleSelector(parentCode, applicableForecast) {
-      var sel = document.getElementById('rd-fc-rule-select');
+      applicableForecast = applicableForecast || [];
       var nameInp = document.getElementById('rd-fc-rule-name');
+      var idHidden = document.getElementById('rd-fc-rule-id');
       var calcHost = document.getElementById('rd-fc-calc-process');
 
       function applyByRuleId(rid) {
-        var rule = applicableForecast.filter(function(r) {
-          return r && r.id === rid;
-        })[0];
+        var rule = rid
+          ? applicableForecast.filter(function(r) {
+              return r && r.id === rid;
+            })[0]
+          : null;
         if (nameInp) nameInp.value = rule ? rule.name || '' : '';
-        if (calcHost) calcHost.innerHTML = rdBuildCalcProcessHtml(parentCode, rid);
+        if (calcHost) calcHost.innerHTML = rdBuildCalcProcessHtml(parentCode, rid || '');
         rdInitCalcProcessCharts(parentCode, rid || '');
         rdPaintForecastChart(parentCode, rule || null);
       }
 
-      if (!sel || sel.disabled || !applicableForecast || !applicableForecast.length) {
+      if (!applicableForecast.length) {
         if (calcHost) {
           calcHost.innerHTML = rdBuildCalcProcessHtml(parentCode, '');
           rdInitCalcProcessCharts(parentCode, '');
@@ -1329,10 +1358,8 @@
         rdPaintForecastChart(parentCode, null);
         return;
       }
-      sel.addEventListener('change', function() {
-        applyByRuleId(sel.value);
-      });
-      applyByRuleId(sel.value);
+      var rid0 = (idHidden && idHidden.value) || (applicableForecast[0] && applicableForecast[0].id) || '';
+      applyByRuleId(rid0);
     }
 
     function rdRender() {
@@ -1355,7 +1382,7 @@
 
       var chartHint = applicableForecast.length
         ? '<strong>蓝线</strong>：模拟原始日销 → 去噪得 A → 加权得 X → 按规则系数得到的<strong>预测日销量</strong>（与本页解析同源）。<strong>绿线</strong>：<strong>同比实际销量</strong>，横轴每个预测日对应<strong>去年同日（−364 天）</strong>的模拟真实日销（去噪后与 A 口径一致）；接入服务端后替换为真实同比口径。'
-        : '当前未匹配到启用规则；下列为默认规则 + 模拟日销管线。在「销量预测规则」中启用并适用本父体后将按所选规则重算。';
+        : '当前未匹配到已启用、且已圈选本父体的规则；下列为默认配置 + 模拟日销管线。在「销量预测规则」中为该父体配置唯一一条启用规则后，将按该条重算。';
 
       var ph = '<span class="v muted">—</span>';
       root.innerHTML =
