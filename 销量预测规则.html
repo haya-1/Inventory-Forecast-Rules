@@ -1011,6 +1011,11 @@
       flex-wrap: wrap;
     }
 
+    .sf-coeff-inp[type='date'] {
+      min-width: 130px;
+      width: 130px;
+    }
+
     .sf-coeff-inp {
       height: 32px;
       border: 1px solid #dcdfe6;
@@ -1579,11 +1584,11 @@
         <div class="drawer-section-head">3. 影响系数</div>
 
         <div class="sf-coeff-formula">
-          <div class="sf-coeff-formula-title">最终动态日销量公式</div>
+          <div class="sf-coeff-formula-title">各日预测日销量（概念说明）</div>
           <div class="sf-coeff-formula-formula">
-            动态日销量 = 基础日销量 × 季节/市场系数 × 促销系数 × 同比销售系数 × 次新品/老品系数 × 竞对价格系数
+            由「销量去噪 + 日销规则」得到<strong>基础日销量 X</strong>后，再连乘季节、同比、生命周期、竞对、目标等系数，得到<strong>未来各自然日</strong>的<strong>预测日销量</strong>；分段系数行中的起止<strong>日期</strong>表示该系数对未来预测区间内<strong>每一天</strong>生效的区间（精确到日）。促销覆盖日仍可按促销模块单独覆盖默认日销。
           </div>
-          <div class="sf-coeff-formula-note">各系数默认值为 1（不影响），大于1为增量调整，小于1为减量调整</div>
+          <div class="sf-coeff-formula-note">各系数默认值为 1；&gt;1 为增量，&lt;1 为减量。季节系数仍按日历月（1–12 月）映射到每一天。</div>
         </div>
 
         <div class="sf-coeff-part-title">日销量影响系数</div>
@@ -1595,7 +1600,7 @@
           </div>
           <div class="sf-coeff-body"> 
             <p class="sf-rule-hint">
-              按月维护季节性系数，1 表示无调整，&gt;1 表示旺季增长，&lt;1 表示淡季衰减。例如泳衣夏季（7~8月）可填 1.3，冬季填 0.5。
+              按<strong>自然月</strong>维护季节性系数，用于匹配<strong>未来预测</strong>时各月份：1 表示无调整，&gt;1 旺季，&lt;1 淡季。例如泳衣可在 7–8 月填 1.3、冬季填 0.5。
             </p>
             <div class="sf-season-table-wrap">
               <table class="sf-season-month-table">
@@ -1642,13 +1647,13 @@
             <span class="sf-coeff-subhead-text">同比销售系数</span>
           </div>
           <div class="sf-coeff-body">
-            <p class="sf-rule-hint">参考去年同期的销量趋势，确认增长是否健康且符合预期</p>
+            <p class="sf-rule-hint">同比系数生效的<strong>起止日期</strong>（年-月-日），对区间内<strong>每个预测自然日</strong>分别生效。</p>
             <div class="sf-coeff-table-wrap">
               <table class="sf-coeff-data-table">
                 <thead>
                   <tr>
                     <th style="width:56px;">序号</th>
-                    <th>时间段</th>
+                    <th>起止日期（预测区间）</th>
                     <th class="sf-coeff-col-growth" style="min-width:120px;">增长/衰减</th>
                     <th style="min-width:100px;">系数值</th>
                     <th style="min-width:160px;">说明</th>
@@ -1689,14 +1694,14 @@
             <span class="sf-coeff-subhead-text">产品生命周期系数（次新品/老品）</span>
           </div>
           <div class="sf-coeff-body">
-            <p class="sf-rule-hint">次新品处于增长期，系数 &gt; 1；老品处于衰减期，系数 &lt; 1</p>
+            <p class="sf-rule-hint">次新品处于增长期，系数 &gt; 1；老品处于衰减期，系数 &lt; 1。时间范围为<strong>起止日期</strong>（精确到日）。</p>
             <div class="sf-coeff-table-wrap">
               <table class="sf-coeff-data-table">
                 <thead>
                   <tr>
                     <th style="width:56px;">序号</th>
                     <th style="min-width:120px;">生命周期类型</th>
-                    <th>时间段</th>
+                    <th>起止日期（预测区间）</th>
                     <th class="sf-coeff-col-growth" style="min-width:120px;">增长/衰减</th>
                     <th style="min-width:100px;">比例系数</th>
                     <th style="width:64px;">操作</th>
@@ -1740,13 +1745,13 @@
             <span class="sf-coeff-subhead-text">竞对价格系数</span>
           </div>
           <div class="sf-coeff-body">
-            <p class="sf-rule-hint">竞对降价时 &lt; 1（需求被分流），竞对涨价时 &gt; 1（需求流入）</p>
+            <p class="sf-rule-hint">竞对降价时 &lt; 1（需求被分流），竞对涨价时 &gt; 1（需求流入）。区间为<strong>起止日期</strong>（精确到日）。</p>
             <div class="sf-coeff-table-wrap">
               <table class="sf-coeff-data-table">
                 <thead>
                   <tr>
                     <th style="width:56px;">序号</th>
-                    <th>时间段</th>
+                    <th>起止日期（预测区间）</th>
                     <th class="sf-coeff-col-growth" style="min-width:120px;">增长/衰减</th>
                     <th style="min-width:100px;">系数值</th>
                     <th style="min-width:160px;">说明</th>
@@ -1786,13 +1791,13 @@
             <span class="sf-coeff-subhead-text">目标系数 / 目标置信率系数</span>
           </div>
           <div class="sf-coeff-body">
-            <p class="sf-rule-hint">反映公司销售目标与完成率的牵引力度，目标完成率高时可适当调高</p>
+            <p class="sf-rule-hint">反映销售目标牵引力度；区间为<strong>起止日期</strong>（精确到日）。</p>
             <div class="sf-coeff-table-wrap">
               <table class="sf-coeff-data-table">
                 <thead>
                   <tr>
                     <th style="width:56px;">序号</th>
-                    <th>时间段</th>
+                    <th>起止日期（预测区间）</th>
                     <th class="sf-coeff-col-growth" style="min-width:120px;">增长/衰减</th>
                     <th style="min-width:100px;">系数值</th>
                     <th style="min-width:160px;">说明</th>
@@ -2175,6 +2180,24 @@
         return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
       }
 
+      /** 影响系数区间存 yyyy-mm-dd；兼容历史仅到月（yyyy-mm：起日取月初、止日取月末） */
+      function sfToDateInputValue(v, endOfMonth) {
+        if (v == null || v === '') return '';
+        var s = String(v).trim();
+        if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+        if (/^\d{4}-\d{2}$/.test(s)) {
+          if (endOfMonth) {
+            var y = parseInt(s.slice(0, 4), 10);
+            var m = parseInt(s.slice(5, 7), 10);
+            if (isNaN(y) || isNaN(m) || m < 1 || m > 12) return s + '-01';
+            var last = new Date(y, m, 0).getDate();
+            return s + '-' + (last < 10 ? '0' : '') + last;
+          }
+          return s + '-01';
+        }
+        return s;
+      }
+
       function getDefaultFormState() {
         return {
           name: '',
@@ -2387,9 +2410,9 @@
         return (
           '<td></td>' +
           '<td><div class="sf-coeff-dates">' +
-          '<input type="date" class="sf-coeff-inp" style="width:130px;" value="' + sfEscAttr(row.d0) + '" />' +
+          '<input type="date" class="sf-coeff-inp" style="width:130px;" value="' + sfEscAttr(sfToDateInputValue(row.d0, false)) + '" />' +
           '<span>至</span>' +
-          '<input type="date" class="sf-coeff-inp" style="width:130px;" value="' + sfEscAttr(row.d1) + '" />' +
+          '<input type="date" class="sf-coeff-inp" style="width:130px;" value="' + sfEscAttr(sfToDateInputValue(row.d1, true)) + '" />' +
           '</div></td>' +
           '<td class="sf-coeff-col-growth"><select class="sf-coeff-sel">' +
           '<option value="up"' + (g === 'up' ? ' selected' : '') + '>增长 ↑</option>' +
@@ -2410,9 +2433,9 @@
           '<option' + (lt === '次新品' ? ' selected' : '') + '>次新品</option>' +
           '<option' + (lt === '老品' ? ' selected' : '') + '>老品</option></select></td>' +
           '<td><div class="sf-coeff-dates">' +
-          '<input type="date" class="sf-coeff-inp" style="width:130px;" value="' + sfEscAttr(row.d0) + '" />' +
+          '<input type="date" class="sf-coeff-inp" style="width:130px;" value="' + sfEscAttr(sfToDateInputValue(row.d0, false)) + '" />' +
           '<span>至</span>' +
-          '<input type="date" class="sf-coeff-inp" style="width:130px;" value="' + sfEscAttr(row.d1) + '" />' +
+          '<input type="date" class="sf-coeff-inp" style="width:130px;" value="' + sfEscAttr(sfToDateInputValue(row.d1, true)) + '" />' +
           '</div></td>' +
           '<td class="sf-coeff-col-growth"><select class="sf-coeff-sel">' +
           '<option value="up"' + (g === 'up' ? ' selected' : '') + '>同比增长</option>' +

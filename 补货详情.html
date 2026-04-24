@@ -98,7 +98,17 @@
     #rd-panel-forecast .rd-module { margin-bottom: 16px; }
     #rd-panel-forecast .rd-module:last-child { margin-bottom: 0; }
     .rd-fc-hint { font-size: 12px; color: #909399; margin-bottom: 12px; line-height: 1.5; }
-    .rd-fc-chart-host { width: 100%; max-width: 920px; height: 200px; margin: 0 auto; }
+    .rd-fc-hint strong { font-weight: 600; color: #606266; }
+    .rd-fc-chart-host {
+      width: 100%;
+      max-width: none;
+      min-height: 300px;
+      height: 320px;
+      margin: 0 auto;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    .rd-fc-chart-host svg { shape-rendering: geometricPrecision; }
     .rd-fc-chart-fallback { min-height: 120px; display: flex; align-items: center; justify-content: center; color: #909399; font-size: 13px; border: 1px dashed #dcdfe6; border-radius: 4px; background: #fafafa; }
     .rd-rule-table { width: 100%; border-collapse: collapse; font-size: 13px; }
     .rd-rule-table th, .rd-rule-table td { border: 1px solid #ebeef5; padding: 10px 12px; text-align: left; }
@@ -113,7 +123,7 @@
     .rd-parse-flow .arrow { color: #c0c4cc; }
     .rd-parse-placeholder { min-height: 120px; border: 1px dashed #dcdfe6; border-radius: 4px; background: #fafafa; display: flex; align-items: center; justify-content: center; color: #909399; font-size: 13px; text-align: center; padding: 16px; line-height: 1.6; }
 
-    .rd-metro { position: relative; padding-left: 32px; max-width: 920px; }
+    .rd-metro { position: relative; padding-left: 32px; max-width: 100%; }
     .rd-metro::before { content: ''; position: absolute; left: 11px; top: 18px; bottom: 18px; width: 4px; background: linear-gradient(180deg, #409eff 0%, #67c23a 55%, #e6a23c 100%); border-radius: 2px; opacity: 0.85; }
     .rd-metro-stop { position: relative; margin-bottom: 28px; }
     .rd-metro-stop:last-child { margin-bottom: 4px; }
@@ -130,6 +140,46 @@
     .rd-metro-result { margin-top: 10px; padding: 10px 12px; background: #ecf5ff; border-radius: 6px; font-size: 13px; color: #409eff; font-weight: 600; }
     .rd-metro-sub { margin-top: 12px; padding-top: 12px; border-top: 1px dashed #dcdfe6; }
     .rd-metro-sub h4 { font-size: 13px; color: #606266; margin-bottom: 8px; font-weight: 600; }
+
+    .rd-metro-split { display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap; }
+    .rd-metro-split__main { flex: 1; min-width: 280px; }
+    .rd-metro-split__side {
+      flex: 0 0 42%;
+      min-width: 300px;
+      max-width: 560px;
+      border: 1px solid #ebeef5;
+      border-radius: 8px;
+      padding: 12px;
+      background: #fafbfc;
+      position: sticky;
+      top: 12px;
+    }
+    .rd-parse-chart-title { font-size: 13px; font-weight: 600; color: #303133; margin-bottom: 8px; }
+    .rd-parse-chart-note { font-size: 11px; color: #909399; margin-top: 8px; line-height: 1.5; }
+    .rd-parse-echart-host { width: 100%; height: 260px; }
+    .rd-parse-echart-host--tall { height: 300px; }
+    .rd-coeff-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px 18px;
+      margin-bottom: 12px;
+      padding: 10px 12px;
+      background: #f5f7fa;
+      border-radius: 6px;
+      border: 1px solid #ebeef5;
+    }
+    .rd-coeff-toolbar-h { font-size: 13px; font-weight: 600; color: #606266; margin-right: 4px; }
+    .rd-coeff-toolbar label {
+      font-size: 13px;
+      color: #606266;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .rd-coeff-toolbar input { width: 16px; height: 16px; accent-color: #409eff; cursor: pointer; }
 
     .rd-empty { padding: 48px 24px; text-align: center; color: #909399; font-size: 14px; }
     .rd-empty a { color: #409eff; text-decoration: none; }
@@ -260,7 +310,543 @@
       return Math.abs(h) + 1;
     }
 
+    /** 与种子规则 SF20260410001 一致；管线默认表单（localStorage 无数据或字段缺失时补齐） */
+    var RD_FALLBACK_FORM_SF20260410001 = {
+      dailyWeights: { '3': 10, '7': 35, '14': 25, '30': 20, '60': 10, '90': 0 },
+      autoDenoise: { x: '4', y: '2', largeEnabled: true },
+      dateDenoise: [
+        { type: '固定值去噪', d0: '2026-01-15', d1: '2026-01-20', value: '45', note: '仓库盘点停发' },
+        { type: '百分比去噪', d0: '2026-03-01', d1: '2026-03-03', value: '60', note: '抓数异常按 60% 缩放' }
+      ],
+      returnDenoise: [{ d0: '2025-11-01', d1: '2026-01-31', pct: '8', note: '旺季退货率偏高' }],
+      season: ['0.92', '0.95', '1', '1.02', '1.05', '1.08', '1.1', '1.12', '1.05', '1', '0.98', '1.15'],
+      yoy: [
+        { d0: '2025-01-01', d1: '2025-06-30', growth: 'up', coeff: '1.08', note: '去年同期活动基数偏低' },
+        { d0: '2025-07-01', d1: '2025-12-31', growth: 'up', coeff: '1.12', note: '促销季同比抬升' }
+      ],
+      lifecycle: [
+        { lifeType: '次新品', d0: '2025-09-01', d1: '2026-03-31', growth: 'up', coeff: '1.15' },
+        { lifeType: '老品', d0: '2026-04-01', d1: '', growth: 'down', coeff: '0.95' }
+      ],
+      competitor: [{ d0: '2026-02-01', d1: '2026-04-30', growth: 'down', coeff: '0.92', note: '竞对降价约 8%' }],
+      target: [{ d0: '2026-01-01', d1: '2026-06-30', growth: 'up', coeff: '1.05', note: '渠道目标上调 5%' }]
+    };
+
+    function rdZ2(n) {
+      return n < 10 ? '0' + n : '' + n;
+    }
+
+    function rdParseYMD(s) {
+      if (!s || !String(s).trim()) return null;
+      var p = String(s).trim().split('-');
+      if (p.length < 3) return null;
+      var y = parseInt(p[0], 10);
+      var m = parseInt(p[1], 10);
+      var d = parseInt(p[2], 10);
+      if (isNaN(y) || isNaN(m) || isNaN(d)) return null;
+      return new Date(y, m - 1, d);
+    }
+
+    function rdStartOfDay(d) {
+      return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    }
+
+    function rdFormatYMD(d) {
+      return d.getFullYear() + '-' + rdZ2(d.getMonth() + 1) + '-' + rdZ2(d.getDate());
+    }
+
+    function rdAddDays(d, n) {
+      var x = new Date(d.getTime());
+      x.setDate(x.getDate() + n);
+      return x;
+    }
+
+    function rdDateInRange(dateStr, d0s, d1s) {
+      var t = rdParseYMD(dateStr);
+      if (!t) return false;
+      var d0 = rdParseYMD(d0s);
+      if (!d0) return false;
+      var t0 = rdStartOfDay(t).getTime();
+      var a0 = rdStartOfDay(d0).getTime();
+      if (t0 < a0) return false;
+      if (!d1s || !String(d1s).trim()) return true;
+      var d1 = rdParseYMD(d1s);
+      if (!d1) return true;
+      return t0 <= rdStartOfDay(d1).getTime();
+    }
+
+    function rdOverlapDayCount(winStart, winEnd, d0s, d1s) {
+      var d0 = rdParseYMD(d0s);
+      if (!d0) return 0;
+      var d1 = d1s && String(d1s).trim() ? rdParseYMD(d1s) : d0;
+      if (!d1) d1 = d0;
+      var s = Math.max(rdStartOfDay(winStart).getTime(), rdStartOfDay(d0).getTime());
+      var e = Math.min(rdStartOfDay(winEnd).getTime(), rdStartOfDay(d1).getTime());
+      if (s > e) return 0;
+      return Math.round((e - s) / 86400000) + 1;
+    }
+
+    function rdMulberry32(seed) {
+      var a = seed >>> 0;
+      return function() {
+        a |= 0;
+        a = (a + 0x6d2b79f5) | 0;
+        var t = Math.imul(a ^ (a >>> 15), a | 1);
+        t = (t + Math.imul(t ^ (t >>> 7), t | 61)) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    function rdMergeForecastForm(f) {
+      var b = RD_FALLBACK_FORM_SF20260410001;
+      var o = {
+        dailyWeights: (f && f.dailyWeights) ? f.dailyWeights : b.dailyWeights,
+        autoDenoise: (f && f.autoDenoise) ? f.autoDenoise : b.autoDenoise,
+        dateDenoise:
+          f && f.dateDenoise && f.dateDenoise.length >= 2
+            ? f.dateDenoise
+            : b.dateDenoise.slice(),
+        returnDenoise:
+          f && f.returnDenoise && f.returnDenoise.length
+            ? f.returnDenoise
+            : b.returnDenoise.slice(),
+        season: (f && f.season && f.season.length === 12) ? f.season : b.season.slice(),
+        yoy: (f && f.yoy && f.yoy.length) ? f.yoy : b.yoy.slice(),
+        lifecycle: (f && f.lifecycle && f.lifecycle.length) ? f.lifecycle : b.lifecycle.slice(),
+        competitor: (f && f.competitor && f.competitor.length) ? f.competitor : b.competitor.slice(),
+        target: (f && f.target && f.target.length) ? f.target : b.target.slice()
+      };
+      return o;
+    }
+
+    function rdApplyLargeOrder(orders, ad) {
+      if (!ad || ad.largeEnabled === false) return orders.slice();
+      var x = parseFloat(ad.x);
+      var y = parseFloat(ad.y);
+      if (isNaN(x)) x = 999999;
+      if (isNaN(y)) y = 0;
+      return orders.map(function(o) {
+        return o >= x ? y : o;
+      });
+    }
+
+    function rdSimulateDayOrders(rng, baseLevel, dayIndex) {
+      var n = 3 + Math.floor(rng() * 10);
+      var orders = [];
+      var bl = Math.max(20, baseLevel);
+      for (var i = 0; i < n; i++) {
+        var v = -Math.log(rng() + 1e-12) * (bl / 6);
+        v = Math.min(220, Math.max(0.5, v));
+        orders.push(v);
+      }
+      return orders;
+    }
+
+    function rdApplyDateDenoiseRows(daily, dateStr, rows) {
+      var v = daily;
+      if (!rows || !rows.length) return v;
+      for (var r = 0; r < rows.length; r++) {
+        var row = rows[r];
+        if (!row || !rdDateInRange(dateStr, row.d0, row.d1)) continue;
+        var typ = row.type || '';
+        if (typ.indexOf('百分比') >= 0) {
+          var p = parseFloat(row.value);
+          if (!isNaN(p)) v = v * (p / 100);
+        } else {
+          var fv = parseFloat(row.value);
+          if (!isNaN(fv)) v = fv;
+        }
+      }
+      return v;
+    }
+
+    function rdApplyReturnRows(daily, dateStr, rows) {
+      var v = daily;
+      if (!rows || !rows.length) return v;
+      for (var r = 0; r < rows.length; r++) {
+        var row = rows[r];
+        if (!row || !rdDateInRange(dateStr, row.d0, row.d1)) continue;
+        var pct = parseFloat(row.pct);
+        if (!isNaN(pct) && pct > 0) v = v * (1 - pct / 100);
+      }
+      return v;
+    }
+
+    function rdPickCoeff(rows, dateStr) {
+      if (!rows || !rows.length) return 1;
+      for (var i = 0; i < rows.length; i++) {
+        var row = rows[i];
+        if (!row) continue;
+        if (rdDateInRange(dateStr, row.d0, row.d1)) {
+          var c = parseFloat(row.coeff);
+          return isNaN(c) ? 1 : c;
+        }
+      }
+      return 1;
+    }
+
+    function rdKBreakdown(form, dateStr) {
+      var dt = rdParseYMD(dateStr);
+      var m = dt ? dt.getMonth() + 1 : 1;
+      var ksRaw = form.season && form.season[m - 1] != null ? form.season[m - 1] : '1';
+      var ks = parseFloat(ksRaw);
+      if (isNaN(ks)) ks = 1;
+      var ky = rdPickCoeff(form.yoy, dateStr);
+      var kl = rdPickCoeff(form.lifecycle, dateStr);
+      var kc = rdPickCoeff(form.competitor, dateStr);
+      var kt = rdPickCoeff(form.target, dateStr);
+      var prod = ks * ky * kl * kc * kt;
+      return { ks: ks, ky: ky, kl: kl, kc: kc, kt: kt, prod: prod };
+    }
+
+    /** coeffFlags 某维为 false 时该维按 1 参与连乘（不参与计算） */
+    function rdKBreakdownWithFlags(form, dateStr, coeffFlags) {
+      var kb = rdKBreakdown(form, dateStr);
+      var cf = coeffFlags || {};
+      if (cf.season === false) kb.ks = 1;
+      if (cf.yoy === false) kb.ky = 1;
+      if (cf.lifecycle === false) kb.kl = 1;
+      if (cf.competitor === false) kb.kc = 1;
+      if (cf.target === false) kb.kt = 1;
+      kb.prod = kb.ks * kb.ky * kb.kl * kb.kc * kb.kt;
+      return kb;
+    }
+
+    /**
+     * 单日：模拟订单 → 大订单去噪 → 日期/退货去噪；输出各阶段数值供曲线展示。
+     */
+    function rdSimulateOneDaySalesDetailed(form, seed, dayDate) {
+      form = form || RD_FALLBACK_FORM_SF20260410001;
+      var d = rdStartOfDay(dayDate);
+      var ds = rdFormatYMD(d);
+      var ord = Math.floor(d.getTime() / 86400000);
+      var rng = rdMulberry32(seed + ord * 9973 + d.getDate() * 31);
+      var dow = d.getDay();
+      var seasonal =
+        1 +
+        0.12 * Math.sin(((ord + (seed % 40)) / 365) * Math.PI * 2) +
+        (dow === 0 || dow === 6 ? -0.06 : 0);
+      var baseLevel = (75 + (seed % 55)) * seasonal;
+
+      var orders = rdSimulateDayOrders(rng, baseLevel, 0);
+      var rawSum = 0;
+      for (var oo = 0; oo < orders.length; oo++) rawSum += orders[oo];
+      orders = rdApplyLargeOrder(orders, form.autoDenoise || {});
+      var afterLarge = 0;
+      for (var o = 0; o < orders.length; o++) afterLarge += orders[o];
+
+      var afterDate = rdApplyDateDenoiseRows(afterLarge, ds, form.dateDenoise || []);
+      var afterReturn = rdApplyReturnRows(afterDate, ds, form.returnDenoise || []);
+
+      return {
+        raw: Math.round(rawSum * 100) / 100,
+        afterLarge: Math.round(afterLarge * 100) / 100,
+        afterDate: Math.round(afterDate * 100) / 100,
+        denoised: Math.round(afterReturn * 100) / 100
+      };
+    }
+
+    function rdSimulateOneDaySales(form, seed, dayDate) {
+      var x = rdSimulateOneDaySalesDetailed(form, seed, dayDate);
+      return { raw: x.raw, denoised: x.denoised };
+    }
+
+    /**
+     * 模拟近 90 天原始日销（订单汇总）→ 去噪得 A → 加权得 X → 未来 90 日逐日预测。
+     * form 须已合并默认值（rdMergeForecastForm）。
+     */
+    function rdPipelineForecast(form, seed, coeffFlags) {
+      form = form || RD_FALLBACK_FORM_SF20260410001;
+      coeffFlags = coeffFlags || {};
+      var WINDOW = 90;
+      var FC_DAYS = 90;
+      var today = rdStartOfDay(new Date());
+      var winStart = rdAddDays(today, -(WINDOW - 1));
+      var winEnd = today;
+
+      var chartDates = [];
+      var rawDaily = [];
+      var afterLargeDaily = [];
+      var afterDateDaily = [];
+      var A = [];
+
+      for (var i = 0; i < WINDOW; i++) {
+        var dayDate = rdAddDays(winStart, i);
+        chartDates.push(rdFormatYMD(dayDate));
+        var one = rdSimulateOneDaySalesDetailed(form, seed, dayDate);
+        rawDaily.push(one.raw);
+        afterLargeDaily.push(one.afterLarge);
+        afterDateDaily.push(one.afterDate);
+        A.push(one.denoised);
+      }
+
+      var n = A.length;
+      var mu = {};
+      [3, 7, 14, 30, 60, 90].forEach(function(k) {
+        if (n >= k) {
+          var s = 0;
+          for (var j = n - k; j < n; j++) s += A[j];
+          mu[k] = Math.round((s / k) * 1000) / 1000;
+        }
+      });
+
+      var wMap = form.dailyWeights || {};
+      var sumW = 0;
+      var acc = 0;
+      [3, 7, 14, 30, 60, 90].forEach(function(k) {
+        if (mu[k] == null) return;
+        var wt = parseFloat(wMap[String(k)]);
+        if (isNaN(wt) || wt <= 0) return;
+        sumW += wt;
+        acc += wt * mu[k];
+      });
+      var X = 0;
+      if (sumW > 0) X = acc / sumW;
+      else X = mu[30] != null ? mu[30] : mu[7] != null ? mu[7] : A[n - 1];
+      X = Math.round(X * 100) / 100;
+
+      var tomorrow = rdAddDays(today, 1);
+      var forecastDates = [];
+      var forecastPred = [];
+      /** 与去年同日对齐的「同比实际日销量」（演示：同一模拟链路下去噪后结果；接入服务端后为真实口径） */
+      var forecastYoyActual = [];
+
+      for (var fi = 0; fi < FC_DAYS; fi++) {
+        var fd = rdAddDays(tomorrow, fi);
+        var fds = rdFormatYMD(fd);
+        forecastDates.push(fds);
+        var kb = rdKBreakdownWithFlags(form, fds, coeffFlags);
+        var pred = Math.round(X * kb.prod * 100) / 100;
+        forecastPred.push(pred);
+        var yoyDay = rdAddDays(fd, -364);
+        var yoySales = rdSimulateOneDaySales(form, seed, yoyDay).denoised;
+        forecastYoyActual.push(yoySales);
+      }
+
+      var rep = rdKBreakdownWithFlags(form, forecastDates[0], coeffFlags);
+
+      return {
+        winStartStr: rdFormatYMD(winStart),
+        winEndStr: rdFormatYMD(winEnd),
+        chartDates: chartDates,
+        rawDaily: rawDaily,
+        afterLargeDaily: afterLargeDaily,
+        afterDateDaily: afterDateDaily,
+        A: A,
+        mu: mu,
+        X: X,
+        forecastDates: forecastDates,
+        forecastPred: forecastPred,
+        forecastYoyActual: forecastYoyActual,
+        repK: rep,
+        coeffFlags: coeffFlags,
+        meanA: Math.round((A.reduce(function(s, x) { return s + x; }, 0) / Math.max(A.length, 1)) * 100) / 100
+      };
+    }
+
     var rdForecastChartInstance = null;
+    var rdCalcChartInstances = [];
+
+    function rdGetCoeffFlagsFromDom() {
+      var keys = ['season', 'yoy', 'lifecycle', 'competitor', 'target'];
+      var out = {};
+      keys.forEach(function(k) {
+        var el = document.querySelector('#rd-fc-calc-process [data-rd-coeff-toggle="' + k + '"]');
+        out[k] = !el ? true : !!el.checked;
+      });
+      return out;
+    }
+
+    /** 初次渲染 calc 容器尚不存在时用 rdCoeffToggles / 默认全启用 */
+    function rdGetCoeffFlagsForPipeline() {
+      if (document.querySelector('#rd-fc-calc-process [data-rd-coeff-toggle="season"]')) {
+        return rdGetCoeffFlagsFromDom();
+      }
+      var t = window.rdCoeffToggles || {};
+      return {
+        season: t.season !== false,
+        yoy: t.yoy !== false,
+        lifecycle: t.lifecycle !== false,
+        competitor: t.competitor !== false,
+        target: t.target !== false
+      };
+    }
+
+    function rdCoeffToolbarHtml() {
+      var tg = window.rdCoeffToggles || {};
+      function on(key) {
+        return tg[key] !== false ? ' checked' : '';
+      }
+      return (
+        '<div class="rd-coeff-toolbar">' +
+        '<span class="rd-coeff-toolbar-h">参与预测连乘：</span>' +
+        '<label><input type="checkbox" data-rd-coeff-toggle="season"' +
+        on('season') +
+        ' />季节</label>' +
+        '<label><input type="checkbox" data-rd-coeff-toggle="yoy"' +
+        on('yoy') +
+        ' />同比</label>' +
+        '<label><input type="checkbox" data-rd-coeff-toggle="lifecycle"' +
+        on('lifecycle') +
+        ' />生命周期</label>' +
+        '<label><input type="checkbox" data-rd-coeff-toggle="competitor"' +
+        on('competitor') +
+        ' />竞对</label>' +
+        '<label><input type="checkbox" data-rd-coeff-toggle="target"' +
+        on('target') +
+        ' />目标</label>' +
+        '<span style="font-size:12px;color:#909399;margin-left:8px;">关闭则该维按 1 代入，并重绘上方预测曲线。</span>' +
+        '</div>'
+      );
+    }
+
+    function rdDisposeCalcCharts() {
+      rdCalcChartInstances.forEach(function(chart) {
+        try {
+          chart.dispose();
+        } catch (err) {}
+      });
+      rdCalcChartInstances.length = 0;
+    }
+
+    function rdInitCalcProcessCharts(parentCode, ruleId) {
+      rdDisposeCalcCharts();
+      if (typeof echarts === 'undefined') return;
+      var rule = ruleId ? rdGetSalesRuleById(ruleId) : null;
+      var form = rdMergeForecastForm(rule && rule.form ? rule.form : null);
+      var seed = rdHashStr(String(parentCode) + '|' + String(ruleId || ''));
+      var flags = rdGetCoeffFlagsFromDom();
+      var pipe = rdPipelineForecast(form, seed, flags);
+
+      var xShort = pipe.chartDates.map(function(d) {
+        return d.slice(5);
+      });
+
+      var elD = document.getElementById('rd-calc-chart-denoise');
+      if (elD && pipe.rawDaily.length) {
+        var c1 = echarts.init(elD, null, { renderer: 'svg' });
+        c1.setOption({
+          color: ['#909399', '#409eff', '#e6a23c', '#67c23a'],
+          textStyle: { fontFamily: 'inherit', fontSize: 11 },
+          tooltip: { trigger: 'axis' },
+          legend: {
+            type: 'scroll',
+            orient: 'horizontal',
+            bottom: 0,
+            textStyle: { fontSize: 10 },
+            data: ['原始日销', '大订单去噪后', '日期类去噪后', '退货去噪后·A']
+          },
+          grid: { left: 46, right: 14, top: 36, bottom: 52 },
+          xAxis: {
+            type: 'category',
+            boundaryGap: false,
+            data: xShort,
+            axisLabel: { fontSize: 9, rotate: 32, interval: 8 }
+          },
+          yAxis: {
+            type: 'value',
+            name: '销量',
+            nameTextStyle: { fontSize: 10 },
+            splitLine: { lineStyle: { type: 'dashed', color: '#ebeef5' } }
+          },
+          series: [
+            {
+              name: '原始日销',
+              type: 'line',
+              smooth: 0.25,
+              showSymbol: false,
+              lineStyle: { width: 1.6 },
+              data: pipe.rawDaily
+            },
+            {
+              name: '大订单去噪后',
+              type: 'line',
+              smooth: 0.25,
+              showSymbol: false,
+              lineStyle: { width: 1.6 },
+              data: pipe.afterLargeDaily
+            },
+            {
+              name: '日期类去噪后',
+              type: 'line',
+              smooth: 0.25,
+              showSymbol: false,
+              lineStyle: { width: 1.6 },
+              data: pipe.afterDateDaily
+            },
+            {
+              name: '退货去噪后·A',
+              type: 'line',
+              smooth: 0.25,
+              showSymbol: false,
+              lineStyle: { width: 2.4 },
+              data: pipe.A
+            }
+          ]
+        });
+        rdCalcChartInstances.push(c1);
+      }
+
+      var elK = document.getElementById('rd-calc-chart-ktrace');
+      if (elK && pipe.forecastDates.length) {
+        var kProd = [];
+        for (var ki = 0; ki < pipe.forecastDates.length; ki++) {
+          kProd.push(
+            Math.round(rdKBreakdownWithFlags(form, pipe.forecastDates[ki], flags).prod * 10000) / 10000
+          );
+        }
+        var xF = pipe.forecastDates.map(function(d) {
+          return d.slice(5);
+        });
+        var c2 = echarts.init(elK, null, { renderer: 'svg' });
+        c2.setOption({
+          color: ['#e6a23c'],
+          tooltip: { trigger: 'axis' },
+          legend: { data: ['有效系数连乘 K'], bottom: 0, textStyle: { fontSize: 10 } },
+          grid: { left: 48, right: 12, top: 28, bottom: 40 },
+          xAxis: {
+            type: 'category',
+            boundaryGap: false,
+            data: xF,
+            axisLabel: { fontSize: 9, rotate: 32, interval: 8 }
+          },
+          yAxis: { type: 'value', name: 'K', splitLine: { lineStyle: { type: 'dashed', color: '#ebeef5' } } },
+          series: [
+            {
+              name: '有效系数连乘 K',
+              type: 'line',
+              smooth: 0.35,
+              showSymbol: false,
+              lineStyle: { width: 2 },
+              data: kProd
+            }
+          ]
+        });
+        rdCalcChartInstances.push(c2);
+      }
+    }
+
+    if (!window._rdCoeffToggleBound) {
+      window._rdCoeffToggleBound = true;
+      document.body.addEventListener('change', function(e) {
+        var t = e.target;
+        if (!t || !t.getAttribute || !t.matches('#rd-fc-calc-process [data-rd-coeff-toggle]')) return;
+        var k = t.getAttribute('data-rd-coeff-toggle');
+        if (!window.rdCoeffToggles) window.rdCoeffToggles = {};
+        window.rdCoeffToggles[k] = t.checked;
+        var panel = document.getElementById('rd-panel-forecast');
+        var parentCode = panel && panel.getAttribute('data-parent-code');
+        if (!parentCode) return;
+        var sel = document.getElementById('rd-fc-rule-select');
+        var rid = sel && sel.value ? sel.value : '';
+        var rules = rdFindApplicableForecastRules(parentCode);
+        var rule = rid ? rules.filter(function(r) { return r && r.id === rid; })[0] : null;
+        var calcHost2 = document.getElementById('rd-fc-calc-process');
+        if (calcHost2) calcHost2.innerHTML = rdBuildCalcProcessHtml(parentCode, rid || '');
+        rdInitCalcProcessCharts(parentCode, rid || '');
+        rdPaintForecastChart(parentCode, rule || null);
+      });
+    }
 
     function rdResizeForecastChart() {
       if (typeof echarts === 'undefined') return;
@@ -280,79 +866,90 @@
       host.innerHTML = '';
 
       var rid = selectedRule && selectedRule.id ? selectedRule.id : '';
-      var seed = rdHashStr(parentCode + '|' + rid);
-      var n = 30;
-      var pred = [];
-      var yoy = [];
-      var categories = [];
-      for (var i = 0; i < n; i++) {
-        var t = (i / n) * Math.PI * 2;
-        var base = 60 + (seed % 50) + Math.sin(t + seed * 0.01) * 28 + i * 1.15;
-        pred.push(Math.round(base * 10) / 10);
-        yoy.push(Math.round((base * 0.9 + Math.cos(t * 1.2 + 0.5) * 22) * 10) / 10);
-        categories.push(String(i + 1));
-      }
+      var seed = rdHashStr(String(parentCode) + '|' + String(rid));
+      var formMerged = rdMergeForecastForm(selectedRule && selectedRule.form ? selectedRule.form : null);
+      var coeffFlags = rdGetCoeffFlagsForPipeline();
+      var pipe = rdPipelineForecast(formMerged, seed, coeffFlags);
+      var categories = pipe.forecastDates;
+      var pred = pipe.forecastPred;
+      var yoy = pipe.forecastYoyActual;
 
       if (typeof echarts === 'undefined') {
         host.innerHTML = '<div class="rd-fc-chart-fallback">ECharts 未加载，请检查网络后刷新页面</div>';
         return;
       }
 
-      rdForecastChartInstance = echarts.init(host);
+      rdForecastChartInstance = echarts.init(host, null, {
+        renderer: 'svg',
+        useDirtyRect: false
+      });
       rdForecastChartInstance.setOption({
         color: ['#409eff', '#67c23a'],
-        textStyle: { fontFamily: 'inherit', fontSize: 11 },
-        grid: { left: 44, right: 20, top: 36, bottom: 24, containLabel: false },
-        tooltip: { trigger: 'axis', axisPointer: { type: 'cross' } },
+        textStyle: { fontFamily: 'inherit', fontSize: 12 },
+        grid: { left: 56, right: 22, top: 42, bottom: 38, containLabel: false },
+        tooltip: { trigger: 'axis', axisPointer: { type: 'cross' }, textStyle: { fontSize: 12 } },
         legend: {
-          data: ['预测销量', '同比实际销量'],
+          data: ['预测日销量', '同比实际销量'],
           top: 4,
           left: 'center',
+          itemGap: 48,
           itemWidth: 22,
           itemHeight: 8,
-          textStyle: { fontSize: 12, color: '#606266' }
+          textStyle: { fontSize: 13, color: '#606266' }
         },
         xAxis: {
           type: 'category',
           boundaryGap: false,
           data: categories,
+          name: '日期',
+          nameTextStyle: { color: '#909399', fontSize: 12 },
           axisLine: { lineStyle: { color: '#dcdfe6' } },
-          axisLabel: { color: '#909399', fontSize: 10 }
+          axisLabel: { color: '#606266', fontSize: 10, rotate: 28, interval: 8 }
         },
         yAxis: {
           type: 'value',
+          name: '日销量',
+          nameTextStyle: { color: '#909399', fontSize: 12 },
           splitLine: { lineStyle: { color: '#ebeef5', type: 'dashed' } },
-          axisLabel: { color: '#909399', fontSize: 10 }
+          axisLabel: { color: '#606266', fontSize: 11 }
         },
         series: [
           {
-            name: '预测销量',
+            name: '预测日销量',
             type: 'line',
-            smooth: true,
-            symbol: 'circle',
-            symbolSize: 5,
+            smooth: 0.35,
+            showSymbol: false,
             data: pred,
-            lineStyle: { width: 2 }
+            lineStyle: { width: 2.5 }
           },
           {
             name: '同比实际销量',
             type: 'line',
-            smooth: true,
-            symbol: 'circle',
-            symbolSize: 4,
+            smooth: 0.35,
+            showSymbol: false,
             data: yoy,
-            lineStyle: { width: 2, type: 'dashed' },
+            lineStyle: { width: 2.5 },
             emphasis: { focus: 'series' }
           }
         ]
       });
+      rdForecastChartInstance.resize();
 
       if (!window._rdChartResizeBound) {
         window._rdChartResizeBound = true;
         window.addEventListener('resize', function() {
           rdResizeForecastChart();
+          rdResizeCalcCharts();
         });
       }
+    }
+
+    function rdResizeCalcCharts() {
+      rdCalcChartInstances.forEach(function(c) {
+        try {
+          c.resize();
+        } catch (err) {}
+      });
     }
 
     function rdGetSalesRuleById(ruleId) {
@@ -391,159 +988,318 @@
       );
     }
 
-    /** 与种子规则 SF20260410001 一致，供 localStorage 无数据时演示 */
-    var RD_FALLBACK_FORM_SF20260410001 = {
-      dailyWeights: { '3': 10, '7': 35, '14': 25, '30': 20, '60': 10, '90': 0 },
-      autoDenoise: { x: '4', y: '2', largeEnabled: true },
-      dateDenoise: [
-        { type: '固定值去噪', d0: '2026-01-15', d1: '2026-01-20', value: '45', note: '仓库盘点停发' },
-        { type: '百分比去噪', d0: '2026-03-01', d1: '2026-03-03', value: '60', note: '抓数异常按 60% 缩放' }
-      ],
-      returnDenoise: [{ d0: '2025-11-01', d1: '2026-01-31', pct: '8', note: '旺季退货率偏高' }],
-      season: ['0.92', '0.95', '1', '1.02', '1.05', '1.08', '1.1', '1.12', '1.05', '1', '0.98', '1.15'],
-      yoy: [
-        { d0: '2025-01-01', d1: '2025-06-30', growth: 'up', coeff: '1.08', note: '去年同期活动基数偏低' },
-        { d0: '2025-07-01', d1: '2025-12-31', growth: 'up', coeff: '1.12', note: '促销季同比抬升' }
-      ],
-      lifecycle: [
-        { lifeType: '次新品', d0: '2025-09-01', d1: '2026-03-31', growth: 'up', coeff: '1.15' },
-        { lifeType: '老品', d0: '2026-04-01', d1: '', growth: 'down', coeff: '0.95' }
-      ],
-      competitor: [{ d0: '2026-02-01', d1: '2026-04-30', growth: 'down', coeff: '0.92', note: '竞对降价约 8%' }],
-      target: [{ d0: '2026-01-01', d1: '2026-06-30', growth: 'up', coeff: '1.05', note: '渠道目标上调 5%' }]
-    };
-
-    /** 根据当前选中的规则展示计算过程；元数据来自规则表单，示意数字随父体+规则略变以示区分 */
+    /** 根据当前选中的规则展示计算过程；与管线 rdPipelineForecast 使用同一套模拟与公式 */
     function rdBuildCalcProcessHtml(parentCode, ruleId) {
-      var rule = rdGetSalesRuleById(ruleId);
-      var f = rule && rule.form ? rule.form : null;
-      if (!f) {
+      var rule = ruleId ? rdGetSalesRuleById(ruleId) : null;
+      if (ruleId && (!rule || !rule.form)) {
         return '<div class="rd-parse-placeholder">未选择规则，或所选规则无完整配置。请在上方选择一条适用于本父体的销量预测规则。</div>';
       }
-      var w = f.dailyWeights || {};
-      var ad = f.autoDenoise || { x: '4', y: '2', largeEnabled: true };
+      var form = rdMergeForecastForm(rule && rule.form ? rule.form : null);
+      var seed = rdHashStr(String(parentCode) + '|' + String(ruleId));
+      var pipe = rdPipelineForecast(form, seed, rdGetCoeffFlagsForPipeline());
+
+      var w = form.dailyWeights || {};
+      var ad = form.autoDenoise || { x: '4', y: '2', largeEnabled: true };
       var dd =
-        f.dateDenoise && f.dateDenoise.length >= 2
-          ? f.dateDenoise
+        form.dateDenoise && form.dateDenoise.length >= 2
+          ? form.dateDenoise
           : RD_FALLBACK_FORM_SF20260410001.dateDenoise.slice();
       var rd =
-        f.returnDenoise && f.returnDenoise.length
-          ? f.returnDenoise
+        form.returnDenoise && form.returnDenoise.length
+          ? form.returnDenoise
           : RD_FALLBACK_FORM_SF20260410001.returnDenoise.slice();
       if (!dd[0]) dd[0] = RD_FALLBACK_FORM_SF20260410001.dateDenoise[0];
       if (!dd[1]) dd[1] = RD_FALLBACK_FORM_SF20260410001.dateDenoise[1];
       if (!rd[0]) rd[0] = RD_FALLBACK_FORM_SF20260410001.returnDenoise[0];
 
-      var winStart = '2026-01-18';
-      var winEnd = '2026-04-16';
+      var winStart = pipe.winStartStr;
+      var winEnd = pipe.winEndStr;
+      var ws = rdParseYMD(winStart);
+      var we = rdParseYMD(winEnd);
+      var ov1 = ws && we ? rdOverlapDayCount(ws, we, dd[0].d0, dd[0].d1) : 0;
+      var ov2 = ws && we ? rdOverlapDayCount(ws, we, dd[1].d0, dd[1].d1) : 0;
+      var retOv = ws && we ? rdOverlapDayCount(ws, we, rd[0].d0, rd[0].d1) : 0;
+      var pctRet = parseFloat(rd[0].pct);
+      var retMult =
+        !isNaN(pctRet) && pctRet > 0 ? Math.round((1 - pctRet / 100) * 1000) / 1000 : 1;
 
-      var jitter = (rdHashStr(String(parentCode) + '|' + String(ruleId)) % 17) * 0.35;
-      var mu3 = Math.round((122.4 + jitter) * 10) / 10;
-      var mu7 = Math.round((119.8 + jitter * 0.9) * 10) / 10;
-      var mu14 = Math.round((116.2 + jitter * 0.8) * 10) / 10;
-      var mu30 = Math.round((114.0 + jitter * 0.7) * 10) / 10;
-      var mu60 = Math.round((110.5 + jitter * 0.6) * 10) / 10;
-      var w3 = (parseFloat(w['3']) || 0) / 100;
-      var w7 = (parseFloat(w['7']) || 0) / 100;
-      var w14 = (parseFloat(w['14']) || 0) / 100;
-      var w30 = (parseFloat(w['30']) || 0) / 100;
-      var w60 = (parseFloat(w['60']) || 0) / 100;
-      var X = w3 * mu3 + w7 * mu7 + w14 * mu14 + w30 * mu30 + w60 * mu60;
-      X = Math.round(X * 100) / 100;
+      var mu = pipe.mu;
+      var mu3 = mu[3] != null ? mu[3] : '—';
+      var mu7 = mu[7] != null ? mu[7] : '—';
+      var mu14 = mu[14] != null ? mu[14] : '—';
+      var mu30 = mu[30] != null ? mu[30] : '—';
+      var mu60 = mu[60] != null ? mu[60] : '—';
 
-      var kSeason = 0.995;
-      var kYoy = 1.096;
-      var kLife = 1.118;
-      var kCompRaw =
-        f.competitor && f.competitor[0] && f.competitor[0].coeff != null && f.competitor[0].coeff !== ''
-          ? parseFloat(f.competitor[0].coeff)
-          : NaN;
-      var kComp = !isNaN(kCompRaw) ? kCompRaw : 0.936;
-      kComp = Math.round(kComp * 1000) / 1000;
-      var kTargetRaw =
-        f.target && f.target[0] && f.target[0].coeff != null && f.target[0].coeff !== ''
-          ? parseFloat(f.target[0].coeff)
-          : NaN;
-      var kTarget = !isNaN(kTargetRaw) ? kTargetRaw : 1.05;
-      kTarget = Math.round(kTarget * 1000) / 1000;
-      var K = kSeason * kYoy * kLife * kComp * kTarget;
-      K = Math.round(K * 10000) / 10000;
+      var sumW = 0;
+      [3, 7, 14, 30, 60, 90].forEach(function(k) {
+        var wt = parseFloat(w[String(k)]);
+        if (!isNaN(wt) && wt > 0 && mu[k] != null) sumW += wt;
+      });
+      function rdContrib(kk) {
+        var wt = parseFloat(w[String(kk)]) || 0;
+        if (mu[kk] == null || sumW <= 0) return 0;
+        return Math.round((wt * mu[kk]) / sumW * 100) / 100;
+      }
+
+      var X = pipe.X;
+      var rep = pipe.repK;
+      var kSeason = Math.round(rep.ks * 1000) / 1000;
+      var kYoy = Math.round(rep.ky * 1000) / 1000;
+      var kLife = Math.round(rep.kl * 1000) / 1000;
+      var kComp = Math.round(rep.kc * 1000) / 1000;
+      var kTarget = Math.round(rep.kt * 1000) / 1000;
+      var K = Math.round(rep.prod * 10000) / 10000;
       var dailyFinal = Math.round(X * K * 100) / 100;
+      var fd0 = pipe.forecastDates && pipe.forecastDates[0] ? pipe.forecastDates[0] : '';
+      var repCfg = fd0 ? rdKBreakdown(form, fd0) : rep;
 
       var h = '';
 
       h += '<div class="rd-metro">';
       h += '<div class="rd-metro-stop"><span class="rd-metro-node" aria-hidden="true"></span><div class="rd-metro-card">';
       h += '<div class="rd-metro-h">① 销量去噪（得到近 90 天每日销量集合 A）</div>';
-      h += '<div class="rd-metro-formula">对滑动窗口 <code>[' + rdEsc(winStart) + ' ~ ' + rdEsc(winEnd) + ']</code> 内每日<strong>原始实际销量</strong>依次套用以下去噪规则；若同一天命中多条，按「大订单去噪 → 日期去噪 → 退货去噪」顺序覆盖。最终结果记为集合 <code>A = {a<sub>1</sub>…a<sub>90</sub>}</code>。</div>';
+      h += '<div class="rd-metro-split">';
+      h += '<div class="rd-metro-split__main">';
+      h +=
+        '<div class="rd-metro-formula"><strong>输入</strong>：滑动窗口内每日<strong>模拟原始订单</strong>汇总销量；<strong>输出</strong>：经四步规则逐日修正后的序列 <code>A</code>。窗口 <code>[' +
+        rdEsc(winStart) +
+        ' ~ ' +
+        rdEsc(winEnd) +
+        ']</code>。同一天多规则命中顺序：大订单 → 日期规则（配置顺序）→ 退货。</div>';
 
       h += '<div class="rd-metro-sub"><h4>规则1 · 大订单去噪</h4>';
+      h +=
+        '<div class="rd-metro-formula"><strong>元数据</strong>：阈值 <code>x</code>、替换值 <code>y</code>。<strong>计算</strong>：单笔订单销量 ≥ <code>x</code> 的明细改为 <code>y</code>，再汇总到自然日。<strong>→ 数据形态</strong>：由「原始日销」变为「大订单去噪后日销」序列。</div>';
       h += '<div class="rd-metro-formula">在<strong>订单粒度</strong>判断：若某笔订单某产品销量 <code>≥ ' + rdEsc(ad.x) + '</code>（阈值），则该笔该产品在计入日销量时改为 <code>' + rdEsc(ad.y) + '</code>（固定值）；逐笔处理后再汇总到自然日。元数据：大订单去噪 ' + (ad.largeEnabled !== false ? '开启' : '关闭') + '。</div>';
       h += '<table class="rd-mini-table"><thead><tr><th>元数据</th><th>本例计算结果（示意）</th></tr></thead><tbody>';
-      h += '<tr><td>阈值 <code>' + rdEsc(ad.x) + '</code>，固定替换 <code>' + rdEsc(ad.y) + '</code></td><td>窗口内若干笔 ≥ 阈值的订单先按固定值再汇总至日销，削峰。</td></tr></tbody></table></div>';
+      h += '<tr><td>阈值 <code>' + rdEsc(ad.x) + '</code>，固定替换 <code>' + rdEsc(ad.y) + '</code></td><td>模拟订单中 ≥ 阈值的笔数先替换再汇总至日销。</td></tr></tbody></table>';
+      h +=
+        '<div style="font-size:11px;color:#67c23a;margin:6px 0 0;font-weight:500;">→ 产出数据：逐日「大订单去噪后」销量（见右侧曲线第 2 条）</div></div>';
 
       h += '<div class="rd-metro-sub"><h4>规则2 · 日期固定值去噪</h4>';
-      h += '<div class="rd-metro-formula">区间 <code>[' + rdEsc(dd[0].d0) + ' ~ ' + rdEsc(dd[0].d1) + ']</code> 内日销量替换为 <code>' + rdEsc(dd[0].value) + '</code>（与近 90 天交集共 6 天）。</div>';
+      h +=
+        '<div class="rd-metro-formula"><strong>元数据</strong>：起止日、替换常数。<strong>计算</strong>：交集日期上日销<strong>整体替换</strong>为配置值。<strong>→ 数据形态</strong>：在命中日期上覆盖为常数序列。</div>';
+      h +=
+        '<div class="rd-metro-formula">区间 <code>[' +
+        rdEsc(dd[0].d0) +
+        ' ~ ' +
+        rdEsc(dd[0].d1) +
+        ']</code> 内日销量替换为 <code>' +
+        rdEsc(dd[0].value) +
+        '</code>（与近 90 天交集共 <strong>' +
+        ov1 +
+        '</strong> 天）。</div>';
       h += '<table class="rd-mini-table"><thead><tr><th>元数据</th><th>计算结果</th></tr></thead><tbody>';
-      h += '<tr><td>原因：' + rdEsc(dd[0].note || '') + '</td><td>交集 6 天均置为 ' + rdEsc(dd[0].value) + '</td></tr></tbody></table></div>';
+      h +=
+        '<tr><td>原因：' +
+        rdEsc(dd[0].note || '') +
+        '</td><td>交集 ' +
+        ov1 +
+        ' 天均置为 ' +
+        rdEsc(dd[0].value) +
+        '</td></tr></tbody></table>';
+      h +=
+        '<div style="font-size:11px;color:#67c23a;margin:6px 0 0;font-weight:500;">→ 产出数据：逐日「日期类（含固定值）去噪后」销量（见右侧曲线第 3 条）</div></div>';
 
       h += '<div class="rd-metro-sub"><h4>规则3 · 日期百分比去噪</h4>';
-      h += '<div class="rd-metro-formula">区间 <code>[' + rdEsc(dd[1].d0) + ' ~ ' + rdEsc(dd[1].d1) + ']</code> 内日销量 × <code>' + rdEsc(dd[1].value) + '%</code>。</div>';
+      h +=
+        '<div class="rd-metro-formula"><strong>元数据</strong>：起止日、百分比 <code>p</code>。<strong>计算</strong>：交集日上日销 × <code>p/100</code>。<strong>→ 数据形态</strong>：在命中日期上按比例缩放。</div>';
+      h +=
+        '<div class="rd-metro-formula">区间 <code>[' +
+        rdEsc(dd[1].d0) +
+        ' ~ ' +
+        rdEsc(dd[1].d1) +
+        ']</code> 内日销量 × <code>' +
+        rdEsc(dd[1].value) +
+        '%</code>（与近 90 天交集共 <strong>' +
+        ov2 +
+        '</strong> 天）。</div>';
       h += '<table class="rd-mini-table"><thead><tr><th>元数据</th><th>计算结果</th></tr></thead><tbody>';
-      h += '<tr><td>' + rdEsc(dd[1].note || '') + '</td><td>交集 3 天按 ' + rdEsc(dd[1].value) + '% 缩放</td></tr></tbody></table></div>';
+      h +=
+        '<tr><td>' +
+        rdEsc(dd[1].note || '') +
+        '</td><td>交集 ' +
+        ov2 +
+        ' 天按 ' +
+        rdEsc(dd[1].value) +
+        '% 缩放</td></tr></tbody></table>';
+      h +=
+        '<div style="font-size:11px;color:#67c23a;margin:6px 0 0;font-weight:500;">→ 产出数据：同上一条曲线「日期类去噪后」（固定值与百分比按配置顺序叠加）</div></div>';
 
       h += '<div class="rd-metro-sub"><h4>规则4 · 退货量去噪</h4>';
-      h += '<div class="rd-metro-formula">在 <code>[' + rdEsc(rd[0].d0) + ' ~ ' + rdEsc(rd[0].d1) + ']</code> 内，按退货率 <code>' + rdEsc(rd[0].pct) + '%</code> 对日销做平滑（示例：有效影响近 90 天中 73 天）。</div>';
+      h +=
+        '<div class="rd-metro-formula"><strong>元数据</strong>：起止日、退货率。<strong>计算</strong>：交集日内日销 × <code>(1 − 退货率)</code>。<strong>→ 数据形态</strong>：最终得到集合 <code>A</code>。</div>';
+      h +=
+        '<div class="rd-metro-formula">在 <code>[' +
+        rdEsc(rd[0].d0) +
+        ' ~ ' +
+        rdEsc(rd[0].d1) +
+        ']</code> 内，将日销乘以 <code>(1 − 退货率)</code>；退货率 <code>' +
+        rdEsc(rd[0].pct) +
+        '%</code>（与近 90 天交集共 <strong>' +
+        retOv +
+        '</strong> 天）。</div>';
       h += '<table class="rd-mini-table"><thead><tr><th>元数据</th><th>计算结果</th></tr></thead><tbody>';
-      h += '<tr><td>' + rdEsc(rd[0].note || '') + '</td><td>受影响天次均额外折扣系数约 0.992</td></tr></tbody></table></div>';
+      h +=
+        '<tr><td>' +
+        rdEsc(rd[0].note || '') +
+        '</td><td>区间内单日乘数约 <strong>' +
+        retMult +
+        '</strong></td></tr></tbody></table>';
+      h +=
+        '<div style="font-size:11px;color:#67c23a;margin:6px 0 0;font-weight:500;">→ 产出数据：集合 <code>A</code>（见右侧曲线第 4 条），共 90 个点</div></div>';
 
-      h += '<div class="rd-metro-result">集合 A：共 90 个日销量；去噪后窗口日均 <strong>115.8</strong>（示例汇总，用于下一步窗口统计）</div>';
+      h +=
+        '<div class="rd-metro-result">集合 A：共 90 个日销量；去噪后窗口日均 <strong>' +
+        pipe.meanA +
+        '</strong>（用于下一步 μ 与 X）</div>';
+      h += '</div>';
+
+      h += '<aside class="rd-metro-split__side">';
+      h += '<div class="rd-parse-chart-title">近 90 天：元数据 → 逐日销量（各步去噪曲线）</div>';
+      h += '<div id="rd-calc-chart-denoise" class="rd-parse-echart-host rd-parse-echart-host--tall"></div>';
+      h +=
+        '<p class="rd-parse-chart-note">横轴为窗口内日期；四条线依次为 <strong>原始</strong> → <strong>大订单后</strong> → <strong>日期类规则后</strong> → <strong>退货后·A</strong>。可与左侧每步「→ 产出数据」对照。</p>';
+      h += '</aside>';
+      h += '</div>';
       h += '</div></div>';
 
       h += '<div class="rd-metro-stop"><span class="rd-metro-node" aria-hidden="true"></span><div class="rd-metro-card">';
       h += '<div class="rd-metro-h">② 日销量规则：加权基础日均 X（暂不含促销）</div>';
-      h += '<div class="rd-metro-formula">在集合 A 上分别统计近 3/7/14/30/60 日日均 <code>μ<sub>3</sub>…μ<sub>60</sub></code>，再按权重加权：<code>X = Σ<sub>k∈{3,7,14,30,60}</sub> w<sub>k</sub>·μ<sub>k</sub></code>，其中 <code>Σw<sub>k</sub>=100%</code>（-promo）。</div>';
-      h += '<table class="rd-mini-table"><thead><tr><th>窗口</th><th>权重 w（元数据）</th><th>μ（基于 A 的示意值）</th><th>贡献 w·μ</th></tr></thead><tbody>';
-      h += '<tr><td>近3日</td><td>' + rdEsc(String(w['3'] != null ? w['3'] : 0)) + '%</td><td>' + mu3 + '</td><td>' + (Math.round(w3 * mu3 * 100) / 100) + '</td></tr>';
-      h += '<tr><td>近7日</td><td>' + rdEsc(String(w['7'] != null ? w['7'] : 0)) + '%</td><td>' + mu7 + '</td><td>' + (Math.round(w7 * mu7 * 100) / 100) + '</td></tr>';
-      h += '<tr><td>近14日</td><td>' + rdEsc(String(w['14'] != null ? w['14'] : 0)) + '%</td><td>' + mu14 + '</td><td>' + (Math.round(w14 * mu14 * 100) / 100) + '</td></tr>';
-      h += '<tr><td>近30日</td><td>' + rdEsc(String(w['30'] != null ? w['30'] : 0)) + '%</td><td>' + mu30 + '</td><td>' + (Math.round(w30 * mu30 * 100) / 100) + '</td></tr>';
-      h += '<tr><td>近60日</td><td>' + rdEsc(String(w['60'] != null ? w['60'] : 0)) + '%</td><td>' + mu60 + '</td><td>' + (Math.round(w60 * mu60 * 100) / 100) + '</td></tr>';
+      h += '<div class="rd-metro-formula">在集合 A 上分别统计近 3/7/14/30/60 日日均 <code>μ<sub>3</sub>…μ<sub>60</sub></code>，再按权重加权：<code>X = (Σ w<sub>k</sub>·μ<sub>k</sub>) / Σw<sub>k</sub></code>（权重和可不为 100% 时按相对权重归一）。由此得到<strong>单一基础日销量 X</strong>。</div>';
+      h += '<table class="rd-mini-table"><thead><tr><th>窗口</th><th>权重 w（元数据）</th><th>μ（基于模拟 A）</th><th>贡献（占 X）</th></tr></thead><tbody>';
+      h +=
+        '<tr><td>近3日</td><td>' +
+        rdEsc(String(w['3'] != null ? w['3'] : 0)) +
+        '%</td><td>' +
+        mu3 +
+        '</td><td>' +
+        rdContrib(3) +
+        '</td></tr>';
+      h +=
+        '<tr><td>近7日</td><td>' +
+        rdEsc(String(w['7'] != null ? w['7'] : 0)) +
+        '%</td><td>' +
+        mu7 +
+        '</td><td>' +
+        rdContrib(7) +
+        '</td></tr>';
+      h +=
+        '<tr><td>近14日</td><td>' +
+        rdEsc(String(w['14'] != null ? w['14'] : 0)) +
+        '%</td><td>' +
+        mu14 +
+        '</td><td>' +
+        rdContrib(14) +
+        '</td></tr>';
+      h +=
+        '<tr><td>近30日</td><td>' +
+        rdEsc(String(w['30'] != null ? w['30'] : 0)) +
+        '%</td><td>' +
+        mu30 +
+        '</td><td>' +
+        rdContrib(30) +
+        '</td></tr>';
+      h +=
+        '<tr><td>近60日</td><td>' +
+        rdEsc(String(w['60'] != null ? w['60'] : 0)) +
+        '%</td><td>' +
+        mu60 +
+        '</td><td>' +
+        rdContrib(60) +
+        '</td></tr>';
       h += '</tbody></table>';
       h += '<div class="rd-metro-result">基础日均 X = <strong>' + X + '</strong></div>';
       h += '</div></div>';
 
       h += '<div class="rd-metro-stop"><span class="rd-metro-node" aria-hidden="true"></span><div class="rd-metro-card">';
-      h += '<div class="rd-metro-h">③ 影响系数连乘（未覆盖区间系数=1；多段覆盖先按天加权平均）</div>';
-      h += '<div class="rd-metro-formula">预测日均 <code>≈ X × K<sub>季节</sub> × K<sub>同比</sub> × K<sub>生命周期</sub> × K<sub>竞对</sub> × K<sub>目标</sub></code>。各 K 在近 90 天内有配置区间时，按<strong>重合天数加权</strong>得到有效系数；无重合则为 1。</div>';
+      h += '<div class="rd-metro-h">③ 影响系数 → 各日预测日销量</div>';
+      h += '<div class="rd-metro-split">';
+      h += '<div class="rd-metro-split__main">';
+      h +=
+        '<div class="rd-metro-formula"><strong>输入</strong>：基础日销量 <code>X</code>、各维度规则元数据；<strong>计算</strong>：每个预测日按日期命中分段系数并连乘。<strong>输出</strong>：未来逐日预测日销量（上方蓝线）。下方开关控制<strong>是否代入</strong>该维（关闭则该维按 1）。<strong>绿线</strong>仍为去年同日同比实际销量。</div>';
 
-      h += '<table class="rd-mini-table"><thead><tr><th>系数类型</th><th>规则元数据摘要</th><th>近90天有效 K（示意）</th></tr></thead><tbody>';
-      h += '<tr><td>季节</td><td>12 个月系数配置</td><td>' + kSeason + '（1–4 月加权）</td></tr>';
-      h += '<tr><td>同比</td><td>两段日期系数 1.08 / 1.12</td><td>' + kYoy + '（与窗口重合分段加权）</td></tr>';
-      h += '<tr><td>生命周期</td><td>次新品 1.15 / 老品 0.95</td><td>' + kLife + '</td></tr>';
+      h += rdCoeffToolbarHtml();
+
+      h +=
+        '<div class="rd-metro-formula">预测首日 <code>' +
+        rdEsc(fd0) +
+        '</code>：<strong>规则侧 K</strong> 由配置直接命中；<strong>生效 K</strong> = 规则 K ×（开关：关则视为 1）。连乘采用<strong>生效 K</strong>。</div>';
+
+      h +=
+        '<table class="rd-mini-table"><thead><tr><th>系数类型</th><th>规则元数据摘要</th><th>规则 K</th><th>生效 K</th></tr></thead><tbody>';
+      h +=
+        '<tr><td>季节</td><td>12 个月系数（映射到当日月份）</td><td>' +
+        Math.round(repCfg.ks * 1000) / 1000 +
+        '</td><td>' +
+        kSeason +
+        '</td></tr>';
+      h +=
+        '<tr><td>同比</td><td>按日期区间首条命中</td><td>' +
+        Math.round(repCfg.ky * 1000) / 1000 +
+        '</td><td>' +
+        kYoy +
+        '</td></tr>';
+      h +=
+        '<tr><td>生命周期</td><td>按日期区间首条命中</td><td>' +
+        Math.round(repCfg.kl * 1000) / 1000 +
+        '</td><td>' +
+        kLife +
+        '</td></tr>';
       h +=
         '<tr><td>竞对</td><td>' +
-        rdEsc((f.competitor && f.competitor[0] && f.competitor[0].d0) || '') +
+        rdEsc((form.competitor && form.competitor[0] && form.competitor[0].d0) || '') +
         ' ~ ' +
-        rdEsc((f.competitor && f.competitor[0] && f.competitor[0].d1) || '') +
-        '，系数 ' +
-        rdEsc((f.competitor && f.competitor[0] && f.competitor[0].coeff) || String(kComp)) +
+        rdEsc((form.competitor && form.competitor[0] && form.competitor[0].d1) || '') +
+        '</td><td>' +
+        Math.round(repCfg.kc * 1000) / 1000 +
         '</td><td>' +
         kComp +
-        '（部分覆盖）</td></tr>';
+        '</td></tr>';
       h +=
         '<tr><td>目标</td><td>' +
-        rdEsc((f.target && f.target[0] && f.target[0].d0) || '') +
+        rdEsc((form.target && form.target[0] && form.target[0].d0) || '') +
         ' ~ ' +
-        rdEsc((f.target && f.target[0] && f.target[0].d1) || '') +
-        '，系数 ' +
-        rdEsc((f.target && f.target[0] && f.target[0].coeff) || String(kTarget)) +
+        rdEsc((form.target && form.target[0] && form.target[0].d1) || '') +
+        '</td><td>' +
+        Math.round(repCfg.kt * 1000) / 1000 +
         '</td><td>' +
         kTarget +
         '</td></tr>';
       h += '</tbody></table>';
-      h += '<div class="rd-metro-formula">连乘：<code>K = ' + kSeason + ' × ' + kYoy + ' × ' + kLife + ' × ' + kComp + ' × ' + kTarget + ' ≈ ' + K + '</code></div>';
-      h += '<div class="rd-metro-result">示意预测日均 ≈ X × K = ' + X + ' × ' + K + ' ≈ <strong>' + dailyFinal + '</strong>（不含促销与其它业务校正）</div>';
+      h +=
+        '<div class="rd-metro-formula">生效连乘：<code>K = ' +
+        kSeason +
+        ' × ' +
+        kYoy +
+        ' × ' +
+        kLife +
+        ' × ' +
+        kComp +
+        ' × ' +
+        kTarget +
+        ' ≈ ' +
+        K +
+        '</code></div>';
+      h +=
+        '<div class="rd-metro-result"><strong>预测首日（' +
+        rdEsc(fd0) +
+        '）</strong>预测日销量 ≈ X × K<sub>生效</sub> = ' +
+        X +
+        ' × ' +
+        K +
+        ' ≈ <strong>' +
+        dailyFinal +
+        '</strong>（各日系数可能不同；不含促销）</div>';
+
+      h += '</div>';
+      h += '<aside class="rd-metro-split__side">';
+      h += '<div class="rd-parse-chart-title">预测期：有效系数连乘 K（随开关变化）</div>';
+      h += '<div id="rd-calc-chart-ktrace" class="rd-parse-echart-host"></div>';
+      h +=
+        '<p class="rd-parse-chart-note">与上方「销量预测结果」蓝线同源：K 为各预测日生效系数之积；取消勾选某维后该维按 1，曲线与表内「生效 K」同步变化。</p>';
+      h += '</aside>';
+      h += '</div>';
       h += '</div></div>';
 
       h += '</div>';
@@ -560,11 +1316,16 @@
           return r && r.id === rid;
         })[0];
         if (nameInp) nameInp.value = rule ? rule.name || '' : '';
-        rdPaintForecastChart(parentCode, rule || null);
         if (calcHost) calcHost.innerHTML = rdBuildCalcProcessHtml(parentCode, rid);
+        rdInitCalcProcessCharts(parentCode, rid || '');
+        rdPaintForecastChart(parentCode, rule || null);
       }
 
       if (!sel || sel.disabled || !applicableForecast || !applicableForecast.length) {
+        if (calcHost) {
+          calcHost.innerHTML = rdBuildCalcProcessHtml(parentCode, '');
+          rdInitCalcProcessCharts(parentCode, '');
+        }
         rdPaintForecastChart(parentCode, null);
         return;
       }
@@ -593,8 +1354,8 @@
       var titleExtra = asin ? '<span class="rd-asin">' + rdEsc(asin) + '</span>' : '<span class="rd-asin muted">—</span>';
 
       var chartHint = applicableForecast.length
-        ? '根据当前适配的销量预测规则估算的预测销量曲线（示意）；绿色虚线为同比实际销量。实际以服务端计算为准。'
-        : '当前未匹配到启用规则，下方为示意曲线；在「销量预测规则」中启用并适用本父体后将按规则重算。';
+        ? '<strong>蓝线</strong>：模拟原始日销 → 去噪得 A → 加权得 X → 按规则系数得到的<strong>预测日销量</strong>（与本页解析同源）。<strong>绿线</strong>：<strong>同比实际销量</strong>，横轴每个预测日对应<strong>去年同日（−364 天）</strong>的模拟真实日销（去噪后与 A 口径一致）；接入服务端后替换为真实同比口径。'
+        : '当前未匹配到启用规则；下列为默认规则 + 模拟日销管线。在「销量预测规则」中启用并适用本父体后将按所选规则重算。';
 
       var ph = '<span class="v muted">—</span>';
       root.innerHTML =
@@ -677,7 +1438,9 @@
 
         '</div>' +
         '</div>' +
-        '<div id="rd-panel-forecast">' +
+        '<div id="rd-panel-forecast" data-parent-code="' +
+        rdEscAttr(code) +
+        '">' +
         '<div class="rd-fc-inner">' +
 
         '<div class="rd-module">' +
@@ -689,7 +1452,7 @@
         '<div class="rd-module">' +
         '<div class="rd-module-hd">销量预测结果</div>' +
         '<div class="rd-module-bd">' +
-        '<p class="rd-fc-hint">' + rdEsc(chartHint) + '</p>' +
+        '<p class="rd-fc-hint">' + chartHint + '</p>' +
         '<div class="rd-fc-chart-host" id="rd-fc-chart-host"></div>' +
         '</div></div>' +
 
@@ -703,6 +1466,13 @@
         '</div>' +
         '</div>' +
         '</div>';
+      window.rdCoeffToggles = {
+        season: true,
+        yoy: true,
+        lifecycle: true,
+        competitor: true,
+        target: true
+      };
       rdInitForecastRuleSelector(code, applicableForecast);
     }
 
@@ -720,7 +1490,10 @@
         panelD.classList.add('rd-panel--hidden');
         panelF.classList.add('rd-panel--visible');
         requestAnimationFrame(function() {
-          setTimeout(rdResizeForecastChart, 0);
+          setTimeout(function() {
+            rdResizeForecastChart();
+            rdResizeCalcCharts();
+          }, 0);
         });
       }
     }
