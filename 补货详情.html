@@ -123,13 +123,77 @@
     .rd-parse-flow .arrow { color: #c0c4cc; }
     .rd-parse-placeholder { min-height: 120px; border: 1px dashed #dcdfe6; border-radius: 4px; background: #fafafa; display: flex; align-items: center; justify-content: center; color: #909399; font-size: 13px; text-align: center; padding: 16px; line-height: 1.6; }
 
-    .rd-metro { position: relative; padding-left: 32px; max-width: 100%; }
-    .rd-metro::before { content: ''; position: absolute; left: 11px; top: 18px; bottom: 18px; width: 4px; background: linear-gradient(180deg, #409eff 0%, #67c23a 55%, #e6a23c 100%); border-radius: 2px; opacity: 0.85; }
-    .rd-metro-stop { position: relative; margin-bottom: 28px; }
-    .rd-metro-stop:last-child { margin-bottom: 4px; }
-    .rd-metro-node { position: absolute; left: -26px; top: 2px; width: 16px; height: 16px; border-radius: 50%; background: #409eff; border: 3px solid #fff; box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.45); z-index: 1; }
-    .rd-metro-stop:nth-child(2) .rd-metro-node { background: #67c23a; box-shadow: 0 0 0 2px rgba(103, 194, 58, 0.45); }
-    .rd-metro-stop:nth-child(3) .rd-metro-node { background: #e6a23c; box-shadow: 0 0 0 2px rgba(230, 162, 60, 0.45); }
+    /* 计算过程：横向地铁 + Tab 切换 */
+    .rd-calc-process { max-width: 100%; }
+    .rd-calc-metro-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0;
+      margin-bottom: 16px;
+      padding: 14px 10px 18px;
+      background: linear-gradient(180deg, #f9fafb 0%, #f0f2f5 100%);
+      border-radius: 10px;
+      border: 1px solid #e4e7ed;
+    }
+    .rd-calc-metro-connector {
+      flex: 1 1 32px;
+      min-width: 20px;
+      max-width: 100%;
+      height: 3px;
+      border-radius: 2px;
+      background: linear-gradient(90deg, #409eff 0%, #67c23a 50%, #e6a23c 100%);
+      opacity: 0.65;
+    }
+    .rd-calc-metro-tile {
+      flex: 0 1 33%;
+      min-width: 0;
+      max-width: 200px;
+      border: 1px solid #ebeef5;
+      background: #fff;
+      border-radius: 8px;
+      padding: 8px 8px 10px;
+      cursor: pointer;
+      text-align: center;
+      font-size: 12px;
+      line-height: 1.35;
+      color: #606266;
+      transition: box-shadow 0.2s, border-color 0.2s, color 0.2s;
+    }
+    .rd-calc-metro-tile:hover { border-color: #c6e2ff; color: #409eff; }
+    .rd-calc-metro-tile.is-active {
+      color: #303133;
+      font-weight: 600;
+      border-color: #b3d8ff;
+      box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
+    }
+    .rd-calc-metro-tile::before {
+      content: '';
+      display: block;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      margin: 0 auto 6px;
+      background: #dcdfe6;
+      box-shadow: 0 0 0 2px #fff;
+    }
+    .rd-calc-metro-tile[data-rd-calc-tab='0']::before { background: #a0cfff; }
+    .rd-calc-metro-tile[data-rd-calc-tab='1']::before { background: #b3e19d; }
+    .rd-calc-metro-tile[data-rd-calc-tab='2']::before { background: #f3d19e; }
+    .rd-calc-metro-tile.is-active[data-rd-calc-tab='0']::before { background: #409eff; }
+    .rd-calc-metro-tile.is-active[data-rd-calc-tab='1']::before { background: #67c23a; }
+    .rd-calc-metro-tile.is-active[data-rd-calc-tab='2']::before { background: #e6a23c; }
+    .rd-calc-metro-panels { min-height: 0; }
+    .rd-calc-metro-panel { animation: rdCalcFadeIn 0.2s ease; }
+    .rd-calc-metro-panel[hidden] { display: none !important; }
+    @keyframes rdCalcFadeIn { from { opacity: 0.6; } to { opacity: 1; } }
+
+    @media (max-width: 700px) {
+      .rd-calc-metro-bar { flex-wrap: wrap; row-gap: 10px; justify-content: center; }
+      .rd-calc-metro-connector { flex: 0 0 32px; max-width: 50px; }
+    }
+
+    .rd-metro { max-width: 100%; }
     .rd-metro-card { border: 1px solid #ebeef5; border-radius: 8px; padding: 14px 16px; background: #fff; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04); }
     .rd-metro-h { font-size: 15px; font-weight: 600; color: #303133; margin-bottom: 10px; }
     .rd-metro-formula { font-size: 12px; color: #606266; line-height: 1.65; margin-bottom: 10px; padding: 10px 12px; background: #f9fafb; border-radius: 6px; border: 1px solid #ebeef5; }
@@ -742,17 +806,16 @@
       if (elD && pipe.rawDaily.length) {
         var c1 = echarts.init(elD, null, { renderer: 'svg' });
         c1.setOption({
-          color: ['#909399', '#409eff', '#e6a23c', '#67c23a'],
+          color: ['#909399', '#409eff'],
           textStyle: { fontFamily: 'inherit', fontSize: 11 },
           tooltip: { trigger: 'axis' },
           legend: {
-            type: 'scroll',
             orient: 'horizontal',
             bottom: 0,
             textStyle: { fontSize: 10 },
-            data: ['原始日销', '大订单去噪后', '日期类去噪后', '退货去噪后·A']
+            data: ['原始日销', '去噪后日销 A']
           },
-          grid: { left: 46, right: 14, top: 36, bottom: 52 },
+          grid: { left: 46, right: 14, top: 36, bottom: 42 },
           xAxis: {
             type: 'category',
             boundaryGap: false,
@@ -771,31 +834,15 @@
               type: 'line',
               smooth: 0.25,
               showSymbol: false,
-              lineStyle: { width: 1.6 },
+              lineStyle: { width: 1.5 },
               data: pipe.rawDaily
             },
             {
-              name: '大订单去噪后',
+              name: '去噪后日销 A',
               type: 'line',
               smooth: 0.25,
               showSymbol: false,
-              lineStyle: { width: 1.6 },
-              data: pipe.afterLargeDaily
-            },
-            {
-              name: '日期类去噪后',
-              type: 'line',
-              smooth: 0.25,
-              showSymbol: false,
-              lineStyle: { width: 1.6 },
-              data: pipe.afterDateDaily
-            },
-            {
-              name: '退货去噪后·A',
-              type: 'line',
-              smooth: 0.25,
-              showSymbol: false,
-              lineStyle: { width: 2.4 },
+              lineStyle: { width: 2.2 },
               data: pipe.A
             }
           ]
@@ -840,6 +887,9 @@
         });
         rdCalcChartInstances.push(c2);
       }
+      requestAnimationFrame(function() {
+        rdResizeCalcCharts();
+      });
     }
 
     if (!window._rdCoeffToggleBound) {
@@ -968,6 +1018,36 @@
       });
     }
 
+    /** 计算过程：横向阶段 Tab 切换，隐藏面板内的图表在切换后重算尺寸 */
+    function rdBindCalcProcessTabSwitch() {
+      if (window._rdCalcProcessTabBound) return;
+      window._rdCalcProcessTabBound = true;
+      document.body.addEventListener('click', function(e) {
+        var btn = e.target && e.target.closest && e.target.closest('#rd-fc-calc-process .rd-calc-metro-tile');
+        if (!btn) return;
+        e.preventDefault();
+        var root = document.getElementById('rd-fc-calc-process');
+        if (!root || !root.contains(btn)) return;
+        var tab = btn.getAttribute('data-rd-calc-tab');
+        if (tab == null) return;
+        root.querySelectorAll('.rd-calc-metro-tile').forEach(function(b) {
+          var on = b.getAttribute('data-rd-calc-tab') === tab;
+          b.classList.toggle('is-active', on);
+          b.setAttribute('aria-selected', on ? 'true' : 'false');
+        });
+        root.querySelectorAll('.rd-calc-metro-panel').forEach(function(p) {
+          var show = p.getAttribute('data-rd-calc-panel') === tab;
+          if (show) p.removeAttribute('hidden');
+          else p.setAttribute('hidden', 'hidden');
+          p.classList.toggle('is-active', show);
+        });
+        requestAnimationFrame(function() {
+          rdResizeCalcCharts();
+        });
+      });
+    }
+    rdBindCalcProcessTabSwitch();
+
     function rdGetSalesRuleById(ruleId) {
       if (!ruleId) return null;
       var all = rdLoadSalesForecastRules();
@@ -1081,8 +1161,20 @@
 
       var h = '';
 
-      h += '<div class="rd-metro">';
-      h += '<div class="rd-metro-stop"><span class="rd-metro-node" aria-hidden="true"></span><div class="rd-metro-card">';
+      h += '<div class="rd-calc-process">';
+      h += '<div class="rd-calc-metro-bar" role="tablist" aria-label="计算过程阶段">';
+      h +=
+        '<button type="button" class="rd-calc-metro-tile is-active" role="tab" aria-selected="true" data-rd-calc-tab="0" id="rd-calc-tab-0">① 销量去噪<br/><span style="font-size:11px;font-weight:400;color:#909399">集合 A</span></button>';
+      h += '<span class="rd-calc-metro-connector" aria-hidden="true"></span>';
+      h +=
+        '<button type="button" class="rd-calc-metro-tile" role="tab" aria-selected="false" data-rd-calc-tab="1" id="rd-calc-tab-1">② 加权得 X<br/><span style="font-size:11px;font-weight:400;color:#909399">日销规则</span></button>';
+      h += '<span class="rd-calc-metro-connector" aria-hidden="true"></span>';
+      h +=
+        '<button type="button" class="rd-calc-metro-tile" role="tab" aria-selected="false" data-rd-calc-tab="2" id="rd-calc-tab-2">③ 影响系数<br/><span style="font-size:11px;font-weight:400;color:#909399">预测日销</span></button>';
+      h += '</div>';
+      h += '<div class="rd-calc-metro-panels">';
+      h += '<div class="rd-calc-metro-panel is-active" data-rd-calc-panel="0" role="tabpanel" id="rd-calc-panel-0" aria-labelledby="rd-calc-tab-0">';
+      h += '<div class="rd-metro-card">';
       h += '<div class="rd-metro-h">① 销量去噪（得到近 90 天每日销量集合 A）</div>';
       h += '<div class="rd-metro-split">';
       h += '<div class="rd-metro-split__main">';
@@ -1100,7 +1192,7 @@
       h += '<table class="rd-mini-table"><thead><tr><th>元数据</th><th>本例计算结果（示意）</th></tr></thead><tbody>';
       h += '<tr><td>阈值 <code>' + rdEsc(ad.x) + '</code>，固定替换 <code>' + rdEsc(ad.y) + '</code></td><td>模拟订单中 ≥ 阈值的笔数先替换再汇总至日销。</td></tr></tbody></table>';
       h +=
-        '<div style="font-size:11px;color:#67c23a;margin:6px 0 0;font-weight:500;">→ 产出数据：逐日「大订单去噪后」销量（见右侧曲线第 2 条）</div></div>';
+        '<div style="font-size:11px;color:#67c23a;margin:6px 0 0;font-weight:500;">→ 产出：本步效果已合入全链路，对应右侧图「<strong>去噪后</strong>」与「原始」的对照</div></div>';
 
       h += '<div class="rd-metro-sub"><h4>规则2 · 日期固定值去噪</h4>';
       h +=
@@ -1125,7 +1217,7 @@
         rdEsc(dd[0].value) +
         '</td></tr></tbody></table>';
       h +=
-        '<div style="font-size:11px;color:#67c23a;margin:6px 0 0;font-weight:500;">→ 产出数据：逐日「日期类（含固定值）去噪后」销量（见右侧曲线第 3 条）</div></div>';
+        '<div style="font-size:11px;color:#67c23a;margin:6px 0 0;font-weight:500;">→ 产出：与后续日期类规则、退货规则叠加，最终为右侧图「<strong>去噪后</strong>」</div></div>';
 
       h += '<div class="rd-metro-sub"><h4>规则3 · 日期百分比去噪</h4>';
       h +=
@@ -1173,7 +1265,7 @@
         retMult +
         '</strong></td></tr></tbody></table>';
       h +=
-        '<div style="font-size:11px;color:#67c23a;margin:6px 0 0;font-weight:500;">→ 产出数据：集合 <code>A</code>（见右侧曲线第 4 条），共 90 个点</div></div>';
+        '<div style="font-size:11px;color:#67c23a;margin:6px 0 0;font-weight:500;">→ 产出：集合 <code>A</code> 与右侧「<strong>去噪后</strong>」线一致，共 90 个点</div></div>';
 
       h +=
         '<div class="rd-metro-result">集合 A：共 90 个日销量；去噪后窗口日均 <strong>' +
@@ -1182,15 +1274,13 @@
       h += '</div>';
 
       h += '<aside class="rd-metro-split__side">';
-      h += '<div class="rd-parse-chart-title">近 90 天：元数据 → 逐日销量（各步去噪曲线）</div>';
+      h += '<div class="rd-parse-chart-title">近 90 天：原始日销 与 去噪后日销 A</div>';
       h += '<div id="rd-calc-chart-denoise" class="rd-parse-echart-host rd-parse-echart-host--tall"></div>';
       h +=
-        '<p class="rd-parse-chart-note">横轴为窗口内日期；四条线依次为 <strong>原始</strong> → <strong>大订单后</strong> → <strong>日期类规则后</strong> → <strong>退货后·A</strong>。可与左侧每步「→ 产出数据」对照。</p>';
-      h += '</aside>';
-      h += '</div>';
-      h += '</div></div>';
-
-      h += '<div class="rd-metro-stop"><span class="rd-metro-node" aria-hidden="true"></span><div class="rd-metro-card">';
+        '<p class="rd-parse-chart-note">横轴为窗口内日期。仅展示两条线：<strong>原始日销</strong>（大订单前）、<strong>去噪后</strong>（经大订单/日期/退货等规则后得到的 A，中间各步不单独出折线）。</p>';
+      h += '</aside></div></div></div>';
+      h += '<div class="rd-calc-metro-panel" hidden data-rd-calc-panel="1" role="tabpanel" id="rd-calc-panel-1" aria-labelledby="rd-calc-tab-1">';
+      h += '<div class="rd-metro-card">';
       h += '<div class="rd-metro-h">② 日销量规则：加权基础日均 X（暂不含促销）</div>';
       h += '<div class="rd-metro-formula">在集合 A 上分别统计近 3/7/14/30/60 日日均 <code>μ<sub>3</sub>…μ<sub>60</sub></code>，再按权重加权：<code>X = (Σ w<sub>k</sub>·μ<sub>k</sub>) / Σw<sub>k</sub></code>（权重和可不为 100% 时按相对权重归一）。由此得到<strong>单一基础日销量 X</strong>。</div>';
       h += '<table class="rd-mini-table"><thead><tr><th>窗口</th><th>权重 w（元数据）</th><th>μ（基于模拟 A）</th><th>贡献（占 X）</th></tr></thead><tbody>';
@@ -1237,8 +1327,8 @@
       h += '</tbody></table>';
       h += '<div class="rd-metro-result">基础日均 X = <strong>' + X + '</strong></div>';
       h += '</div></div>';
-
-      h += '<div class="rd-metro-stop"><span class="rd-metro-node" aria-hidden="true"></span><div class="rd-metro-card">';
+      h += '<div class="rd-calc-metro-panel" hidden data-rd-calc-panel="2" role="tabpanel" id="rd-calc-panel-2" aria-labelledby="rd-calc-tab-2">';
+      h += '<div class="rd-metro-card">';
       h += '<div class="rd-metro-h">③ 影响系数 → 各日预测日销量</div>';
       h += '<div class="rd-metro-split">';
       h += '<div class="rd-metro-split__main">';
@@ -1324,11 +1414,7 @@
       h += '<div id="rd-calc-chart-ktrace" class="rd-parse-echart-host"></div>';
       h +=
         '<p class="rd-parse-chart-note">与上方「销量预测结果」蓝线同源：K 为各预测日生效系数之积；取消勾选某维后该维按 1，曲线与表内「生效 K」同步变化。</p>';
-      h += '</aside>';
-      h += '</div>';
-      h += '</div></div>';
-
-      h += '</div>';
+      h += '</aside></div></div></div></div></div>';
       return h;
     }
 
