@@ -731,6 +731,18 @@
       padding-top: 18px;
       border-top: 1px dashed #e4e7ed;
     }
+    .sf-date-denoise-value-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      flex-wrap: nowrap;
+    }
+    .sf-date-denoise-pct-suf {
+      font-size: 13px;
+      color: #606266;
+      user-select: none;
+      line-height: 1;
+    }
 
     .sf-denoise-subhead--row {
       width: 100%;
@@ -742,86 +754,22 @@
       flex: 1;
       min-width: 0;
     }
-    /* ② 指定日期去噪：与预测配置/备货页一致的胶囊整体启停 */
-    .sf-denoise-date-pill-wrap .section-title-toggle {
-      display: inline-flex;
+    .sf-subhead-toggle {
+      display: flex;
       align-items: center;
-      cursor: pointer;
-      user-select: none;
-      white-space: nowrap;
-      position: relative;
-      flex-shrink: 0;
-    }
-    .sf-denoise-date-pill-wrap .section-title-toggle input[type="checkbox"] {
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 64px;
-      height: 28px;
-      margin: 0;
-      opacity: 0;
-      cursor: pointer;
-      z-index: 4;
-    }
-    .sf-denoise-date-pill-wrap .section-title-toggle:focus-within .pill-switch-ui {
-      box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.35);
-    }
-    .sf-denoise-date-pill-wrap .pill-switch-ui {
-      position: relative;
-      display: inline-block;
-      width: 64px;
-      height: 28px;
-      border-radius: 999px;
-      background: #c0c4cc;
-      transition: background 0.22s ease;
-    }
-    .sf-denoise-date-pill-wrap .section-title-toggle input:checked + .pill-switch-ui {
-      background: #52c41a;
-    }
-    .sf-denoise-date-pill-wrap .pill-switch-knob {
-      position: absolute;
-      top: 3px;
-      left: 3px;
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      background: #fff;
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
-      transition: transform 0.22s ease;
-      z-index: 2;
-    }
-    .sf-denoise-date-pill-wrap .section-title-toggle input:checked + .pill-switch-ui .pill-switch-knob {
-      transform: translateX(36px);
-    }
-    .sf-denoise-date-pill-wrap .pill-switch-label {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
+      gap: 6px;
       font-size: 12px;
-      font-weight: 700;
-      color: #fff;
-      line-height: 1;
-      pointer-events: none;
-      z-index: 1;
-      letter-spacing: 0.02em;
+      color: #606266;
+      flex-shrink: 0;
+      white-space: nowrap;
     }
-    .sf-denoise-date-pill-wrap .pill-switch-label--on {
-      left: 10px;
-      opacity: 0;
-      transition: opacity 0.15s ease;
+    .sf-subhead-toggle .switch {
+      transform: scale(0.92);
+      transform-origin: center right;
     }
-    .sf-denoise-date-pill-wrap .pill-switch-label--off {
-      right: 8px;
-      opacity: 1;
-      transition: opacity 0.15s ease;
-    }
-    .sf-denoise-date-pill-wrap .section-title-toggle input:checked + .pill-switch-ui .pill-switch-label--on {
-      opacity: 1;
-    }
-    .sf-denoise-date-pill-wrap .section-title-toggle input:checked + .pill-switch-ui .pill-switch-label--off {
-      opacity: 0;
-    }
-    .sf-denoise-date-content.section-disabled {
+    .sf-denoise-date-content.section-disabled,
+    .sf-denoise-stockout-content.section-disabled,
+    .sf-denoise-return-content.section-disabled {
       opacity: 0.45;
       pointer-events: none;
       transition: opacity 0.2s ease;
@@ -1599,7 +1547,7 @@
                 <tr>
                   <th style="width:100px;">类型</th>
                   <th>规则</th>
-                  <th style="width:100px;">状态</th>
+                  <th style="width:100px;">启用/停用</th>
                 </tr>
               </thead>
               <tbody>
@@ -1631,19 +1579,16 @@
           <div class="sf-denoise-subhead sf-denoise-subhead--row" role="heading" aria-level="3">
             <span class="sf-denoise-subhead-bar" aria-hidden="true"></span>
             <span class="sf-denoise-subhead-text">② 日销量指定日期去噪</span>
-            <div class="sf-denoise-date-pill-wrap">
-              <label
-                class="section-title-toggle"
-                title="启用后本段全部日期规则参与计算；停用时整段不生效，下方配置保留且置灰不可编辑"
-              >
+            <span
+              class="sf-subhead-toggle"
+              title="启用后本段全部日期规则参与计算；停用时整段不生效，下方配置保留且置灰不可编辑"
+            >
+              <span style="color:#909399;">启用/停用</span>
+              <label class="switch">
                 <input type="checkbox" id="sf-denoise-date-block-en" checked />
-                <span class="pill-switch-ui">
-                  <span class="pill-switch-knob"></span>
-                  <span class="pill-switch-label pill-switch-label--on">启用</span>
-                  <span class="pill-switch-label pill-switch-label--off">停用</span>
-                </span>
+                <span class="switch-slider"></span>
               </label>
-            </div>
+            </span>
           </div>
           <div id="sf-denoise-date-content" class="sf-denoise-date-content">
             <p class="sf-rule-hint">
@@ -1656,7 +1601,7 @@
                     <th style="width:56px;">序号</th>
                     <th style="min-width:160px;">去噪类型</th>
                     <th>时间段</th>
-                    <th style="min-width:100px;">去噪值</th>
+                    <th style="min-width:100px;">去噪值/比例</th>
                     <th style="min-width:140px;">名称/说明</th>
                     <th style="width:64px;">操作</th>
                   </tr>
@@ -1677,7 +1622,12 @@
                         <input type="date" class="sf-coeff-inp" style="width:130px;" />
                       </div>
                     </td>
-                    <td><input type="number" class="sf-coeff-inp sf-coeff-inp--num" placeholder="值" /></td>
+                    <td>
+                      <div class="sf-date-denoise-value-wrap">
+                        <input type="number" class="sf-coeff-inp sf-coeff-inp--num" placeholder="值" />
+                        <span class="sf-date-denoise-pct-suf" style="display: none" aria-hidden="true">%</span>
+                      </div>
+                    </td>
                     <td>
                       <input
                         type="text"
@@ -1710,31 +1660,48 @@
         </div>
 
         <div class="sf-denoise-block sf-denoise-block--sep" id="sf-denoise-stockout-wrap">
-          <div class="sf-denoise-subhead" role="heading" aria-level="3">
+          <div class="sf-denoise-subhead sf-denoise-subhead--row" role="heading" aria-level="3">
             <span class="sf-denoise-subhead-bar" aria-hidden="true"></span>
             <span class="sf-denoise-subhead-text">③ 日销量断货去噪</span>
+            <span class="sf-subhead-toggle" title="启用后按公式参与历史修正；停用则跳过本逻辑（展示保留，预测管线中断货修正暂不模拟）">
+              <span style="color:#909399;">启用/停用</span>
+              <label class="switch">
+                <input type="checkbox" id="sf-denoise-stockout-en" checked />
+                <span class="switch-slider"></span>
+              </label>
+            </span>
           </div>
-          <div class="sf-denoise-stockout-formula">
-            <div class="sf-denoise-stockout-formula-title">系统自动断货去噪公式</div>
-            <div class="sf-denoise-stockout-formula-body">
-              修正后日销量 = 原日销量 × （预计销售天数 / （预计销售天数 - 断货天数））
+          <div id="sf-denoise-stockout-content" class="sf-denoise-stockout-content">
+            <div class="sf-denoise-stockout-formula">
+              <div class="sf-denoise-stockout-formula-title">系统自动断货去噪公式</div>
+              <div class="sf-denoise-stockout-formula-body">
+              启用后，系统将自动识别断货时段，日销权重规则计算时不把断货日纳入计算范围内
+              </div>
+              <div class="sf-denoise-stockout-formula-note">
+                断货日定义：系统每日记录 FBA 库存（FBA可售量 + FBA预留中转 + FBA预留处理中），当为0时，标记为断货日。
+              </div>
             </div>
-            <div class="sf-denoise-stockout-formula-note">
-              断货点定义：系统每日记录 FBA 库存（FBA可售量 + FBA预留中转 + FBA预留处理中），当为0时，标记为断货日。
-            </div>
+            <p class="sf-rule-hint"></p>
           </div>
-          <p class="sf-rule-hint">启用后，系统将自动识别断货时段并按上述公式修正历史日销量</p>
         </div>
 
         <div class="sf-denoise-block sf-denoise-block--sep" id="sf-denoise-return-wrap">
-          <div class="sf-denoise-subhead" role="heading" aria-level="3">
+          <div class="sf-denoise-subhead sf-denoise-subhead--row" role="heading" aria-level="3">
             <span class="sf-denoise-subhead-bar" aria-hidden="true"></span>
             <span class="sf-denoise-subhead-text">④ 退货量去噪</span>
+            <span class="sf-subhead-toggle" title="启用后按比例扣减退货；停用则预测计算中不应用退货去噪（配置保留、下方置灰）">
+              <span style="color:#909399;">启用/停用</span>
+              <label class="switch">
+                <input type="checkbox" id="sf-denoise-return-block-en" checked />
+                <span class="switch-slider"></span>
+              </label>
+            </span>
           </div>
-          <p class="sf-rule-hint">
-            从历史销量中扣减退货/退款数量，使净销量更准确地反映真实需求。
-          </p>
-          <div class="sf-coeff-table-wrap">
+          <div id="sf-denoise-return-content" class="sf-denoise-return-content">
+            <p class="sf-rule-hint">
+              从历史销量中扣减退货/退款数量，使净销量更准确地反映真实需求。扣减比例：如填15，表示该时段每日销量扣减15%的退货量。
+            </p>
+            <div class="sf-coeff-table-wrap">
             <table class="sf-coeff-data-table">
               <thead>
                 <tr>
@@ -1771,6 +1738,7 @@
           </div>
           <button type="button" class="btn sf-coeff-add-btn" id="sf-return-denoise-add"><span>+</span> 添加</button>
           <p class="sf-rule-hint">扣减比例：如填15，表示该时段销量扣减15%的退货量</p>
+          </div>
         </div>
       </section>
 
@@ -1876,18 +1844,18 @@
         <div class="drawer-section-head">4. 影响系数</div>
 
         <div class="sf-coeff-formula">
-          <div class="sf-coeff-formula-title">各日预测日销量（概念说明）</div>
+          <div class="sf-coeff-formula-title">计算说明  </div>
           <div class="sf-coeff-formula-formula">
-            由「销量去噪 + 日销规则」得到<strong>基础日销量 X</strong>后，再连乘季节、同比、生命周期、竞对、目标等系数，得到<strong>未来各自然日</strong>的<strong>预测日销量</strong>；分段系数行中的起止<strong>日期</strong>表示该系数对未来预测区间内<strong>每一天</strong>生效的区间（精确到日）。（促销覆盖当前版本关闭，不介入预测。）
+            由「销量去噪 + 日销规则」得到<strong>基础日销量</strong>后，再连乘季节、同比、生命周期、竞对、目标等系数，得到<strong>未来各自然日</strong>的<strong>预测日销量。</strong>
           </div>
-          <div class="sf-coeff-formula-note">各系数默认值为 1；&gt;1 为增量，&lt;1 为减量。季节系数仍按日历月（1–12 月）映射到每一天。</div>
+          <div class="sf-coeff-formula-note">默认值为 1；&gt;1 为增量，&lt;1 为减量。</div>
         </div>
 
         <div class="sf-coeff-part-title">日销量影响系数</div>
 
         <div class="sf-coeff-block" id="sf-coeff-season-wrap">
           <div class="sf-coeff-subhead" role="heading" aria-level="3">
-            <span class="sf-coeff-subhead-bar" aria-hidden="true"></span>
+            <span class="sf-coeff-subhead-bar" aria-hidden="true"></span> 
             <span class="sf-coeff-subhead-text">季节/市场系数</span>
           </div>
           <div class="sf-coeff-body"> 
@@ -2346,7 +2314,7 @@
           competitor: [{ d0: '', d1: '', growth: 'down', coeff: '1', note: '' }],
           target: [{ d0: '', d1: '', growth: 'up', coeff: '1', note: '' }],
           autoDenoise: { x: '10', y: '1', largeEnabled: true },
-          denoiseBlockEnabled: { date: true },
+          denoiseBlockEnabled: { date: true, stockout: true, return: true },
           dateDenoise: [{ type: '固定值去噪', d0: '', d1: '', value: '', note: '' }],
           returnDenoise: [{ d0: '', d1: '', pct: '', note: '' }]
         };
@@ -2588,6 +2556,7 @@
 
       function sfHtmlDateDenoiseRow(row) {
         var t = row.type === '百分比去噪' ? '百分比去噪' : '固定值去噪';
+        var isPct = t === '百分比去噪';
         return (
           '<td></td>' +
           '<td><select class="sf-coeff-sel">' +
@@ -2598,7 +2567,11 @@
           '<span>至</span>' +
           '<input type="date" class="sf-coeff-inp" style="width:130px;" value="' + sfEscAttr(row.d1) + '" />' +
           '</div></td>' +
-          '<td><input type="number" class="sf-coeff-inp sf-coeff-inp--num" placeholder="值" value="' + sfEscAttr(row.value) + '" /></td>' +
+          '<td><div class="sf-date-denoise-value-wrap">' +
+          '<input type="number" class="sf-coeff-inp sf-coeff-inp--num" placeholder="值" value="' + sfEscAttr(row.value) + '" />' +
+          '<span class="sf-date-denoise-pct-suf"' +
+          (isPct ? ' aria-hidden="false"' : ' style="display:none" aria-hidden="true"') +
+          '>%</span></div></td>' +
           '<td><input type="text" class="sf-coeff-inp sf-coeff-inp--wide" value="' + sfEscAttr(row.note) + '" placeholder="说明" /></td>' +
           '<td><button type="button" class="sf-denoise-row-del" data-tbody="sf-date-denoise-tbody" title="删除" aria-label="删除">🗑️</button></td>'
         );
@@ -2694,11 +2667,12 @@
             if (!tds || tds.length < 6) return;
             var typ = tds[1].querySelector('select');
             var dates = tds[2].querySelectorAll('input[type="date"]');
+            var valInp = tds[3].querySelector('.sf-date-denoise-value-wrap input') || tds[3].querySelector('input');
             dateRows.push({
               type: typ ? typ.value : '固定值去噪',
               d0: dates[0] ? dates[0].value : '',
               d1: dates[1] ? dates[1].value : '',
-              value: (tds[3].querySelector('input') && tds[3].querySelector('input').value) || '',
+              value: (valInp && valInp.value) || '',
               note: (tds[4].querySelector('input') && tds[4].querySelector('input').value) || ''
             });
           });
@@ -2719,7 +2693,6 @@
             });
           });
         }
-        var dateBlockEl = document.getElementById('sf-denoise-date-block-en');
         return {
           name: (document.getElementById('rule-name-input') && document.getElementById('rule-name-input').value) || '',
           enabled: document.getElementById('rule-enabled-input') ? document.getElementById('rule-enabled-input').checked : true,
@@ -2736,7 +2709,16 @@
             y: autoY ? autoY.value : '1',
             largeEnabled: autoEn ? autoEn.checked : true
           },
-          denoiseBlockEnabled: { date: dateBlockEl ? dateBlockEl.checked : true },
+          denoiseBlockEnabled: (function() {
+            var a = document.getElementById('sf-denoise-date-block-en');
+            var b = document.getElementById('sf-denoise-stockout-en');
+            var c = document.getElementById('sf-denoise-return-block-en');
+            return {
+              date: a ? a.checked : true,
+              stockout: b ? b.checked : true,
+              return: c ? c.checked : true
+            };
+          })(),
           dateDenoise: dateRows,
           returnDenoise: retRows
         };
@@ -2811,7 +2793,13 @@
         var dbe = state.denoiseBlockEnabled || {};
         var sdb = document.getElementById('sf-denoise-date-block-en');
         if (sdb) sdb.checked = dbe.date !== false;
+        var sde2 = document.getElementById('sf-denoise-stockout-en');
+        if (sde2) sde2.checked = dbe.stockout !== false;
+        var sre2 = document.getElementById('sf-denoise-return-block-en');
+        if (sre2) sre2.checked = dbe.return !== false;
         if (typeof sfSyncDateDenoiseBlock === 'function') sfSyncDateDenoiseBlock();
+        if (typeof sfSyncStockoutDenoiseBlock === 'function') sfSyncStockoutDenoiseBlock();
+        if (typeof sfSyncReturnDenoiseBlock === 'function') sfSyncReturnDenoiseBlock();
         var dtbody = document.getElementById('sf-date-denoise-tbody');
         if (dtbody) {
           var drows = state.dateDenoise && state.dateDenoise.length ? state.dateDenoise : [{}];
@@ -2822,6 +2810,7 @@
             dtbody.appendChild(tr);
           });
           sfDenoiseUpdateRowNumbers(dtbody);
+          sfDateDenoiseSyncAllPctSuffix();
         }
         var rtbody = document.getElementById('sf-return-denoise-tbody');
         if (rtbody) {
@@ -3332,7 +3321,33 @@
         tr.remove();
         sfCoeffRenumberRows(tbody);
       }
+      function sfDateDenoiseUpdateRowPctSuffix(tr) {
+        if (!tr) return;
+        var tds = tr.cells;
+        if (!tds || tds.length < 4) return;
+        var sel = tds[1] && tds[1].querySelector('select');
+        var cell = tds[3];
+        if (!cell) return;
+        var suf = cell.querySelector('.sf-date-denoise-pct-suf');
+        if (!suf) return;
+        var isPct = sel && (sel.value || '').indexOf('百分比') >= 0;
+        suf.style.display = isPct ? 'inline' : 'none';
+        suf.setAttribute('aria-hidden', isPct ? 'false' : 'true');
+      }
+      function sfDateDenoiseSyncAllPctSuffix() {
+        var tb = document.getElementById('sf-date-denoise-tbody');
+        if (!tb) return;
+        tb.querySelectorAll('tr').forEach(function(tr) {
+          sfDateDenoiseUpdateRowPctSuffix(tr);
+        });
+      }
       if (sfCoeffDrawerBody) {
+        sfCoeffDrawerBody.addEventListener('change', function(e) {
+          var t = e.target;
+          if (!t || t.tagName !== 'SELECT' || !t.closest('#sf-date-denoise-tbody')) return;
+          var tr = t.closest('tr');
+          if (tr) sfDateDenoiseUpdateRowPctSuffix(tr);
+        });
         sfCoeffDrawerBody.addEventListener('click', function(e) {
           var delCoeff = e.target.closest('.sf-coeff-row-del');
           if (delCoeff) {
@@ -3382,7 +3397,7 @@
         var count = tbody.querySelectorAll('tr').length;
         var tr = document.createElement('tr');
         tr.innerHTML =
-          '<td>' + (count + 1) + '</td>' +
+          '<td></td>' +
           '<td><select class="sf-coeff-sel">' +
           '<option selected>固定值去噪</option><option>百分比去噪</option></select></td>' +
           '<td><div class="sf-coeff-dates">' +
@@ -3390,11 +3405,14 @@
           '<span>至</span>' +
           '<input type="date" class="sf-coeff-inp" style="width:130px;" />' +
           '</div></td>' +
-          '<td><input type="number" class="sf-coeff-inp sf-coeff-inp--num" placeholder="值" /></td>' +
+          '<td><div class="sf-date-denoise-value-wrap">' +
+          '<input type="number" class="sf-coeff-inp sf-coeff-inp--num" placeholder="值" />' +
+          '<span class="sf-date-denoise-pct-suf" style="display:none" aria-hidden="true">%</span></div></td>' +
           '<td><input type="text" class="sf-coeff-inp sf-coeff-inp--wide" placeholder="说明" /></td>' +
           '<td><button type="button" class="sf-denoise-row-del" data-tbody="sf-date-denoise-tbody" title="删除" aria-label="删除">🗑️</button></td>';
         tbody.appendChild(tr);
         sfDenoiseUpdateRowNumbers(tbody);
+        sfDateDenoiseUpdateRowPctSuffix(tr);
       }
       function sfDenoiseAddReturnRow() {
         var tbody = document.getElementById('sf-return-denoise-tbody');
@@ -3437,8 +3455,31 @@
         sfDateBlockEn.addEventListener('change', sfSyncDateDenoiseBlock);
         sfSyncDateDenoiseBlock();
       }
+      function sfSyncStockoutDenoiseBlock() {
+        var ch = document.getElementById('sf-denoise-stockout-en');
+        var el = document.getElementById('sf-denoise-stockout-content');
+        if (!el) return;
+        el.classList.toggle('section-disabled', !(ch && ch.checked));
+      }
+      var sfStBlockEn = document.getElementById('sf-denoise-stockout-en');
+      if (sfStBlockEn) {
+        sfStBlockEn.addEventListener('change', sfSyncStockoutDenoiseBlock);
+        sfSyncStockoutDenoiseBlock();
+      }
+      function sfSyncReturnDenoiseBlock() {
+        var ch = document.getElementById('sf-denoise-return-block-en');
+        var el = document.getElementById('sf-denoise-return-content');
+        if (!el) return;
+        el.classList.toggle('section-disabled', !(ch && ch.checked));
+      }
+      var sfRetBlockEn = document.getElementById('sf-denoise-return-block-en');
+      if (sfRetBlockEn) {
+        sfRetBlockEn.addEventListener('change', sfSyncReturnDenoiseBlock);
+        sfSyncReturnDenoiseBlock();
+      }
       var sfDateDenoiseAdd = document.getElementById('sf-date-denoise-add');
       if (sfDateDenoiseAdd) sfDateDenoiseAdd.addEventListener('click', sfDenoiseAddDateRow);
+      sfDateDenoiseSyncAllPctSuffix();
       var sfReturnDenoiseAdd = document.getElementById('sf-return-denoise-add');
       if (sfReturnDenoiseAdd) sfReturnDenoiseAdd.addEventListener('click', sfDenoiseAddReturnRow);
 

@@ -467,13 +467,17 @@
     }
 
     function rdDefaultDenoiseBlockEnabled() {
-      return { date: true };
+      return { date: true, stockout: true, return: true };
     }
 
     function rdMergeForecastForm(f) {
       var b = RD_FALLBACK_FORM_SF20260410001;
       var dbe = rdDefaultDenoiseBlockEnabled();
-      if (f && f.denoiseBlockEnabled && f.denoiseBlockEnabled.date === false) dbe.date = false;
+      if (f && f.denoiseBlockEnabled) {
+        if (f.denoiseBlockEnabled.date === false) dbe.date = false;
+        if (f.denoiseBlockEnabled.stockout === false) dbe.stockout = false;
+        if (f.denoiseBlockEnabled.return === false) dbe.return = false;
+      }
       var o = {
         dailyWeights: (f && f.dailyWeights) ? f.dailyWeights : b.dailyWeights,
         autoDenoise: (f && f.autoDenoise) ? f.autoDenoise : b.autoDenoise,
@@ -616,7 +620,8 @@
       var dbeD = (form.denoiseBlockEnabled || rdDefaultDenoiseBlockEnabled());
       var datePass = dbeD.date === false ? [] : (form.dateDenoise || []);
       var afterDate = rdApplyDateDenoiseRows(afterLarge, ds, datePass);
-      var afterReturn = rdApplyReturnRows(afterDate, ds, form.returnDenoise || []);
+      var returnPass = dbeD.return === false ? [] : (form.returnDenoise || []);
+      var afterReturn = rdApplyReturnRows(afterDate, ds, returnPass);
 
       return {
         raw: Math.round(rawSum * 100) / 100,
