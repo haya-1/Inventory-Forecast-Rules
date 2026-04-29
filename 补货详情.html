@@ -581,19 +581,6 @@
       return { ks: ks, ky: ky, kl: kl, kc: kc, kt: kt, prod: prod };
     }
 
-    /** coeffFlags 某维为 false 时该维按 1 参与连乘（不参与计算） */
-    function rdKBreakdownWithFlags(form, dateStr, coeffFlags) {
-      var kb = rdKBreakdown(form, dateStr);
-      var cf = coeffFlags || {};
-      if (cf.season === false) kb.ks = 1;
-      if (cf.yoy === false) kb.ky = 1;
-      if (cf.lifecycle === false) kb.kl = 1;
-      if (cf.competitor === false) kb.kc = 1;
-      if (cf.target === false) kb.kt = 1;
-      kb.prod = kb.ks * kb.ky * kb.kl * kb.kc * kb.kt;
-      return kb;
-    }
-
     /**
      * 单日：模拟订单 → 大订单去噪 → 日期/退货去噪；输出各阶段数值供曲线展示。
      */
@@ -640,9 +627,8 @@
      * 模拟近 90 天原始日销（订单汇总）→ 去噪得 A → 加权得 X → 未来 90 日逐日预测。
      * form 须已合并默认值（rdMergeForecastForm）。
      */
-    function rdPipelineForecast(form, seed, coeffFlags) {
+    function rdPipelineForecast(form, seed) {
       form = form || RD_FALLBACK_FORM_SF20260410001;
-      coeffFlags = coeffFlags || {};
       var WINDOW = 90;
       var FC_DAYS = 90;
       var today = rdStartOfDay(new Date());
@@ -700,7 +686,7 @@
         var fd = rdAddDays(tomorrow, fi);
         var fds = rdFormatYMD(fd);
         forecastDates.push(fds);
-        var kb = rdKBreakdownWithFlags(form, fds, coeffFlags);
+        var kb = rdKBreakdown(form, fds);
         var pred = Math.round(X * kb.prod * 100) / 100;
         forecastPred.push(pred);
         var yoyDay = rdAddDays(fd, -364);
@@ -708,7 +694,7 @@
         forecastYoyActual.push(yoySales);
       }
 
-      var rep = rdKBreakdownWithFlags(form, forecastDates[0], coeffFlags);
+      var rep = rdKBreakdown(form, forecastDates[0]);
 
       return {
         winStartStr: rdFormatYMD(winStart),
@@ -724,66 +710,12 @@
         forecastPred: forecastPred,
         forecastYoyActual: forecastYoyActual,
         repK: rep,
-        coeffFlags: coeffFlags,
         meanA: Math.round((A.reduce(function(s, x) { return s + x; }, 0) / Math.max(A.length, 1)) * 100) / 100
       };
     }
 
     var rdForecastChartInstance = null;
     var rdCalcChartInstances = [];
-
-    function rdGetCoeffFlagsFromDom() {
-      var keys = ['season', 'yoy', 'lifecycle', 'competitor', 'target'];
-      var out = {};
-      keys.forEach(function(k) {
-        var el = document.querySelector('#rd-fc-calc-process [data-rd-coeff-toggle="' + k + '"]');
-        out[k] = !el ? true : !!el.checked;
-      });
-      return out;
-    }
-
-    /** 初次渲染 calc 容器尚不存在时用 rdCoeffToggles / 默认全启用 */
-    function rdGetCoeffFlagsForPipeline() {
-      if (document.querySelector('#rd-fc-calc-process [data-rd-coeff-toggle="season"]')) {
-        return rdGetCoeffFlagsFromDom();
-      }
-      var t = window.rdCoeffToggles || {};
-      return {
-        season: t.season !== false,
-        yoy: t.yoy !== false,
-        lifecycle: t.lifecycle !== false,
-        competitor: t.competitor !== false,
-        target: t.target !== false
-      };
-    }
-
-    function rdCoeffToolbarHtml() {
-      var tg = window.rdCoeffToggles || {};
-      function on(key) {
-        return tg[key] !== false ? ' checked' : '';
-      }
-      return (
-        '<div class="rd-coeff-toolbar">' +
-        '<span class="rd-coeff-toolbar-h">参与预测连乘：</span>' +
-        '<label><input type="checkbox" data-rd-coeff-toggle="season"' +
-        on('season') +
-        ' />季节</label>' +
-        '<label><input type="checkbox" data-rd-coeff-toggle="yoy"' +
-        on('yoy') +
-        ' />同比</label>' +
-        '<label><input type="checkbox" data-rd-coeff-toggle="lifecycle"' +
-        on('lifecycle') +
-        ' />生命周期</label>' +
-        '<label><input type="checkbox" data-rd-coeff-toggle="competitor"' +
-        on('competitor') +
-        ' />竞对</label>' +
-        '<label><input type="checkbox" data-rd-coeff-toggle="target"' +
-        on('target') +
-        ' />目标</label>' +
-        '<span style="font-size:12px;color:#909399;margin-left:8px;">关闭则该维按 1 代入，并重绘上方预测曲线。</span>' +
-        '</div>'
-      );
-    }
 
     function rdDisposeCalcCharts() {
       rdCalcChartInstances.forEach(function(chart) {
@@ -800,8 +732,7 @@
       var rule = ruleId ? rdGetSalesRuleById(ruleId) : null;
       var form = rdMergeForecastForm(rule && rule.form ? rule.form : null);
       var seed = rdHashStr(String(parentCode) + '|' + String(ruleId || ''));
-      var flags = rdGetCoeffFlagsFromDom();
-      var pipe = rdPipelineForecast(form, seed, flags);
+      var pipe = rdPipelineForecast(form, seed);
 
       var xShort = pipe.chartDates.map(function(d) {
         return d.slice(5);
@@ -860,7 +791,7 @@
         var kProd = [];
         for (var ki = 0; ki < pipe.forecastDates.length; ki++) {
           kProd.push(
-            Math.round(rdKBreakdownWithFlags(form, pipe.forecastDates[ki], flags).prod * 10000) / 10000
+            Math.round(rdKBreakdown(form, pipe.forecastDates[ki]).prod * 10000) / 10000
           );
         }
         var xF = pipe.forecastDates.map(function(d) {
@@ -897,28 +828,6 @@
       });
     }
 
-    if (!window._rdCoeffToggleBound) {
-      window._rdCoeffToggleBound = true;
-      document.body.addEventListener('change', function(e) {
-        var t = e.target;
-        if (!t || !t.getAttribute || !t.matches('#rd-fc-calc-process [data-rd-coeff-toggle]')) return;
-        var k = t.getAttribute('data-rd-coeff-toggle');
-        if (!window.rdCoeffToggles) window.rdCoeffToggles = {};
-        window.rdCoeffToggles[k] = t.checked;
-        var panel = document.getElementById('rd-panel-forecast');
-        var parentCode = panel && panel.getAttribute('data-parent-code');
-        if (!parentCode) return;
-        var ridInp = document.getElementById('rd-fc-rule-id');
-        var rid = ridInp && ridInp.value ? ridInp.value : '';
-        var rules = rdFindApplicableForecastRules(parentCode);
-        var rule = rid ? rules.filter(function(r) { return r && r.id === rid; })[0] : null;
-        var calcHost2 = document.getElementById('rd-fc-calc-process');
-        if (calcHost2) calcHost2.innerHTML = rdBuildCalcProcessHtml(parentCode, rid || '');
-        rdInitCalcProcessCharts(parentCode, rid || '');
-        rdPaintForecastChart(parentCode, rule || null);
-      });
-    }
-
     function rdResizeForecastChart() {
       if (typeof echarts === 'undefined') return;
       var host = document.getElementById('rd-fc-chart-host');
@@ -939,8 +848,7 @@
       var rid = selectedRule && selectedRule.id ? selectedRule.id : '';
       var seed = rdHashStr(String(parentCode) + '|' + String(rid));
       var formMerged = rdMergeForecastForm(selectedRule && selectedRule.form ? selectedRule.form : null);
-      var coeffFlags = rdGetCoeffFlagsForPipeline();
-      var pipe = rdPipelineForecast(formMerged, seed, coeffFlags);
+      var pipe = rdPipelineForecast(formMerged, seed);
       var categories = pipe.forecastDates;
       var pred = pipe.forecastPred;
       var yoy = pipe.forecastYoyActual;
@@ -1107,7 +1015,7 @@
       }
       var form = rdMergeForecastForm(rule && rule.form ? rule.form : null);
       var seed = rdHashStr(String(parentCode) + '|' + String(ruleId));
-      var pipe = rdPipelineForecast(form, seed, rdGetCoeffFlagsForPipeline());
+      var pipe = rdPipelineForecast(form, seed);
 
       var w = form.dailyWeights || {};
       var ad = form.autoDenoise || { x: '4', y: '2', largeEnabled: true };
@@ -1130,9 +1038,6 @@
       var ov1 = ws && we ? rdOverlapDayCount(ws, we, dd[0].d0, dd[0].d1) : 0;
       var ov2 = ws && we ? rdOverlapDayCount(ws, we, dd[1].d0, dd[1].d1) : 0;
       var retOv = ws && we ? rdOverlapDayCount(ws, we, rd[0].d0, rd[0].d1) : 0;
-      var pctRet = parseFloat(rd[0].pct);
-      var retMult =
-        !isNaN(pctRet) && pctRet > 0 ? Math.round((1 - pctRet / 100) * 1000) / 1000 : 1;
 
       var mu = pipe.mu;
       var mu3 = mu[3] != null ? mu[3] : '—';
@@ -1162,7 +1067,6 @@
       var K = Math.round(rep.prod * 10000) / 10000;
       var dailyFinal = Math.round(X * K * 100) / 100;
       var fd0 = pipe.forecastDates && pipe.forecastDates[0] ? pipe.forecastDates[0] : '';
-      var repCfg = fd0 ? rdKBreakdown(form, fd0) : rep;
 
       var h = '';
 
@@ -1178,248 +1082,78 @@
         '<button type="button" class="rd-calc-metro-tile" role="tab" aria-selected="false" data-rd-calc-tab="2" id="rd-calc-tab-2">③ 影响系数<br/><span style="font-size:11px;font-weight:400;color:#909399">预测日销量</span></button>';
       h += '</div>';
       h += '<div class="rd-calc-metro-panels">';
+
+      /* ---- 面板 0：销量去噪 ---- */
       h += '<div class="rd-calc-metro-panel is-active" data-rd-calc-panel="0" role="tabpanel" id="rd-calc-panel-0" aria-labelledby="rd-calc-tab-0">';
       h += '<div class="rd-metro-card">';
-      h += '<div class="rd-metro-h">① 销量去噪（得到近 90 天每日销量集合 A）</div>';
+      h += '<div class="rd-metro-h">第①步：清洗历史销量，去掉异常数据</div>';
       h += '<div class="rd-metro-split">';
       h += '<div class="rd-metro-split__main">';
-      h +=
-        '<div class="rd-metro-formula"><strong>输入</strong>：滑动窗口内每日<strong>模拟原始订单</strong>汇总销量；<strong>输出</strong>：经四步规则逐日修正后的序列 <code>A</code>。窗口 <code>[' +
-        rdEsc(winStart) +
-        ' ~ ' +
-        rdEsc(winEnd) +
-        ']</code>。同一天多规则命中顺序：大订单 → 日期规则（配置顺序）→ 退货。</div>';
 
-      h += '<div class="rd-metro-sub"><h4>规则1 · 大订单去噪</h4>';
-      h +=
-        '<div class="rd-metro-formula"><strong>元数据</strong>：阈值 <code>x</code>、替换值 <code>y</code>。<strong>计算</strong>：单笔订单销量 ≥ <code>x</code> 的明细改为 <code>y</code>，再汇总到自然日。<strong>→ 数据形态</strong>：由「原始日销」变为「大订单去噪后日销」序列。</div>';
-      h += '<div class="rd-metro-formula">在<strong>订单粒度</strong>判断：若某笔订单某产品销量 <code>≥ ' + rdEsc(ad.x) + '</code>（阈值），则该笔该产品在计入日销量时改为 <code>' + rdEsc(ad.y) + '</code>（固定值）；逐笔处理后再汇总到自然日。元数据：大订单去噪 ' + (ad.largeEnabled !== false ? '开启' : '关闭') + '。</div>';
-      h += '<table class="rd-mini-table"><thead><tr><th>元数据</th><th>本例计算结果（示意）</th></tr></thead><tbody>';
-      h += '<tr><td>阈值 <code>' + rdEsc(ad.x) + '</code>，固定替换 <code>' + rdEsc(ad.y) + '</code></td><td>模拟订单中 ≥ 阈值的笔数先替换再汇总至日销。</td></tr></tbody></table>';
-      h +=
-        '<div style="font-size:11px;color:#67c23a;margin:6px 0 0;font-weight:500;">→ 产出：本步效果已合入全链路，对应右侧图「<strong>去噪后</strong>」与「原始」的对照</div></div>';
+      h += '<div class="rd-metro-formula">系统取最近 90 天（<code>' + rdEsc(winStart) + ' ~ ' + rdEsc(winEnd) + '</code>）的实际日销量，按以下四条规则逐日清洗，得到一组干净的日销量数据：</div>';
 
-      h += '<div class="rd-metro-sub"><h4>规则2 · 日期固定值去噪</h4>';
-      h +=
-        '<div class="rd-metro-formula"><strong>元数据</strong>：起止日、替换常数。<strong>计算</strong>：交集日期上日销<strong>整体替换</strong>为配置值。<strong>→ 数据形态</strong>：在命中日期上覆盖为常数序列。</div>';
-      h +=
-        '<div class="rd-metro-formula">区间 <code>[' +
-        rdEsc(dd[0].d0) +
-        ' ~ ' +
-        rdEsc(dd[0].d1) +
-        ']</code> 内日销量替换为 <code>' +
-        rdEsc(dd[0].value) +
-        '</code>（与近 90 天交集共 <strong>' +
-        ov1 +
-        '</strong> 天）。</div>';
-      h += '<table class="rd-mini-table"><thead><tr><th>元数据</th><th>计算结果</th></tr></thead><tbody>';
-      h +=
-        '<tr><td>原因：' +
-        rdEsc(dd[0].note || '') +
-        '</td><td>交集 ' +
-        ov1 +
-        ' 天均置为 ' +
-        rdEsc(dd[0].value) +
-        '</td></tr></tbody></table>';
-      h +=
-        '<div style="font-size:11px;color:#67c23a;margin:6px 0 0;font-weight:500;">→ 产出：与后续日期类规则、退货规则叠加，最终为右侧图「<strong>去噪后</strong>」</div></div>';
+      h += '<ol style="margin:0 0 14px 18px;font-size:13px;color:#606266;line-height:2;">';
+      h += '<li><strong>大订单去噪</strong>' + (ad.largeEnabled !== false ? '' : '（当前关闭）') + '：单笔订单销量 ≥ ' + rdEsc(ad.x) + ' 的，统一按 ' + rdEsc(ad.y) + ' 计入当天，避免个别大订单拉高整体水平。</li>';
+      h += '<li><strong>日期固定值去噪</strong>：' + rdEsc(dd[0].d0) + ' ~ ' + rdEsc(dd[0].d1) + ' 期间（' + rdEsc(dd[0].note || '特殊日期') + '），共影响 ' + ov1 + ' 天，每日销量直接按固定值 ' + rdEsc(dd[0].value) + ' 处理。</li>';
+      h += '<li><strong>日期百分比去噪</strong>：' + rdEsc(dd[1].d0) + ' ~ ' + rdEsc(dd[1].d1) + ' 期间（' + rdEsc(dd[1].note || '数据修正') + '），共影响 ' + ov2 + ' 天，每日销量按 ' + rdEsc(dd[1].value) + '% 缩放还原。</li>';
+      h += '<li><strong>退货去噪</strong>：' + rdEsc(rd[0].d0) + ' ~ ' + rdEsc(rd[0].d1) + ' 期间，扣除约 ' + rdEsc(rd[0].pct) + '% 的退货量' + (rd[0].note ? '（' + rdEsc(rd[0].note) + '）' : '') + '，共影响 ' + retOv + ' 天。</li>';
+      h += '</ol>';
 
-      h += '<div class="rd-metro-sub"><h4>规则3 · 日期百分比去噪</h4>';
-      h +=
-        '<div class="rd-metro-formula"><strong>元数据</strong>：起止日、百分比 <code>p</code>。<strong>计算</strong>：交集日上日销 × <code>p/100</code>。<strong>→ 数据形态</strong>：在命中日期上按比例缩放。</div>';
-      h +=
-        '<div class="rd-metro-formula">区间 <code>[' +
-        rdEsc(dd[1].d0) +
-        ' ~ ' +
-        rdEsc(dd[1].d1) +
-        ']</code> 内日销量 × <code>' +
-        rdEsc(dd[1].value) +
-        '%</code>（与近 90 天交集共 <strong>' +
-        ov2 +
-        '</strong> 天）。</div>';
-      h += '<table class="rd-mini-table"><thead><tr><th>元数据</th><th>计算结果</th></tr></thead><tbody>';
-      h +=
-        '<tr><td>' +
-        rdEsc(dd[1].note || '') +
-        '</td><td>交集 ' +
-        ov2 +
-        ' 天按 ' +
-        rdEsc(dd[1].value) +
-        '% 缩放</td></tr></tbody></table>';
-      h +=
-        '<div style="font-size:11px;color:#67c23a;margin:6px 0 0;font-weight:500;">→ 产出数据：同上一条曲线「日期类去噪后」（固定值与百分比按配置顺序叠加）</div></div>';
-
-      h += '<div class="rd-metro-sub"><h4>规则4 · 退货量去噪</h4>';
-      h +=
-        '<div class="rd-metro-formula"><strong>元数据</strong>：起止日、退货率。<strong>计算</strong>：交集日内日销 × <code>(1 − 退货率)</code>。<strong>→ 数据形态</strong>：最终得到集合 <code>A</code>。</div>';
-      h +=
-        '<div class="rd-metro-formula">在 <code>[' +
-        rdEsc(rd[0].d0) +
-        ' ~ ' +
-        rdEsc(rd[0].d1) +
-        ']</code> 内，将日销乘以 <code>(1 − 退货率)</code>；退货率 <code>' +
-        rdEsc(rd[0].pct) +
-        '%</code>（与近 90 天交集共 <strong>' +
-        retOv +
-        '</strong> 天）。</div>';
-      h += '<table class="rd-mini-table"><thead><tr><th>元数据</th><th>计算结果</th></tr></thead><tbody>';
-      h +=
-        '<tr><td>' +
-        rdEsc(rd[0].note || '') +
-        '</td><td>区间内单日乘数约 <strong>' +
-        retMult +
-        '</strong></td></tr></tbody></table>';
-      h +=
-        '<div style="font-size:11px;color:#67c23a;margin:6px 0 0;font-weight:500;">→ 产出：集合 <code>A</code> 与右侧「<strong>去噪后</strong>」线一致，共 90 个点</div></div>';
-
-      h +=
-        '<div class="rd-metro-result">集合 A：共 90 个日销量；去噪后窗口日均 <strong>' +
-        pipe.meanA +
-        '</strong>（用于下一步 μ 与 X）</div>';
+      h += '<div class="rd-metro-result">清洗后近 90 天日均销量约 <strong>' + pipe.meanA + '</strong>，作为下一步计算的基础。</div>';
       h += '</div>';
 
       h += '<aside class="rd-metro-split__side">';
-      h += '<div class="rd-parse-chart-title">近 90 天：原始日销 与 去噪后日销 A</div>';
+      h += '<div class="rd-parse-chart-title">近 90 天：原始日销 与 清洗后日销</div>';
       h += '<div id="rd-calc-chart-denoise" class="rd-parse-echart-host rd-parse-echart-host--tall"></div>';
-      h +=
-        '<p class="rd-parse-chart-note">横轴为窗口内日期。仅展示两条线：<strong>原始日销</strong>（大订单前）、<strong>去噪后</strong>（经大订单/日期/退货等规则后得到的 A，中间各步不单独出折线）。</p>';
+      h += '<p class="rd-parse-chart-note">灰线为原始日销，蓝线为清洗后数据。两者差异反映四条去噪规则的修正幅度。</p>';
       h += '</aside></div></div></div>';
+
+      /* ---- 面板 1：加权基础日均 ---- */
       h += '<div class="rd-calc-metro-panel" hidden data-rd-calc-panel="1" role="tabpanel" id="rd-calc-panel-1" aria-labelledby="rd-calc-tab-1">';
       h += '<div class="rd-metro-card">';
-      h += '<div class="rd-metro-h">② 日销量规则：加权基础日均 X（暂不含促销）</div>';
-      h += '<div class="rd-metro-formula">在集合 A 上分别统计近 3/7/14/30/60 日日均 <code>μ<sub>3</sub>…μ<sub>60</sub></code>，再按权重加权：<code>X = (Σ w<sub>k</sub>·μ<sub>k</sub>) / Σw<sub>k</sub></code>（权重和可不为 100% 时按相对权重归一）。由此得到<strong>单一基础日销量 X</strong>。</div>';
-      h += '<table class="rd-mini-table"><thead><tr><th>窗口</th><th>权重 w（元数据）</th><th>μ（基于模拟 A）</th><th>贡献（占 X）</th></tr></thead><tbody>';
-      h +=
-        '<tr><td>近3日</td><td>' +
-        rdEsc(String(w['3'] != null ? w['3'] : 0)) +
-        '%</td><td>' +
-        mu3 +
-        '</td><td>' +
-        rdContrib(3) +
-        '</td></tr>';
-      h +=
-        '<tr><td>近7日</td><td>' +
-        rdEsc(String(w['7'] != null ? w['7'] : 0)) +
-        '%</td><td>' +
-        mu7 +
-        '</td><td>' +
-        rdContrib(7) +
-        '</td></tr>';
-      h +=
-        '<tr><td>近14日</td><td>' +
-        rdEsc(String(w['14'] != null ? w['14'] : 0)) +
-        '%</td><td>' +
-        mu14 +
-        '</td><td>' +
-        rdContrib(14) +
-        '</td></tr>';
-      h +=
-        '<tr><td>近30日</td><td>' +
-        rdEsc(String(w['30'] != null ? w['30'] : 0)) +
-        '%</td><td>' +
-        mu30 +
-        '</td><td>' +
-        rdContrib(30) +
-        '</td></tr>';
-      h +=
-        '<tr><td>近60日</td><td>' +
-        rdEsc(String(w['60'] != null ? w['60'] : 0)) +
-        '%</td><td>' +
-        mu60 +
-        '</td><td>' +
-        rdContrib(60) +
-        '</td></tr>';
+      h += '<div class="rd-metro-h">第②步：多时间窗口加权，得出基础日销量</div>';
+      h += '<div class="rd-metro-formula">在清洗后的 90 天数据上，先剔除断货期间的数据（库存为 0 的天数不参与统计），再分别统计近 3 天、7 天、14 天、30 天、60 天的日均销量，按规则中配置的权重进行加权平均。权重越大的窗口，对最终结果的影响越大。这样综合了短期波动和长期趋势，得到一个能代表当前销售水平的基础日销量。</div>';
+
+      h += '<table class="rd-mini-table"><thead><tr><th>统计窗口</th><th>权重</th><th>日均销量</th><th>加权贡献</th></tr></thead><tbody>';
+      h += '<tr><td>近 3 天</td><td>' + rdEsc(String(w['3'] != null ? w['3'] : 0)) + '%</td><td>' + mu3 + '</td><td>' + rdContrib(3) + '</td></tr>';
+      h += '<tr><td>近 7 天</td><td>' + rdEsc(String(w['7'] != null ? w['7'] : 0)) + '%</td><td>' + mu7 + '</td><td>' + rdContrib(7) + '</td></tr>';
+      h += '<tr><td>近 14 天</td><td>' + rdEsc(String(w['14'] != null ? w['14'] : 0)) + '%</td><td>' + mu14 + '</td><td>' + rdContrib(14) + '</td></tr>';
+      h += '<tr><td>近 30 天</td><td>' + rdEsc(String(w['30'] != null ? w['30'] : 0)) + '%</td><td>' + mu30 + '</td><td>' + rdContrib(30) + '</td></tr>';
+      h += '<tr><td>近 60 天</td><td>' + rdEsc(String(w['60'] != null ? w['60'] : 0)) + '%</td><td>' + mu60 + '</td><td>' + rdContrib(60) + '</td></tr>';
       h += '</tbody></table>';
-      h += '<div class="rd-metro-result">基础日均 X = <strong>' + X + '</strong></div>';
+
+      h += '<div class="rd-metro-result">基础日销量 = <strong>' + X + '</strong>（将作为下一步系数调整的基准值）</div>';
       h += '</div></div>';
+
+      /* ---- 面板 2：影响系数 ---- */
       h += '<div class="rd-calc-metro-panel" hidden data-rd-calc-panel="2" role="tabpanel" id="rd-calc-panel-2" aria-labelledby="rd-calc-tab-2">';
       h += '<div class="rd-metro-card">';
-      h += '<div class="rd-metro-h">③ 影响系数 → 各日预测日销量</div>';
+      h += '<div class="rd-metro-h">第③步：多维因素修正，得到每日预测销量</div>';
       h += '<div class="rd-metro-split">';
       h += '<div class="rd-metro-split__main">';
-      h +=
-        '<div class="rd-metro-formula"><strong>输入</strong>：基础日销量 <code>X</code>、各维度规则元数据；<strong>计算</strong>：每个预测日按日期命中分段系数并连乘。<strong>输出</strong>：未来逐日预测日销量（上方蓝线）。下方开关控制<strong>是否代入</strong>该维（关闭则该维按 1）。<strong>绿线</strong>仍为去年同日同比实际销量。</div>';
 
-      h += rdCoeffToolbarHtml();
+      h += '<div class="rd-metro-formula">基础日销量只是一个基准值，实际每天的销量还会受到季节、同比趋势、产品生命周期、竞争环境、业务目标等因素影响。系统对未来的每一天，根据当天的情况，将基础日销量乘以对应的系数。</div>';
 
-      h +=
-        '<div class="rd-metro-formula">预测首日 <code>' +
-        rdEsc(fd0) +
-        '</code>：<strong>规则侧 K</strong> 由配置直接命中；<strong>生效 K</strong> = 规则 K ×（开关：关则视为 1）。连乘采用<strong>生效 K</strong>。</div>';
-
-      h +=
-        '<table class="rd-mini-table"><thead><tr><th>系数类型</th><th>规则元数据摘要</th><th>规则 K</th><th>生效 K</th></tr></thead><tbody>';
-      h +=
-        '<tr><td>季节</td><td>12 个月系数（映射到当日月份）</td><td>' +
-        Math.round(repCfg.ks * 1000) / 1000 +
-        '</td><td>' +
-        kSeason +
-        '</td></tr>';
-      h +=
-        '<tr><td>同比</td><td>按日期区间首条命中</td><td>' +
-        Math.round(repCfg.ky * 1000) / 1000 +
-        '</td><td>' +
-        kYoy +
-        '</td></tr>';
-      h +=
-        '<tr><td>生命周期</td><td>按日期区间首条命中</td><td>' +
-        Math.round(repCfg.kl * 1000) / 1000 +
-        '</td><td>' +
-        kLife +
-        '</td></tr>';
-      h +=
-        '<tr><td>竞对</td><td>' +
-        rdEsc((form.competitor && form.competitor[0] && form.competitor[0].d0) || '') +
-        ' ~ ' +
-        rdEsc((form.competitor && form.competitor[0] && form.competitor[0].d1) || '') +
-        '</td><td>' +
-        Math.round(repCfg.kc * 1000) / 1000 +
-        '</td><td>' +
-        kComp +
-        '</td></tr>';
-      h +=
-        '<tr><td>目标</td><td>' +
-        rdEsc((form.target && form.target[0] && form.target[0].d0) || '') +
-        ' ~ ' +
-        rdEsc((form.target && form.target[0] && form.target[0].d1) || '') +
-        '</td><td>' +
-        Math.round(repCfg.kt * 1000) / 1000 +
-        '</td><td>' +
-        kTarget +
-        '</td></tr>';
+      h += '<table class="rd-mini-table"><thead><tr><th>影响维度</th><th>系数</th><th>说明</th></tr></thead><tbody>';
+      h += '<tr><td>季节</td><td>' + kSeason + '</td><td>根据预测日所在月份的季节规律</td></tr>';
+      h += '<tr><td>同比</td><td>' + kYoy + '</td><td>与去年同期对比的趋势修正</td></tr>';
+      h += '<tr><td>生命周期</td><td>' + kLife + '</td><td>产品处于新品/次新品/老品阶段的影响</td></tr>';
+      h += '<tr><td>竞对</td><td>' + kComp + '</td><td>竞争环境变化带来的影响</td></tr>';
+      h += '<tr><td>目标</td><td>' + kTarget + '</td><td>业务目标调整</td></tr>';
       h += '</tbody></table>';
-      h +=
-        '<div class="rd-metro-formula">生效连乘：<code>K = ' +
-        kSeason +
-        ' × ' +
-        kYoy +
-        ' × ' +
-        kLife +
-        ' × ' +
-        kComp +
-        ' × ' +
-        kTarget +
-        ' ≈ ' +
-        K +
-        '</code></div>';
-      h +=
-        '<div class="rd-metro-result"><strong>预测首日（' +
-        rdEsc(fd0) +
-        '）</strong>预测日销量 ≈ X × K<sub>生效</sub> = ' +
-        X +
-        ' × ' +
-        K +
-        ' ≈ <strong>' +
-        dailyFinal +
-        '</strong>（各日系数可能不同；不含促销）</div>';
+
+      h += '<div class="rd-metro-formula" style="margin-top:10px;">综合系数 = ' + kSeason + ' × ' + kYoy + ' × ' + kLife + ' × ' + kComp + ' × ' + kTarget + ' ≈ <strong>' + K + '</strong></div>';
+
+      h += '<div class="rd-metro-result">以预测首日（' + rdEsc(fd0) + '）为例：基础日销量 ' + X + ' × 综合系数 ' + K + ' = 预测日销量约 <strong>' + dailyFinal + '</strong>（后续每天系数可能不同，完整走势见上方预测曲线和各日系数曲线）</div>';
 
       h += '</div>';
       h += '<aside class="rd-metro-split__side">';
-      h += '<div class="rd-parse-chart-title">预测期：有效系数连乘 K（随开关变化）</div>';
+      h += '<div class="rd-parse-chart-title">预测期：综合系数每日变化</div>';
       h += '<div id="rd-calc-chart-ktrace" class="rd-parse-echart-host"></div>';
-      h +=
-        '<p class="rd-parse-chart-note">与上方「销量预测结果」蓝线同源：K 为各预测日生效系数之积；取消勾选某维后该维按 1，曲线与表内「生效 K」同步变化。</p>';
-      h += '</aside></div></div></div></div></div>';
+      h += '<p class="rd-parse-chart-note">曲线展示未来每天综合系数的变化。</p>';
+      h += '</aside></div></div></div>';
+
+      h += '</div></div>';
       return h;
     }
 
@@ -1584,13 +1318,6 @@
         '</div>' +
         '</div>' +
         '</div>';
-      window.rdCoeffToggles = {
-        season: true,
-        yoy: true,
-        lifecycle: true,
-        competitor: true,
-        target: true
-      };
       rdInitForecastRuleSelector(code, applicableForecast);
     }
 
