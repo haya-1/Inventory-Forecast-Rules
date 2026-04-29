@@ -762,11 +762,13 @@
       color: #606266;
       flex-shrink: 0;
       white-space: nowrap;
+      margin-left: auto;
     }
     .sf-subhead-toggle .switch {
       transform: scale(0.92);
       transform-origin: center right;
     }
+    .sf-coeff-body.section-disabled,
     .sf-denoise-date-content.section-disabled,
     .sf-denoise-stockout-content.section-disabled,
     .sf-denoise-return-content.section-disabled {
@@ -1582,6 +1584,7 @@
             <span
               class="sf-subhead-toggle"
               title="启用后本段全部日期规则参与计算；停用时整段不生效，下方配置保留且置灰不可编辑"
+              style="display:none;"
             >
               <span style="color:#909399;">启用/停用</span>
               <label class="switch">
@@ -1663,7 +1666,7 @@
           <div class="sf-denoise-subhead sf-denoise-subhead--row" role="heading" aria-level="3">
             <span class="sf-denoise-subhead-bar" aria-hidden="true"></span>
             <span class="sf-denoise-subhead-text">③ 日销量断货去噪</span>
-            <span class="sf-subhead-toggle" title="启用后按公式参与历史修正；停用则跳过本逻辑（展示保留，预测管线中断货修正暂不模拟）">
+            <span class="sf-subhead-toggle" title="启用后按公式参与历史修正；停用则跳过本逻辑（展示保留，预测管线中断货修正暂不模拟）" style="display:none;">
               <span style="color:#909399;">启用/停用</span>
               <label class="switch">
                 <input type="checkbox" id="sf-denoise-stockout-en" checked />
@@ -1675,7 +1678,7 @@
             <div class="sf-denoise-stockout-formula">
               <div class="sf-denoise-stockout-formula-title">系统自动断货去噪公式</div>
               <div class="sf-denoise-stockout-formula-body">
-              启用后，系统将自动识别断货时段，日销权重规则计算时不把断货日纳入计算范围内
+              系统将自动识别断货时段，日销权重规则计算时不把断货日纳入计算范围内
               </div>
               <div class="sf-denoise-stockout-formula-note">
                 断货日定义：系统每日记录 FBA 库存（FBA可售量 + FBA预留中转 + FBA预留处理中），当为0时，标记为断货日。
@@ -1689,7 +1692,7 @@
           <div class="sf-denoise-subhead sf-denoise-subhead--row" role="heading" aria-level="3">
             <span class="sf-denoise-subhead-bar" aria-hidden="true"></span>
             <span class="sf-denoise-subhead-text">④ 退货量去噪</span>
-            <span class="sf-subhead-toggle" title="启用后按比例扣减退货；停用则预测计算中不应用退货去噪（配置保留、下方置灰）">
+            <span class="sf-subhead-toggle" title="启用后按比例扣减退货；停用则预测计算中不应用退货去噪（配置保留、下方置灰）" style="display:none;">
               <span style="color:#909399;">启用/停用</span>
               <label class="switch">
                 <input type="checkbox" id="sf-denoise-return-block-en" checked />
@@ -1851,14 +1854,21 @@
           <div class="sf-coeff-formula-note">默认值为 1；&gt;1 为增量，&lt;1 为减量。</div>
         </div>
 
-        <div class="sf-coeff-part-title">日销量影响系数</div>
+        
 
         <div class="sf-coeff-block" id="sf-coeff-season-wrap">
           <div class="sf-coeff-subhead" role="heading" aria-level="3">
-            <span class="sf-coeff-subhead-bar" aria-hidden="true"></span> 
+            <span class="sf-coeff-subhead-bar" aria-hidden="true"></span>
             <span class="sf-coeff-subhead-text">季节/市场系数</span>
+            <span class="sf-subhead-toggle" title="启用后季节系数参与预测连乘计算；停用后该维按 1 代入，下方配置保留">
+              <span style="color:#909399;">启用/停用</span>
+              <label class="switch">
+                <input type="checkbox" id="sf-coeff-season-en" checked />
+                <span class="switch-slider"></span>
+              </label>
+            </span>
           </div>
-          <div class="sf-coeff-body"> 
+          <div class="sf-coeff-body" id="sf-coeff-season-body"> 
             <p class="sf-rule-hint">
               按<strong>自然月</strong>维护季节性系数，用于匹配<strong>未来预测</strong>时各月份：1 表示无调整，&gt;1 旺季，&lt;1 淡季。例如泳衣可在 7–8 月填 1.3、冬季填 0.5。
             </p>
@@ -1905,8 +1915,15 @@
           <div class="sf-coeff-subhead" role="heading" aria-level="3">
             <span class="sf-coeff-subhead-bar" aria-hidden="true"></span>
             <span class="sf-coeff-subhead-text">同比销售系数</span>
+            <span class="sf-subhead-toggle" title="启用后同比系数参与预测连乘计算；停用后该维按 1 代入，下方配置保留">
+              <span style="color:#909399;">启用/停用</span>
+              <label class="switch">
+                <input type="checkbox" id="sf-coeff-yoy-en" checked />
+                <span class="switch-slider"></span>
+              </label>
+            </span>
           </div>
-          <div class="sf-coeff-body">
+          <div class="sf-coeff-body" id="sf-coeff-yoy-body">
             <p class="sf-rule-hint">同比系数生效的<strong>起止日期</strong>（年-月-日），对区间内<strong>每个预测自然日</strong>分别生效。</p>
             <div class="sf-coeff-table-wrap">
               <table class="sf-coeff-data-table">
@@ -1952,8 +1969,15 @@
           <div class="sf-coeff-subhead" role="heading" aria-level="3">
             <span class="sf-coeff-subhead-bar" aria-hidden="true"></span>
             <span class="sf-coeff-subhead-text">产品生命周期系数（次新品/老品）</span>
+            <span class="sf-subhead-toggle" title="启用后生命周期系数参与预测连乘计算；停用后该维按 1 代入，下方配置保留">
+              <span style="color:#909399;">启用/停用</span>
+              <label class="switch">
+                <input type="checkbox" id="sf-coeff-lifecycle-en" checked />
+                <span class="switch-slider"></span>
+              </label>
+            </span>
           </div>
-          <div class="sf-coeff-body">
+          <div class="sf-coeff-body" id="sf-coeff-lifecycle-body">
             <p class="sf-rule-hint">次新品处于增长期，系数 &gt; 1；老品处于衰减期，系数 &lt; 1。时间范围为<strong>起止日期</strong>（精确到日）。</p>
             <div class="sf-coeff-table-wrap">
               <table class="sf-coeff-data-table">
@@ -2003,8 +2027,15 @@
           <div class="sf-coeff-subhead" role="heading" aria-level="3">
             <span class="sf-coeff-subhead-bar" aria-hidden="true"></span>
             <span class="sf-coeff-subhead-text">竞对价格系数</span>
+            <span class="sf-subhead-toggle" title="启用后竞对系数参与预测连乘计算；停用后该维按 1 代入，下方配置保留">
+              <span style="color:#909399;">启用/停用</span>
+              <label class="switch">
+                <input type="checkbox" id="sf-coeff-competitor-en" checked />
+                <span class="switch-slider"></span>
+              </label>
+            </span>
           </div>
-          <div class="sf-coeff-body">
+          <div class="sf-coeff-body" id="sf-coeff-competitor-body">
             <p class="sf-rule-hint">竞对降价时 &lt; 1（需求被分流），竞对涨价时 &gt; 1（需求流入）。区间为<strong>起止日期</strong>（精确到日）。</p>
             <div class="sf-coeff-table-wrap">
               <table class="sf-coeff-data-table">
@@ -2049,8 +2080,15 @@
           <div class="sf-coeff-subhead" role="heading" aria-level="3">
             <span class="sf-coeff-subhead-bar" aria-hidden="true"></span>
             <span class="sf-coeff-subhead-text">目标系数 / 目标置信率系数</span>
+            <span class="sf-subhead-toggle" title="启用后目标系数参与预测连乘计算；停用后该维按 1 代入，下方配置保留">
+              <span style="color:#909399;">启用/停用</span>
+              <label class="switch">
+                <input type="checkbox" id="sf-coeff-target-en" checked />
+                <span class="switch-slider"></span>
+              </label>
+            </span>
           </div>
-          <div class="sf-coeff-body">
+          <div class="sf-coeff-body" id="sf-coeff-target-body">
             <p class="sf-rule-hint">反映销售目标牵引力度；区间为<strong>起止日期</strong>（精确到日）。</p>
             <div class="sf-coeff-table-wrap">
               <table class="sf-coeff-data-table">
@@ -2315,6 +2353,7 @@
           target: [{ d0: '', d1: '', growth: 'up', coeff: '1', note: '' }],
           autoDenoise: { x: '10', y: '1', largeEnabled: true },
           denoiseBlockEnabled: { date: true, stockout: true, return: true },
+          coeffEnabled: { season: true, yoy: true, lifecycle: true, competitor: true, target: true },
           dateDenoise: [{ type: '固定值去噪', d0: '', d1: '', value: '', note: '' }],
           returnDenoise: [{ d0: '', d1: '', pct: '', note: '' }]
         };
@@ -2719,6 +2758,20 @@
               return: c ? c.checked : true
             };
           })(),
+          coeffEnabled: (function() {
+            var s = document.getElementById('sf-coeff-season-en');
+            var y = document.getElementById('sf-coeff-yoy-en');
+            var l = document.getElementById('sf-coeff-lifecycle-en');
+            var c = document.getElementById('sf-coeff-competitor-en');
+            var t = document.getElementById('sf-coeff-target-en');
+            return {
+              season: s ? s.checked : true,
+              yoy: y ? y.checked : true,
+              lifecycle: l ? l.checked : true,
+              competitor: c ? c.checked : true,
+              target: t ? t.checked : true
+            };
+          })(),
           dateDenoise: dateRows,
           returnDenoise: retRows
         };
@@ -2797,8 +2850,20 @@
         if (sde2) sde2.checked = dbe.stockout !== false;
         var sre2 = document.getElementById('sf-denoise-return-block-en');
         if (sre2) sre2.checked = dbe.return !== false;
+        var ce = state.coeffEnabled || { season: true, yoy: true, lifecycle: true, competitor: true, target: true };
+        var cSeason = document.getElementById('sf-coeff-season-en');
+        var cYoy = document.getElementById('sf-coeff-yoy-en');
+        var cLife = document.getElementById('sf-coeff-lifecycle-en');
+        var cComp = document.getElementById('sf-coeff-competitor-en');
+        var cTarget = document.getElementById('sf-coeff-target-en');
+        if (cSeason) cSeason.checked = ce.season !== false;
+        if (cYoy) cYoy.checked = ce.yoy !== false;
+        if (cLife) cLife.checked = ce.lifecycle !== false;
+        if (cComp) cComp.checked = ce.competitor !== false;
+        if (cTarget) cTarget.checked = ce.target !== false;
         if (typeof sfSyncDateDenoiseBlock === 'function') sfSyncDateDenoiseBlock();
         if (typeof sfSyncStockoutDenoiseBlock === 'function') sfSyncStockoutDenoiseBlock();
+        if (typeof sfSyncCoeffBlocks === 'function') sfSyncCoeffBlocks();
         if (typeof sfSyncReturnDenoiseBlock === 'function') sfSyncReturnDenoiseBlock();
         var dtbody = document.getElementById('sf-date-denoise-tbody');
         if (dtbody) {
@@ -3477,6 +3542,30 @@
         sfRetBlockEn.addEventListener('change', sfSyncReturnDenoiseBlock);
         sfSyncReturnDenoiseBlock();
       }
+      function sfSyncOneCoeffBlock(key, chkId, bodyId) {
+        var ch = document.getElementById(chkId);
+        var el = document.getElementById(bodyId);
+        if (!el) return;
+        el.classList.toggle('section-disabled', !(ch && ch.checked));
+      }
+      function sfSyncCoeffBlocks() {
+        sfSyncOneCoeffBlock('season', 'sf-coeff-season-en', 'sf-coeff-season-body');
+        sfSyncOneCoeffBlock('yoy', 'sf-coeff-yoy-en', 'sf-coeff-yoy-body');
+        sfSyncOneCoeffBlock('lifecycle', 'sf-coeff-lifecycle-en', 'sf-coeff-lifecycle-body');
+        sfSyncOneCoeffBlock('competitor', 'sf-coeff-competitor-en', 'sf-coeff-competitor-body');
+        sfSyncOneCoeffBlock('target', 'sf-coeff-target-en', 'sf-coeff-target-body');
+      }
+      var sfCoeffSeasonEn = document.getElementById('sf-coeff-season-en');
+      var sfCoeffYoyEn = document.getElementById('sf-coeff-yoy-en');
+      var sfCoeffLifeEn = document.getElementById('sf-coeff-lifecycle-en');
+      var sfCoeffCompEn = document.getElementById('sf-coeff-competitor-en');
+      var sfCoeffTargetEn = document.getElementById('sf-coeff-target-en');
+      if (sfCoeffSeasonEn) sfCoeffSeasonEn.addEventListener('change', sfSyncCoeffBlocks);
+      if (sfCoeffYoyEn) sfCoeffYoyEn.addEventListener('change', sfSyncCoeffBlocks);
+      if (sfCoeffLifeEn) sfCoeffLifeEn.addEventListener('change', sfSyncCoeffBlocks);
+      if (sfCoeffCompEn) sfCoeffCompEn.addEventListener('change', sfSyncCoeffBlocks);
+      if (sfCoeffTargetEn) sfCoeffTargetEn.addEventListener('change', sfSyncCoeffBlocks);
+      sfSyncCoeffBlocks();
       var sfDateDenoiseAdd = document.getElementById('sf-date-denoise-add');
       if (sfDateDenoiseAdd) sfDateDenoiseAdd.addEventListener('click', sfDenoiseAddDateRow);
       sfDateDenoiseSyncAllPctSuffix();
