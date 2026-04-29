@@ -679,8 +679,13 @@
       var tomorrow = rdAddDays(today, 1);
       var forecastDates = [];
       var forecastPred = [];
-      /** 与去年同日对齐的「同比实际日销量」（演示：同一模拟链路下去噪后结果；接入服务端后为真实口径） */
       var forecastYoyActual = [];
+      var forecastKSeason = [];
+      var forecastKYoy = [];
+      var forecastKLife = [];
+      var forecastKComp = [];
+      var forecastKTarget = [];
+      var forecastKProd = [];
 
       for (var fi = 0; fi < FC_DAYS; fi++) {
         var fd = rdAddDays(tomorrow, fi);
@@ -692,6 +697,12 @@
         var yoyDay = rdAddDays(fd, -364);
         var yoySales = rdSimulateOneDaySales(form, seed, yoyDay).denoised;
         forecastYoyActual.push(yoySales);
+        forecastKSeason.push(kb.ks);
+        forecastKYoy.push(kb.ky);
+        forecastKLife.push(kb.kl);
+        forecastKComp.push(kb.kc);
+        forecastKTarget.push(kb.kt);
+        forecastKProd.push(kb.prod);
       }
 
       var rep = rdKBreakdown(form, forecastDates[0]);
@@ -709,6 +720,12 @@
         forecastDates: forecastDates,
         forecastPred: forecastPred,
         forecastYoyActual: forecastYoyActual,
+        forecastKSeason: forecastKSeason,
+        forecastKYoy: forecastKYoy,
+        forecastKLife: forecastKLife,
+        forecastKComp: forecastKComp,
+        forecastKTarget: forecastKTarget,
+        forecastKProd: forecastKProd,
         repK: rep,
         meanA: Math.round((A.reduce(function(s, x) { return s + x; }, 0) / Math.max(A.length, 1)) * 100) / 100
       };
@@ -788,37 +805,33 @@
 
       var elK = document.getElementById('rd-calc-chart-ktrace');
       if (elK && pipe.forecastDates.length) {
-        var kProd = [];
-        for (var ki = 0; ki < pipe.forecastDates.length; ki++) {
-          kProd.push(
-            Math.round(rdKBreakdown(form, pipe.forecastDates[ki]).prod * 10000) / 10000
-          );
-        }
-        var xF = pipe.forecastDates.map(function(d) {
-          return d.slice(5);
-        });
+        var xF = pipe.forecastDates.map(function(d) { return d.slice(5); });
         var c2 = echarts.init(elK, null, { renderer: 'svg' });
         c2.setOption({
-          color: ['#e6a23c'],
+          color: ['#e6a23c', '#409eff', '#67c23a', '#e040fb', '#f56c6c', '#36cfc9'],
           tooltip: { trigger: 'axis' },
-          legend: { data: ['有效系数连乘 K'], bottom: 0, textStyle: { fontSize: 10 } },
-          grid: { left: 48, right: 12, top: 28, bottom: 40 },
+          legend: {
+            data: ['综合K', '季节', '同比', '生命周期', '竞对', '目标'],
+            bottom: 0,
+            textStyle: { fontSize: 10 },
+            itemWidth: 14,
+            itemHeight: 2
+          },
+          grid: { left: 48, right: 12, top: 36, bottom: 56 },
           xAxis: {
             type: 'category',
             boundaryGap: false,
             data: xF,
-            axisLabel: { fontSize: 9, rotate: 32, interval: 8 }
+            axisLabel: { fontSize: 9, rotate: 32, interval: Math.ceil(xF.length / 12) }
           },
-          yAxis: { type: 'value', name: 'K', splitLine: { lineStyle: { type: 'dashed', color: '#ebeef5' } } },
+          yAxis: { type: 'value', name: '系数', splitLine: { lineStyle: { type: 'dashed', color: '#ebeef5' } } },
           series: [
-            {
-              name: '有效系数连乘 K',
-              type: 'line',
-              smooth: 0.35,
-              showSymbol: false,
-              lineStyle: { width: 2 },
-              data: kProd
-            }
+            { name: '综合K', type: 'line', smooth: 0.35, showSymbol: false, lineStyle: { width: 2.5 }, data: pipe.forecastKProd },
+            { name: '季节', type: 'line', smooth: 0.35, showSymbol: false, lineStyle: { width: 1.5, type: 'dashed' }, data: pipe.forecastKSeason },
+            { name: '同比', type: 'line', smooth: 0.35, showSymbol: false, lineStyle: { width: 1.5, type: 'dashed' }, data: pipe.forecastKYoy },
+            { name: '生命周期', type: 'line', smooth: 0.35, showSymbol: false, lineStyle: { width: 1.5, type: 'dashed' }, data: pipe.forecastKLife },
+            { name: '竞对', type: 'line', smooth: 0.35, showSymbol: false, lineStyle: { width: 1.5, type: 'dashed' }, data: pipe.forecastKComp },
+            { name: '目标', type: 'line', smooth: 0.35, showSymbol: false, lineStyle: { width: 1.5, type: 'dashed' }, data: pipe.forecastKTarget }
           ]
         });
         rdCalcChartInstances.push(c2);
@@ -1087,8 +1100,6 @@
       h += '<div class="rd-calc-metro-panel is-active" data-rd-calc-panel="0" role="tabpanel" id="rd-calc-panel-0" aria-labelledby="rd-calc-tab-0">';
       h += '<div class="rd-metro-card">';
       h += '<div class="rd-metro-h">第①步：清洗历史销量，去掉异常数据</div>';
-      h += '<div class="rd-metro-split">';
-      h += '<div class="rd-metro-split__main">';
 
       h += '<div class="rd-metro-formula">系统取最近 90 天（<code>' + rdEsc(winStart) + ' ~ ' + rdEsc(winEnd) + '</code>）的实际日销量，按以下四条规则逐日清洗，得到一组干净的日销量数据：</div>';
 
@@ -1100,13 +1111,14 @@
       h += '</ol>';
 
       h += '<div class="rd-metro-result">清洗后近 90 天日均销量约 <strong>' + pipe.meanA + '</strong>，作为下一步计算的基础。</div>';
+
+      h += '<div style="margin-top:16px;">';
+      h += '<div class="rd-parse-chart-title">近 90 天：原始日销 与 清洗后日销</div>';
+      h += '<div id="rd-calc-chart-denoise" class="rd-parse-echart-host rd-parse-echart-host--tall" style="height:260px;"></div>';
+      h += '<p class="rd-parse-chart-note">灰线为原始日销，蓝线为清洗后数据。两者差异反映四条去噪规则的修正幅度。</p>';
       h += '</div>';
 
-      h += '<aside class="rd-metro-split__side">';
-      h += '<div class="rd-parse-chart-title">近 90 天：原始日销 与 清洗后日销</div>';
-      h += '<div id="rd-calc-chart-denoise" class="rd-parse-echart-host rd-parse-echart-host--tall"></div>';
-      h += '<p class="rd-parse-chart-note">灰线为原始日销，蓝线为清洗后数据。两者差异反映四条去噪规则的修正幅度。</p>';
-      h += '</aside></div></div></div>';
+      h += '</div></div>';
 
       /* ---- 面板 1：加权基础日均 ---- */
       h += '<div class="rd-calc-metro-panel" hidden data-rd-calc-panel="1" role="tabpanel" id="rd-calc-panel-1" aria-labelledby="rd-calc-tab-1">';
@@ -1120,6 +1132,7 @@
       h += '<tr><td>近 14 天</td><td>' + rdEsc(String(w['14'] != null ? w['14'] : 0)) + '%</td><td>' + mu14 + '</td><td>' + rdContrib(14) + '</td></tr>';
       h += '<tr><td>近 30 天</td><td>' + rdEsc(String(w['30'] != null ? w['30'] : 0)) + '%</td><td>' + mu30 + '</td><td>' + rdContrib(30) + '</td></tr>';
       h += '<tr><td>近 60 天</td><td>' + rdEsc(String(w['60'] != null ? w['60'] : 0)) + '%</td><td>' + mu60 + '</td><td>' + rdContrib(60) + '</td></tr>';
+      h += '<tr><td>近 90 天</td><td>' + rdEsc(String(w['90'] != null ? w['90'] : 0)) + '%</td><td>' + (mu[90] != null ? mu[90] : '—') + '</td><td>' + rdContrib(90) + '</td></tr>';
       h += '</tbody></table>';
 
       h += '<div class="rd-metro-result">基础日销量 = <strong>' + X + '</strong>（将作为下一步系数调整的基准值）</div>';
@@ -1129,12 +1142,10 @@
       h += '<div class="rd-calc-metro-panel" hidden data-rd-calc-panel="2" role="tabpanel" id="rd-calc-panel-2" aria-labelledby="rd-calc-tab-2">';
       h += '<div class="rd-metro-card">';
       h += '<div class="rd-metro-h">第③步：多维因素修正，得到每日预测销量</div>';
-      h += '<div class="rd-metro-split">';
-      h += '<div class="rd-metro-split__main">';
 
       h += '<div class="rd-metro-formula">基础日销量只是一个基准值，实际每天的销量还会受到季节、同比趋势、产品生命周期、竞争环境、业务目标等因素影响。系统对未来的每一天，根据当天的情况，将基础日销量乘以对应的系数。</div>';
 
-      h += '<table class="rd-mini-table"><thead><tr><th>影响维度</th><th>系数</th><th>说明</th></tr></thead><tbody>';
+      h += '<table class="rd-mini-table"><thead><tr><th>影响维度</th><th>首日系数</th><th>说明</th></tr></thead><tbody>';
       h += '<tr><td>季节</td><td>' + kSeason + '</td><td>根据预测日所在月份的季节规律</td></tr>';
       h += '<tr><td>同比</td><td>' + kYoy + '</td><td>与去年同期对比的趋势修正</td></tr>';
       h += '<tr><td>生命周期</td><td>' + kLife + '</td><td>产品处于新品/次新品/老品阶段的影响</td></tr>';
@@ -1144,14 +1155,15 @@
 
       h += '<div class="rd-metro-formula" style="margin-top:10px;">综合系数 = ' + kSeason + ' × ' + kYoy + ' × ' + kLife + ' × ' + kComp + ' × ' + kTarget + ' ≈ <strong>' + K + '</strong></div>';
 
-      h += '<div class="rd-metro-result">以预测首日（' + rdEsc(fd0) + '）为例：基础日销量 ' + X + ' × 综合系数 ' + K + ' = 预测日销量约 <strong>' + dailyFinal + '</strong>（后续每天系数可能不同，完整走势见上方预测曲线和各日系数曲线）</div>';
+      h += '<div class="rd-metro-result">以预测首日（' + rdEsc(fd0) + '）为例：基础日销量 ' + X + ' × 综合系数 ' + K + ' = 预测日销量约 <strong>' + dailyFinal + '</strong>（后续每天系数可能不同，完整走势见上方预测曲线和下方系数曲线）</div>';
 
-      h += '</div>';
-      h += '<aside class="rd-metro-split__side">';
+      h += '<div style="margin-top:16px;">';
       h += '<div class="rd-parse-chart-title">预测期：综合系数每日变化</div>';
-      h += '<div id="rd-calc-chart-ktrace" class="rd-parse-echart-host"></div>';
+      h += '<div id="rd-calc-chart-ktrace" class="rd-parse-echart-host" style="height:280px;"></div>';
       h += '<p class="rd-parse-chart-note">曲线展示未来每天综合系数的变化。</p>';
-      h += '</aside></div></div></div>';
+      h += '</div>';
+
+      h += '</div></div>';
 
       h += '</div></div>';
       return h;
