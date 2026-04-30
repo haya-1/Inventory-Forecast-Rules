@@ -1662,36 +1662,10 @@
           </div>
         </div>
 
-        <div class="sf-denoise-block sf-denoise-block--sep" id="sf-denoise-stockout-wrap">
-          <div class="sf-denoise-subhead sf-denoise-subhead--row" role="heading" aria-level="3">
-            <span class="sf-denoise-subhead-bar" aria-hidden="true"></span>
-            <span class="sf-denoise-subhead-text">③ 日销量断货去噪</span>
-            <span class="sf-subhead-toggle" title="启用后按公式参与历史修正；停用则跳过本逻辑（展示保留，预测管线中断货修正暂不模拟）" style="display:none;">
-              <span style="color:#909399;">启用/停用</span>
-              <label class="switch">
-                <input type="checkbox" id="sf-denoise-stockout-en" checked />
-                <span class="switch-slider"></span>
-              </label>
-            </span>
-          </div>
-          <div id="sf-denoise-stockout-content" class="sf-denoise-stockout-content">
-            <div class="sf-denoise-stockout-formula">
-              <div class="sf-denoise-stockout-formula-title">系统自动断货去噪公式</div>
-              <div class="sf-denoise-stockout-formula-body">
-              系统将自动识别断货时段，日销权重规则计算时不把断货日纳入计算范围内
-              </div>
-              <div class="sf-denoise-stockout-formula-note">
-                断货日定义：系统每日记录 FBA 库存（FBA可售量 + FBA预留中转 + FBA预留处理中），当为0时，标记为断货日。
-              </div>
-            </div>
-            <p class="sf-rule-hint"></p>
-          </div>
-        </div>
-
         <div class="sf-denoise-block sf-denoise-block--sep" id="sf-denoise-return-wrap">
           <div class="sf-denoise-subhead sf-denoise-subhead--row" role="heading" aria-level="3">
             <span class="sf-denoise-subhead-bar" aria-hidden="true"></span>
-            <span class="sf-denoise-subhead-text">④ 退货量去噪</span>
+            <span class="sf-denoise-subhead-text">③ 退货量去噪</span>
             <span class="sf-subhead-toggle" title="启用后按比例扣减退货；停用则预测计算中不应用退货去噪（配置保留、下方置灰）" style="display:none;">
               <span style="color:#909399;">启用/停用</span>
               <label class="switch">
@@ -1741,6 +1715,32 @@
           </div>
           <button type="button" class="btn sf-coeff-add-btn" id="sf-return-denoise-add"><span>+</span> 添加</button>
           <p class="sf-rule-hint">扣减比例：如填15，表示该时段销量扣减15%的退货量</p>
+          </div>
+        </div>
+
+        <div class="sf-denoise-block sf-denoise-block--sep" id="sf-denoise-stockout-wrap">
+          <div class="sf-denoise-subhead sf-denoise-subhead--row" role="heading" aria-level="3">
+            <span class="sf-denoise-subhead-bar" aria-hidden="true"></span>
+            <span class="sf-denoise-subhead-text">④ 日销量断货去噪</span>
+            <span class="sf-subhead-toggle" title="启用后按公式参与历史修正；停用则跳过本逻辑（展示保留，预测管线中断货修正暂不模拟）" style="display:none;">
+              <span style="color:#909399;">启用/停用</span>
+              <label class="switch">
+                <input type="checkbox" id="sf-denoise-stockout-en" checked />
+                <span class="switch-slider"></span>
+              </label>
+            </span>
+          </div>
+          <div id="sf-denoise-stockout-content" class="sf-denoise-stockout-content">
+            <div class="sf-denoise-stockout-formula">
+              <div class="sf-denoise-stockout-formula-title">系统自动断货去噪公式</div>
+              <div class="sf-denoise-stockout-formula-body">
+              系统将自动识别断货时段，日销权重规则计算时不把断货日纳入计算范围内
+              </div>
+              <div class="sf-denoise-stockout-formula-note">
+                断货日定义：系统每日记录 FBA 库存（FBA可售量 + FBA预留中转 + FBA预留处理中），当为0时，标记为断货日。
+              </div>
+            </div>
+            <p class="sf-rule-hint"></p>
           </div>
         </div>
       </section>
