@@ -1016,6 +1016,10 @@
         '<input type="text" id="rd-fc-rule-name" class="filter-control" readonly value="' +
         rdEscAttr(r0.name || '') +
         '" placeholder="—" />' +
+        '<label for="rd-fc-rule-validtime">数据更新时间</label>' +
+        '<input type="text" id="rd-fc-rule-validtime" class="filter-control" readonly value="' +
+        "2026年5月9日08:03:35"+
+        '" placeholder="—" />' +
         '</div>'
       );
     }
@@ -1105,12 +1109,12 @@
 
       h += '<ol style="margin:0 0 14px 18px;font-size:13px;color:#606266;line-height:2;">';
       h += '<li><strong>大订单去噪</strong>' + (ad.largeEnabled !== false ? '' : '（当前关闭）') + '：单笔订单销量 ≥ ' + rdEsc(ad.x) + ' 的，统一按 ' + rdEsc(ad.y) + ' 计入当天，避免个别大订单拉高整体水平。</li>';
-      h += '<li><strong>日期固定值去噪</strong>：' + rdEsc(dd[0].d0) + ' ~ ' + rdEsc(dd[0].d1) + ' 期间（' + rdEsc(dd[0].note || '特殊日期') + '），共影响 ' + ov1 + ' 天，每日销量直接按固定值 ' + rdEsc(dd[0].value) + ' 处理。</li>';
+      h += '<li><strong>日期固定值去噪</strong>：' + rdEsc(dd[0].d0) + ' ~ ' + rdEsc(dd[0].d1) + ' 期间（' + rdEsc(dd[0].note || '特殊日期') + '），共影响 ' + ov1 + ' 天，每日销量直接按固定值 ' + rdEsc(dd[0].value) + ' 处理(ASIN维度)。</li>';
       h += '<li><strong>日期百分比去噪</strong>：' + rdEsc(dd[1].d0) + ' ~ ' + rdEsc(dd[1].d1) + ' 期间（' + rdEsc(dd[1].note || '数据修正') + '），共影响 ' + ov2 + ' 天，每日销量按 ' + rdEsc(dd[1].value) + '% 缩放还原。</li>';
       h += '<li><strong>退货去噪</strong>：' + rdEsc(rd[0].d0) + ' ~ ' + rdEsc(rd[0].d1) + ' 期间，扣除约 ' + rdEsc(rd[0].pct) + '% 的退货量' + (rd[0].note ? '（' + rdEsc(rd[0].note) + '）' : '') + '，共影响 ' + retOv + ' 天。</li>';
       h += '</ol>';
 
-      h += '<div class="rd-metro-result">清洗后近 90 天日均销量约 <strong>' + pipe.meanA + '</strong>，作为下一步计算的基础。</div>';
+      // h += '<div class="rd-metro-result">清洗后近 90 天日均销量约 <strong>' + pipe.meanA + '</strong>，作为下一步计算的基础。</div>';
 
       h += '<div style="margin-top:16px;">';
       h += '<div class="rd-parse-chart-title">近 90 天：原始日销 与 清洗后日销</div>';
@@ -1124,7 +1128,7 @@
       h += '<div class="rd-calc-metro-panel" hidden data-rd-calc-panel="1" role="tabpanel" id="rd-calc-panel-1" aria-labelledby="rd-calc-tab-1">';
       h += '<div class="rd-metro-card">';
       h += '<div class="rd-metro-h">第②步：多时间窗口加权，得出基础日销量</div>';
-      h += '<div class="rd-metro-formula">在清洗后的 90 天数据上，先剔除断货期间的数据（库存为 0 的天数不参与统计），再分别统计近 3 天、7 天、14 天、30 天、60 天的日均销量，按规则中配置的权重进行加权平均。权重越大的窗口，对最终结果的影响越大。这样综合了短期波动和长期趋势，得到一个能代表当前销售水平的基础日销量。</div>';
+      h += '<div class="rd-metro-formula">在清洗后的 90 天数据上，分别统计近 3 天、7 天、14 天、30 天、60 天的日均销量，按规则中配置的权重进行加权平均。权重越大的窗口，对最终结果的影响越大。这样综合了短期波动和长期趋势，得到一个能代表当前销售水平的基础日销量。</div>';
 
       h += '<table class="rd-mini-table"><thead><tr><th>统计窗口</th><th>权重</th><th>日均销量</th><th>加权贡献</th></tr></thead><tbody>';
       h += '<tr><td>近 3 天</td><td>' + rdEsc(String(w['3'] != null ? w['3'] : 0)) + '%</td><td>' + mu3 + '</td><td>' + rdContrib(3) + '</td></tr>';

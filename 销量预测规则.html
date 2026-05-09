@@ -1462,7 +1462,7 @@
 
         <div class="action-row">
           <button type="button" class="btn btn-primary" id="btn-rule-add">+ 新增</button>
-          <button type="button" class="btn btn-cache-clear" id="btn-clear-prototype-cache" title="清除浏览器中本原型写入的 localStorage（父体列表、销量预测规则、预警规则等），页面将刷新">清除本地缓存</button>
+          <button type="button" class="btn btn-cache-clear" id="btn-clear-prototype-cache" title="清除浏览器中本原型写入的 localStorage（父体列表、销量预测规则、预警规则等），页面将刷新" style="display: none;">清除本地缓存</button>
         </div>
 
         <div class="table-wrap">
@@ -1657,7 +1657,7 @@
               <span>+</span> 添加
             </button>
             <p class="sf-rule-hint">
-              固定值去噪：将该时段日销量替换为指定数值。百分比去噪：将该时段日销量按百分比缩放（如填50，表示按50%计算）。
+              固定值去噪：将该时段日销量替换为指定数值。百分比去噪：将该时段日销量按百分比缩放（如填50，表示按50%计算）。以上逻辑按ASIN维度计算。
             </p>
           </div>
         </div>

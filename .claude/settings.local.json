@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:www.google.com)",
+      "WebFetch(domain:www.bing.com)",
+      "WebFetch(domain:en.wikipedia.org)",
+      "WebFetch(domain:www.msn.com)"
+    ]
+  }
+}
