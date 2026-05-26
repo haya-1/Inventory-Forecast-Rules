@@ -300,6 +300,10 @@
     .main-content { margin-left: 88px; transition: margin-left 0.2s ease; }
     .sidebar-backdrop { position: fixed; inset: 0; background: rgba(17, 24, 39, 0.32); opacity: 0; pointer-events: none; transition: opacity 0.2s ease; z-index: 1190; }
     .app-layout.submenu-open .sidebar-backdrop { opacity: 1; pointer-events: auto; }
+    .primary-item[data-submenu="proto"],
+    #proto-submenu {
+      display: none !important;
+    }
   </style>
 </head>
 <body>
@@ -321,10 +325,12 @@
       </div>
       <div class="sidebar-submenu-panel" id="replenish-submenu">
         <a class="submenu-item" href="./补货列表.html">补货列表</a>
+        <a class="submenu-item" href="./备货建议.html">备货建议</a>
       </div>
       <div class="sidebar-submenu-panel" id="system-submenu">
         <div class="submenu-title">系统配置</div>
         <a class="submenu-item" href="./销量预测规则.html">销量预测规则</a>
+        <a class="submenu-item" href="./备货规则配置.html">备货规则</a>
       </div>
       <div class="sidebar-submenu-panel" id="proto-submenu">
         <div class="submenu-title">初始原型</div>

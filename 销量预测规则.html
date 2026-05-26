@@ -756,7 +756,7 @@
     }
     .sf-subhead-toggle {
       display: flex;
-      align-items: center;
+      align-items: center;  
       gap: 6px;
       font-size: 12px;
       color: #606266;
@@ -1396,6 +1396,10 @@
       align-items: center;
       gap: 10px;
     }
+    .primary-item[data-submenu="proto"],
+    #proto-submenu {
+      display: none !important;
+    }
   </style>
 </head>
 <body>
@@ -1417,10 +1421,12 @@
       </div>
       <div class="sidebar-submenu-panel" id="replenish-submenu">
         <a class="submenu-item" href="./补货列表.html">补货列表</a>
+        <a class="submenu-item" href="./备货建议.html">备货建议</a>
       </div>
       <div class="sidebar-submenu-panel" id="system-submenu">
         <div class="submenu-title">系统配置</div>
         <a class="submenu-item active" href="./销量预测规则.html">销量预测规则</a>
+        <a class="submenu-item" href="./备货规则配置.html">备货规则</a>
       </div>
       <div class="sidebar-submenu-panel" id="proto-submenu">
         <div class="submenu-title">初始原型</div>
@@ -1541,7 +1547,7 @@
             <span class="sf-denoise-subhead-text">① 日销量自动去噪</span>
           </div>
           <p class="sf-rule-hint">
-            当单个订单同一产品销量过大，影响历史平均销量时，将该订单的产品销量按指定值计算，避免拉高日均数据。
+            当单个订单同一产品销量过大，影响历史平均销量时，将该订单的销量按指定值计算，避免拉高日均数据。
           </p>
           <div class="sf-coeff-table-wrap">
             <table class="sf-coeff-data-table sf-denoise-auto-table">
@@ -1657,7 +1663,9 @@
               <span>+</span> 添加
             </button>
             <p class="sf-rule-hint">
-              固定值去噪：将该时段日销量替换为指定数值。百分比去噪：将该时段日销量按百分比缩放（如填50，表示按50%计算）。以上逻辑按ASIN维度计算。
+              固定值去噪：将该时段日销量替换为指定数值。
+              百分比去噪：将该时段日销量按百分比缩放（如填50，表示按50%计算）。
+              以上逻辑按ASIN维度计算。
             </p>
           </div>
         </div>
@@ -2899,8 +2907,8 @@
         rules.forEach(function(r) {
           var tr = document.createElement('tr');
           tr.innerHTML =
-            '<td>' + sfEscHtml(r.id) + '</td>' +
-            '<td><a class="link-name" href="javascript:void(0)" data-rule-id="' + sfEscAttr(r.id) + '">' + sfEscHtml(r.name) + '</a></td>' +
+            '<td><a class="link-name" href="javascript:void(0)" data-rule-id="' + sfEscAttr(r.id) + '">' + sfEscHtml(r.id) + '</a></td>' +
+            '<td>' + sfEscHtml(r.name) + '</td>' +
             '<td><label class="switch"><input type="checkbox" data-rule-id="' + sfEscAttr(r.id) + '"' + (r.enabled ? ' checked' : '') + ' /><span class="switch-slider"></span></label></td>' +
             '<td>' + sfEscHtml(r.parentLabel || '') + '</td>' +
             '<td>' + sfEscHtml(r.createdBy || '') + '</td>' +

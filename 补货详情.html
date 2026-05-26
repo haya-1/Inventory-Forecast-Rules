@@ -196,6 +196,64 @@
     .rd-metro { max-width: 100%; }
     .rd-metro-card { border: 1px solid #ebeef5; border-radius: 8px; padding: 14px 16px; background: #fff; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04); }
     .rd-metro-h { font-size: 15px; font-weight: 600; color: #303133; margin-bottom: 10px; }
+    .rd-info-tip {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      margin-left: 4px;
+      border: 1px solid #e6a23c;
+      border-radius: 50%;
+      background: #fdf6ec;
+      color: #e6a23c;
+      font-size: 11px;
+      font-weight: 600;
+      line-height: 1;
+      cursor: help;
+      vertical-align: middle;
+      outline: none;
+    }
+    .rd-info-tip::before,
+    .rd-info-tip::after {
+      position: absolute;
+      left: 50%;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.16s ease, transform 0.16s ease;
+      z-index: 30;
+    }
+    .rd-info-tip::before {
+      content: "";
+      bottom: calc(100% + 3px);
+      border: 5px solid transparent;
+      border-top-color: #303133;
+      transform: translate(-50%, -2px);
+    }
+    .rd-info-tip::after {
+      content: attr(data-tip);
+      bottom: calc(100% + 12px);
+      width: max-content;
+      max-width: 260px;
+      padding: 8px 10px;
+      border-radius: 4px;
+      background: #303133;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 1.5;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+      white-space: normal;
+      transform: translate(-50%, -2px);
+    }
+    .rd-info-tip:hover::before,
+    .rd-info-tip:hover::after,
+    .rd-info-tip:focus::before,
+    .rd-info-tip:focus::after {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
     .rd-metro-formula { font-size: 12px; color: #606266; line-height: 1.65; margin-bottom: 10px; padding: 10px 12px; background: #f9fafb; border-radius: 6px; border: 1px solid #ebeef5; }
     .rd-metro-formula code { font-family: ui-monospace, Consolas, monospace; font-size: 11px; color: #303133; background: #f0f2f5; padding: 1px 4px; border-radius: 3px; }
     .rd-mini-table { width: 100%; border-collapse: collapse; font-size: 12px; margin: 8px 0; }
@@ -254,6 +312,10 @@
     @media (max-width: 768px) {
       .sidebar-submenu-panel, .sidebar-backdrop { display: none; }
     }
+    .primary-item[data-submenu="proto"],
+    #proto-submenu {
+      display: none !important;
+    }
   </style>
 </head>
 <body>
@@ -275,10 +337,12 @@
       </div>
       <div class="sidebar-submenu-panel" id="replenish-submenu">
         <a class="submenu-item" href="./补货列表.html">补货列表</a>
+        <a class="submenu-item" href="./备货建议.html">备货建议</a>
       </div>
       <div class="sidebar-submenu-panel" id="system-submenu">
         <div class="submenu-title">系统配置</div>
         <a class="submenu-item" href="./销量预测规则.html">销量预测规则</a>
+        <a class="submenu-item" href="./备货规则配置.html">备货规则</a>
       </div>
       <div class="sidebar-submenu-panel" id="proto-submenu">
         <div class="submenu-title">初始原型</div>
@@ -1109,7 +1173,7 @@
 
       h += '<ol style="margin:0 0 14px 18px;font-size:13px;color:#606266;line-height:2;">';
       h += '<li><strong>大订单去噪</strong>' + (ad.largeEnabled !== false ? '' : '（当前关闭）') + '：单笔订单销量 ≥ ' + rdEsc(ad.x) + ' 的，统一按 ' + rdEsc(ad.y) + ' 计入当天，避免个别大订单拉高整体水平。</li>';
-      h += '<li><strong>日期固定值去噪</strong>：' + rdEsc(dd[0].d0) + ' ~ ' + rdEsc(dd[0].d1) + ' 期间（' + rdEsc(dd[0].note || '特殊日期') + '），共影响 ' + ov1 + ' 天，每日销量直接按固定值 ' + rdEsc(dd[0].value) + ' 处理(ASIN维度)。</li>';
+      h += '<li><strong>日期固定值去噪</strong><span class="rd-info-tip" tabindex="0" aria-label="该去噪会每条链接的销量修改为固定值" data-tip="该去噪会每条链接的销量修改为固定值">!</span>：' + rdEsc(dd[0].d0) + ' ~ ' + rdEsc(dd[0].d1) + ' 期间（' + rdEsc(dd[0].note || '特殊日期') + '），共影响 ' + ov1 + ' 天，每日销量直接按固定值 ' + rdEsc(dd[0].value) + ' 处理(ASIN维度)。</li>';
       h += '<li><strong>日期百分比去噪</strong>：' + rdEsc(dd[1].d0) + ' ~ ' + rdEsc(dd[1].d1) + ' 期间（' + rdEsc(dd[1].note || '数据修正') + '），共影响 ' + ov2 + ' 天，每日销量按 ' + rdEsc(dd[1].value) + '% 缩放还原。</li>';
       h += '<li><strong>退货去噪</strong>：' + rdEsc(rd[0].d0) + ' ~ ' + rdEsc(rd[0].d1) + ' 期间，扣除约 ' + rdEsc(rd[0].pct) + '% 的退货量' + (rd[0].note ? '（' + rdEsc(rd[0].note) + '）' : '') + '，共影响 ' + retOv + ' 天。</li>';
       h += '</ol>';

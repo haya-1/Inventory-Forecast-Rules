@@ -1,0 +1,1790 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>备货建议</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Microsoft YaHei", sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: #f5f7fa;
+      color: #303133;
+      font-size: 14px;
+      overflow-x: hidden;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    .app-layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      width: 88px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      display: flex;
+      flex-direction: row;
+      overflow: visible;
+      background: transparent;
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.08);
+      z-index: 1200;
+    }
+
+    .sidebar-primary {
+      width: 88px;
+      background: linear-gradient(180deg, #2f47a6 0%, #1f2a78 100%);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px 0;
+    }
+
+    .sidebar-brand {
+      width: 100%;
+      padding: 6px 0 14px;
+      text-align: center;
+    }
+
+    .sidebar-brand h2 {
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 17px;
+      font-weight: 600;
+    }
+
+    .brand-icon {
+      width: 24px;
+      height: 24px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+
+    .sidebar-nav {
+      width: 100%;
+      padding: 4px 0;
+    }
+
+    .primary-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      height: 58px;
+      margin: 6px 10px;
+      border-radius: 10px;
+      color: rgba(255, 255, 255, 0.8);
+      text-decoration: none;
+      font-size: 12px;
+    }
+
+    .primary-item:hover,
+    .primary-item.active {
+      background: rgba(255, 255, 255, 0.14);
+      color: #fff;
+    }
+
+    .item-icon {
+      font-size: 16px;
+    }
+
+    .sidebar-submenu-panel {
+      position: fixed;
+      left: 88px;
+      top: 0;
+      bottom: 0;
+      width: 184px;
+      background: #fff;
+      border-right: 1px solid #e5e7eb;
+      padding: 18px 14px;
+      transform: translateX(-100%);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform 0.24s ease, opacity 0.2s ease;
+      z-index: 1202;
+      box-shadow: 4px 0 18px rgba(0, 0, 0, 0.07);
+    }
+
+    .sidebar-submenu-panel.open {
+      transform: translateX(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .submenu-title {
+      font-size: 24px;
+      color: #111827;
+      margin-bottom: 14px;
+    }
+
+    .submenu-item {
+      display: block;
+      color: #374151;
+      text-decoration: none;
+      padding: 10px 10px;
+      margin-bottom: 6px;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .submenu-item:hover {
+      background: #f3f4f6;
+    }
+
+    .submenu-item.active {
+      background: #eef2ff;
+      color: #2563eb;
+      font-weight: 600;
+    }
+
+    .sidebar-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(17, 24, 39, 0.32);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+      z-index: 1190;
+    }
+
+    .app-layout.submenu-open .sidebar-backdrop {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .main-content {
+      flex: 1;
+      min-height: 100vh;
+      margin-left: 88px;
+      background: #f5f7fa;
+      max-width: calc(100vw - 88px);
+      overflow-x: hidden;
+    }
+
+    .page-wrap {
+      padding: 16px 20px 24px;
+    }
+
+    .panel {
+      background: #fff;
+      border-radius: 4px;
+      border: 1px solid #ebeef5;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+    }
+
+    .panel + .panel {
+      margin-top: 12px;
+    }
+
+    .panel-body {
+      padding: 16px;
+    }
+
+    .page-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+
+    .page-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #303133;
+      line-height: 1.4;
+    }
+
+    .page-subtitle {
+      margin-top: 4px;
+      color: #909399;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .head-actions,
+    .filter-actions,
+    .table-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px 18px;
+    }
+
+    .filter-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .filter-label {
+      color: #606266;
+      white-space: nowrap;
+      font-size: 13px;
+    }
+
+    .filter-control {
+      height: 32px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      padding: 0 10px;
+      color: #606266;
+      outline: none;
+      background: #fff;
+      font-size: 13px;
+    }
+
+    .filter-control:focus {
+      border-color: #409eff;
+    }
+
+    .w-120 { width: 120px; }
+    .w-140 { width: 140px; }
+    .w-160 { width: 160px; }
+    .w-200 { width: 200px; }
+
+    .btn {
+      height: 32px;
+      padding: 0 14px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      background: #fff;
+      color: #606266;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      white-space: nowrap;
+      font-size: 13px;
+    }
+
+    .btn:hover {
+      color: #409eff;
+      border-color: #c6e2ff;
+      background: #ecf5ff;
+    }
+
+    .btn-primary {
+      color: #fff;
+      background: #409eff;
+      border-color: #409eff;
+    }
+
+    .btn-primary:hover {
+      color: #fff;
+      background: #66b1ff;
+      border-color: #66b1ff;
+    }
+
+    .btn-text {
+      border: none;
+      background: transparent;
+      color: #409eff;
+      height: 24px;
+      padding: 0;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .btn-text:hover {
+      color: #66b1ff;
+      background: transparent;
+    }
+
+    .checkbox-line {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #606266;
+      font-size: 13px;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .checkbox-line input {
+      width: 15px;
+      height: 15px;
+      accent-color: #409eff;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .metric-card {
+      border: 1px solid #ebeef5;
+      border-radius: 4px;
+      background: #fff;
+      padding: 14px 16px;
+      min-height: 82px;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .metric-card:hover,
+    .metric-card.active {
+      border-color: #b3d8ff;
+      background: #f5faff;
+    }
+
+    .metric-label {
+      font-size: 12px;
+      color: #909399;
+      line-height: 1.4;
+    }
+
+    .metric-value {
+      display: block;
+      margin-top: 8px;
+      color: #303133;
+      font-size: 24px;
+      font-weight: 600;
+      line-height: 1.1;
+    }
+
+    .metric-hint {
+      display: block;
+      margin-top: 6px;
+      color: #909399;
+      font-size: 12px;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #303133;
+    }
+
+    .section-note {
+      color: #909399;
+      font-size: 12px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid #ebeef5;
+      border-radius: 4px;
+    }
+
+    .data-table {
+      width: 100%;
+      min-width: 1180px;
+      border-collapse: collapse;
+      table-layout: fixed;
+      color: #606266;
+    }
+
+    .data-table th,
+    .data-table td,
+    .detail-table th,
+    .detail-table td {
+      border-bottom: 1px solid #ebeef5;
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: middle;
+      line-height: 1.45;
+      font-size: 13px;
+    }
+
+    .data-table th,
+    .detail-table th {
+      background: #f5f7fa;
+      color: #606266;
+      font-weight: 600;
+    }
+
+    .data-table tbody tr {
+      cursor: pointer;
+    }
+
+    .data-table tbody tr:hover td,
+    .data-table tbody tr.active td {
+      background: #fafcff;
+    }
+
+    .num {
+      text-align: right !important;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .strong-num {
+      color: #303133;
+      font-weight: 600;
+    }
+
+    .sku-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .sku-code {
+      color: #303133;
+      font-weight: 600;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .sku-sub {
+      color: #909399;
+      font-size: 12px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 24px;
+      padding: 0 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      white-space: nowrap;
+      border: 1px solid transparent;
+    }
+
+    .tag-danger {
+      color: #f56c6c;
+      background: #fef0f0;
+      border-color: #fde2e2;
+    }
+
+    .tag-warning {
+      color: #e6a23c;
+      background: #fdf6ec;
+      border-color: #faecd8;
+    }
+
+    .tag-success {
+      color: #67c23a;
+      background: #f0f9eb;
+      border-color: #e1f3d8;
+    }
+
+    .tag-info {
+      color: #409eff;
+      background: #ecf5ff;
+      border-color: #d9ecff;
+    }
+
+    .tag-neutral {
+      color: #606266;
+      background: #f4f4f5;
+      border-color: #e9e9eb;
+    }
+
+    .drawer-mask {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.35);
+      z-index: 1250;
+    }
+
+    .drawer-mask.show {
+      display: block;
+    }
+
+    .detail-drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 760px;
+      max-width: 96vw;
+      height: 100vh;
+      background: #fff;
+      z-index: 1260;
+      display: flex;
+      flex-direction: column;
+      box-shadow: -4px 0 24px rgba(0, 0, 0, 0.12);
+      transform: translateX(100%);
+      transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .detail-drawer.open {
+      transform: translateX(0);
+    }
+
+    .drawer-fixed {
+      flex-shrink: 0;
+      padding: 18px 20px 14px;
+      border-bottom: 1px solid #ebeef5;
+      background: #fff;
+    }
+
+    .drawer-title-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .drawer-title {
+      font-size: 17px;
+      font-weight: 600;
+      color: #303133;
+      line-height: 1.35;
+    }
+
+    .drawer-subtitle {
+      margin-top: 4px;
+      color: #909399;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .drawer-close {
+      width: 28px;
+      height: 28px;
+      border: none;
+      background: transparent;
+      color: #909399;
+      cursor: pointer;
+      font-size: 20px;
+      line-height: 1;
+    }
+
+    .decision-summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .decision-item {
+      border: 1px solid #ebeef5;
+      border-radius: 4px;
+      background: #fafafa;
+      padding: 10px 12px;
+      min-height: 62px;
+    }
+
+    .decision-item span {
+      display: block;
+      color: #909399;
+      font-size: 12px;
+      margin-bottom: 6px;
+    }
+
+    .decision-item strong {
+      display: block;
+      color: #303133;
+      font-size: 14px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .drawer-anchor-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+
+    .drawer-anchors {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      border-bottom: 1px solid transparent;
+    }
+
+    .drawer-anchor {
+      border: none;
+      background: transparent;
+      color: #606266;
+      height: 30px;
+      padding: 0;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .drawer-anchor:hover,
+    .drawer-anchor.active {
+      color: #409eff;
+      font-weight: 600;
+    }
+
+    .drawer-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .drawer-body {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      padding: 16px 20px 24px;
+    }
+
+    .drawer-section {
+      margin-bottom: 16px;
+    }
+
+    .drawer-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .drawer-subhead {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .drawer-subhead-bar {
+      width: 3px;
+      height: 13px;
+      border-radius: 2px;
+      background: #a0cfff;
+      flex-shrink: 0;
+    }
+
+    .drawer-subhead-text {
+      font-size: 13px;
+      font-weight: 500;
+      color: #606266;
+      letter-spacing: 0.02em;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .info-box {
+      border: 1px solid #ebeef5;
+      border-radius: 4px;
+      padding: 12px 14px;
+      background: #fff;
+      min-height: 78px;
+    }
+
+    .info-box.warn {
+      background: #fffaf0;
+      border-color: #faecd8;
+    }
+
+    .info-box.danger {
+      background: #fff7f7;
+      border-color: #fde2e2;
+    }
+
+    .info-box-title {
+      color: #303133;
+      font-weight: 600;
+      font-size: 14px;
+      margin-bottom: 6px;
+    }
+
+    .info-box-text {
+      color: #606266;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .projection-wrap {
+      border: 1px solid #ebeef5;
+      border-radius: 4px;
+      background: #fff;
+      padding: 12px;
+    }
+
+    .projection-chart {
+      width: 100%;
+      height: 220px;
+      border: 1px solid #ebeef5;
+      border-radius: 4px;
+      background: #fafafa;
+      overflow: hidden;
+    }
+
+    .projection-chart svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .chart-legend {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px 18px;
+      margin-top: 10px;
+      color: #606266;
+      font-size: 12px;
+    }
+
+    .legend-line,
+    .legend-block {
+      display: inline-block;
+      width: 18px;
+      height: 3px;
+      border-radius: 2px;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+
+    .legend-line.blue { background: #409eff; }
+    .legend-line.orange { background: #e6a23c; }
+    .legend-block.red { background: rgba(245, 108, 108, 0.18); height: 10px; }
+
+    .detail-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      border: 1px solid #ebeef5;
+      margin-top: 12px;
+    }
+
+    .formula-block {
+      border: 1px solid #ebeef5;
+      border-radius: 4px;
+      background: #fafafa;
+      padding: 12px 14px;
+      color: #606266;
+      font-size: 13px;
+      line-height: 1.7;
+      margin-bottom: 10px;
+    }
+
+    .formula-block strong {
+      color: #303133;
+    }
+
+    .empty-row {
+      text-align: center !important;
+      color: #909399;
+      padding: 28px !important;
+    }
+
+    .primary-item[data-submenu="proto"],
+    #proto-submenu {
+      display: none !important;
+    }
+
+    @media (max-width: 1100px) {
+      .metric-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .decision-summary,
+      .info-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar-submenu-panel,
+      .sidebar-backdrop {
+        display: none;
+      }
+
+      .main-content {
+        margin-left: 88px;
+      }
+
+      .page-head,
+      .section-head {
+        display: block;
+      }
+
+      .head-actions,
+      .table-actions {
+        margin-top: 10px;
+      }
+
+      .metric-grid,
+      .decision-summary,
+      .info-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar-primary">
+        <div class="sidebar-brand">
+          <h2><span class="brand-icon">📦</span><span>OMS</span></h2>
+        </div>
+        <nav class="sidebar-nav">
+          <a class="primary-item" href="./index.html"><span class="item-icon">🏠</span><span class="item-label">首页</span></a>
+          <a class="primary-item" href="#"><span class="item-icon">⚙️</span><span class="item-label">数据决策</span></a>
+          <a class="primary-item" href="#"><span class="item-icon">⚙️</span><span class="item-label">运营工具</span></a>
+          <a class="primary-item" href="#"><span class="item-icon">⚙️</span><span class="item-label">目标</span></a>
+          <a class="primary-item active" href="#" data-submenu="replenish" data-primary-current="true"><span class="item-icon">⚙️</span><span class="item-label">补货</span></a>
+          <a class="primary-item" href="#" data-submenu="system"><span class="item-icon">⚙️</span><span class="item-label">系统配置</span></a>
+          <a class="primary-item" href="#" data-submenu="proto"><span class="item-icon">⚙️</span><span class="item-label">初始原型</span></a>
+        </nav>
+      </div>
+      <div class="sidebar-submenu-panel" id="replenish-submenu">
+        <a class="submenu-item" href="./补货列表.html">补货列表</a>
+        <a class="submenu-item active" href="./备货建议.html">备货建议</a>
+      </div>
+      <div class="sidebar-submenu-panel" id="system-submenu">
+        <div class="submenu-title">系统配置</div>
+        <a class="submenu-item" href="./销量预测规则.html">销量预测规则</a>
+        <a class="submenu-item" href="./备货规则配置.html">备货规则</a>
+      </div>
+      <div class="sidebar-submenu-panel" id="proto-submenu">
+        <div class="submenu-title">初始原型</div>
+        <a class="submenu-item" href="./预测规则配置页面_v1.html">备货规则</a>
+        <a class="submenu-item" href="./预警页面_v1.html">预警模型</a>
+        <a class="submenu-item" href="./预警消息页面_v1.html">预警消息</a>
+      </div>
+    </aside>
+
+    <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+    <main class="main-content">
+      <div class="page-wrap">
+        <div class="page-head">
+          <div>
+            <div class="page-title">备货建议</div>
+            <div class="page-subtitle">基于预测销量、库存、采购与物流时效生成发货建议和下单建议。</div>
+          </div>
+          <div class="head-actions">
+            <button type="button" class="btn" id="btn-export-top">导出</button>
+            <button type="button" class="btn btn-primary" id="btn-plan-top">生成计划</button>
+          </div>
+        </div>
+
+        <section class="panel">
+          <div class="panel-body">
+            <div class="filter-bar">
+              <div class="filter-item">
+                <span class="filter-label">决策日期 D</span>
+                <input class="filter-control w-140" id="filter-date" type="date" />
+              </div>
+              <div class="filter-item">
+                <span class="filter-label">站点</span>
+                <select class="filter-control w-120" id="filter-site">
+                  <option value="">全部</option>
+                  <option value="北美站">北美站</option>
+                  <option value="欧洲站">欧洲站</option>
+                </select>
+              </div>
+              <div class="filter-item">
+                <span class="filter-label">父体 / SKU</span>
+                <input class="filter-control w-200" id="filter-keyword" type="text" placeholder="请输入父体或 SKU" />
+              </div>
+              <div class="filter-item">
+                <span class="filter-label">运输方式</span>
+                <select class="filter-control w-120" id="filter-method">
+                  <option value="">全部</option>
+                  <option value="快船">快船</option>
+                  <option value="慢船">慢船</option>
+                  <option value="空派">空派</option>
+                </select>
+              </div>
+              <div class="filter-item">
+                <span class="filter-label">适用规则</span>
+                <select class="filter-control w-200" id="filter-rule">
+                  <option value="">全部规则</option>
+                </select>
+              </div>
+              <label class="checkbox-line">
+                <input type="checkbox" id="filter-positive" />
+                只看有建议量
+              </label>
+              <label class="checkbox-line">
+                <input type="checkbox" id="filter-risk" />
+                只看异常风险
+              </label>
+              <div class="filter-actions">
+                <button type="button" class="btn btn-primary" id="btn-search">查询</button>
+                <button type="button" class="btn" id="btn-reset">重置</button>
+              </div>
+            </div>
+
+            <div class="metric-grid" id="metric-grid">
+              <button type="button" class="metric-card" data-metric="all">
+                <span class="metric-label">建议发货总量</span>
+                <strong class="metric-value" id="metric-ship">0</strong>
+                <span class="metric-hint">当前筛选合计</span>
+              </button>
+              <button type="button" class="metric-card" data-metric="all">
+                <span class="metric-label">建议下单总量</span>
+                <strong class="metric-value" id="metric-order">0</strong>
+                <span class="metric-hint">当前筛选合计</span>
+              </button>
+              <button type="button" class="metric-card" data-metric="stockout">
+                <span class="metric-label">断货风险 SKU</span>
+                <strong class="metric-value" id="metric-stockout">0</strong>
+                <span class="metric-hint">点击过滤断货风险</span>
+              </button>
+              <button type="button" class="metric-card" data-metric="future">
+                <span class="metric-label">远期库存风险</span>
+                <strong class="metric-value" id="metric-future">0</strong>
+                <span class="metric-hint">已扣减但短期仍可能断货</span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-body">
+            <div class="section-head">
+              <div>
+                <div class="section-title">备货建议列表</div>
+                <div class="section-note">默认按风险等级和建议量排序。</div>
+              </div>
+              <div class="table-actions">
+                <button type="button" class="btn" id="btn-export-table">导出</button>
+                <button type="button" class="btn btn-primary" id="btn-plan-table">生成计划</button>
+              </div>
+            </div>
+
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th style="width: 170px;">SKU</th>
+                    <th style="width: 90px;">站点</th>
+                    <th style="width: 90px;">运输方式</th>
+                    <th style="width: 170px;">标签</th>
+                    <th style="width: 90px;" class="num">安全天数</th>
+                    <th style="width: 120px;" class="num">发货建议量</th>
+                    <th style="width: 120px;" class="num">下单建议量</th>
+                    <th style="width: 130px;">风险</th>
+                    <th style="width: 130px;">建议动作</th>
+                    <th style="width: 90px;">操作</th>
+                  </tr>
+                </thead>
+                <tbody id="suggestion-tbody"></tbody>
+              </table>
+            </div>
+            <div class="section-note" style="margin-top: 12px;" id="result-count">共 0 条</div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div class="drawer-mask" id="drawer-mask"></div>
+  <aside class="detail-drawer" id="detail-drawer" aria-hidden="true">
+    <div class="drawer-fixed">
+      <div class="drawer-title-row">
+        <div>
+          <div class="drawer-title" id="drawer-title">SKU 决策详情</div>
+          <div class="drawer-subtitle" id="drawer-subtitle">-</div>
+        </div>
+        <button type="button" class="drawer-close" id="drawer-close" aria-label="关闭">×</button>
+      </div>
+      <div class="decision-summary">
+        <div class="decision-item">
+          <span>风险等级</span>
+          <strong id="drawer-risk-level">-</strong>
+        </div>
+        <div class="decision-item">
+          <span>建议动作</span>
+          <strong id="drawer-action">-</strong>
+        </div>
+        <div class="decision-item">
+          <span>建议发货量</span>
+          <strong id="drawer-ship-qty">0</strong>
+        </div>
+        <div class="decision-item">
+          <span>建议下单量</span>
+          <strong id="drawer-order-qty">0</strong>
+        </div>
+      </div>
+      <div class="drawer-anchor-row">
+        <div class="drawer-anchors">
+          <button type="button" class="drawer-anchor active" data-anchor="drawer-risk-section">建议动作</button>
+          <button type="button" class="drawer-anchor" data-anchor="drawer-projection-section">库存投影</button>
+          <button type="button" class="drawer-anchor" data-anchor="drawer-calc-section">计算明细</button>
+        </div>
+        <div class="drawer-actions">
+          <button type="button" class="btn btn-primary" id="drawer-create-ship">生成发货计划</button>
+          <button type="button" class="btn" id="drawer-create-order">生成采购计划</button>
+          <button type="button" class="btn" id="drawer-export">导出明细</button>
+        </div>
+      </div>
+    </div>
+    <div class="drawer-body" id="drawer-body">
+      <section class="drawer-section" id="drawer-risk-section">
+        <div class="drawer-subhead" role="heading" aria-level="3">
+          <span class="drawer-subhead-bar" aria-hidden="true"></span>
+          <span class="drawer-subhead-text">风险说明与不处理后果</span>
+        </div>
+        <div class="info-grid">
+          <div class="info-box danger">
+            <div class="info-box-title">风险说明</div>
+            <div class="info-box-text" id="drawer-risk-text">-</div>
+          </div>
+          <div class="info-box warn">
+            <div class="info-box-title">不处理后果</div>
+            <div class="info-box-text" id="drawer-consequence-text">-</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="drawer-section" id="drawer-projection-section">
+        <div class="drawer-subhead" role="heading" aria-level="3">
+          <span class="drawer-subhead-bar" aria-hidden="true"></span>
+          <span class="drawer-subhead-text">库存投影</span>
+        </div>
+        <div class="projection-wrap">
+          <div class="projection-chart" id="projection-chart"></div>
+          <div class="chart-legend">
+            <span><i class="legend-line blue"></i>预计库存</span>
+            <span><i class="legend-line orange"></i>预测销量</span>
+            <span><i class="legend-block red"></i>断货区间</span>
+          </div>
+          <table class="detail-table">
+            <thead>
+              <tr>
+                <th>日期</th>
+                <th class="num">预测销量</th>
+                <th class="num">预计入库</th>
+                <th class="num">日初库存</th>
+                <th class="num">可满足销量</th>
+                <th class="num">断货损失</th>
+              </tr>
+            </thead>
+            <tbody id="projection-tbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="drawer-section" id="drawer-calc-section">
+        <div class="drawer-subhead" role="heading" aria-level="3">
+          <span class="drawer-subhead-bar" aria-hidden="true"></span>
+          <span class="drawer-subhead-text">计算明细</span>
+        </div>
+        <div id="calc-detail"></div>
+      </section>
+    </div>
+  </aside>
+
+  <script>
+    (function initStockingSuggestionPage() {
+      var PARENT_STORAGE_KEY = 'sf_replenish_parent_list_v1';
+      var RULE_STORAGE_KEY = 'stocking_rule_config_rules_v2';
+      var currentMetric = 'all';
+      var allSuggestions = [];
+      var currentSuggestion = null;
+
+      function escapeHtml(value) {
+        return String(value == null ? '' : value)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function toInt(value, fallback) {
+        var n = parseInt(value, 10);
+        if (Number.isNaN(n)) return fallback || 0;
+        return n;
+      }
+
+      function formatNum(value) {
+        return Number(value || 0).toLocaleString('zh-CN');
+      }
+
+      function todayString() {
+        var d = new Date();
+        var pad = function(n) { return n < 10 ? '0' + n : String(n); };
+        return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+      }
+
+      function defaultParentList() {
+        return [
+          { code: 'LFT00002261', asin: 'B083J69DSQ', platform: 'Amazon', site: '美国', store: 'noorkie Inc-US', spu: 'ST18106', owner: '陈柏宏', days: '0/0' },
+          { code: 'LFT00002260', asin: 'B09K799DH7', platform: 'Amazon', site: '美国', store: 'STQWALKING_sandbox-US', spu: 'ST210808', owner: '黄国阳', days: '0/0' },
+          { code: 'LFT00000784', asin: 'B07NV7QK7H', platform: 'Amazon', site: '英国', store: 'STEP QUEEN INC-UK', spu: 'HK1839', owner: '黄利萍', days: '0/0' },
+          { code: 'LFT00000783', asin: 'B0F8GGJ7LK', platform: 'Amazon', site: '英国', store: 'STEP QUEEN INC-UK', spu: 'STK2527157', owner: '余滢', days: '0/0' },
+          { code: 'LFT00000778', asin: 'B0F8GTKXQK', platform: 'Amazon', site: '德国', store: 'STEP QUEEN INC-DE', spu: 'STK2527157', owner: '余滢', days: '0/0' },
+          { code: 'LFT00000755', asin: 'B0GLNK47Y9', platform: 'Amazon', site: '美国', store: 'STQ Inc-US', spu: 'WT82527258', owner: '黄利萍', days: '0/5' }
+        ];
+      }
+
+      function loadParents() {
+        try {
+          var raw = localStorage.getItem(PARENT_STORAGE_KEY);
+          var parsed = raw ? JSON.parse(raw) : null;
+          if (Array.isArray(parsed) && parsed.length) return parsed;
+        } catch (err) {}
+        var list = defaultParentList();
+        try {
+          localStorage.setItem(PARENT_STORAGE_KEY, JSON.stringify(list));
+        } catch (err2) {}
+        return list;
+      }
+
+      function defaultRules() {
+        return [
+          {
+            id: 'BR20260521001',
+            name: '北美站标准备货规则',
+            enabled: true,
+            form: {
+              parentCodes: ['LFT00002261', 'LFT00002260', 'LFT00000755'],
+              procurement: { purchaseLead: 30, purchaseFrequency: 15, pickupPrep: 7, qualityInspection: 2 },
+              fbaSafetyDays: 28,
+              logisticsSites: [
+                { key: 'northAmerica', name: '北美站', enabled: true, shipFrequencyDays: 7, methods: [{ key: 'fastShip', name: '快船', leadTimeDays: 35 }, { key: 'slowShip', name: '慢船', leadTimeDays: 55 }] },
+                { key: 'europe', name: '欧洲站', enabled: true, shipFrequencyDays: 7, methods: [{ key: 'fastShip', name: '快船', leadTimeDays: 40 }, { key: 'slowShip', name: '慢船', leadTimeDays: 60 }] }
+              ],
+              calculation: { deductStockoutSales: true }
+            }
+          },
+          {
+            id: 'BR20260521002',
+            name: '欧洲站稳态备货规则',
+            enabled: true,
+            form: {
+              parentCodes: ['LFT00000784', 'LFT00000783', 'LFT00000778'],
+              procurement: { purchaseLead: 32, purchaseFrequency: 16, pickupPrep: 7, qualityInspection: 3 },
+              fbaSafetyDays: 30,
+              logisticsSites: [
+                { key: 'northAmerica', name: '北美站', enabled: true, shipFrequencyDays: 7, methods: [{ key: 'fastShip', name: '快船', leadTimeDays: 35 }, { key: 'slowShip', name: '慢船', leadTimeDays: 55 }] },
+                { key: 'europe', name: '欧洲站', enabled: true, shipFrequencyDays: 7, methods: [{ key: 'fastShip', name: '快船', leadTimeDays: 40 }, { key: 'slowShip', name: '慢船', leadTimeDays: 60 }] }
+              ],
+              calculation: { deductStockoutSales: true }
+            }
+          }
+        ];
+      }
+
+      function loadRules() {
+        try {
+          var raw = localStorage.getItem(RULE_STORAGE_KEY);
+          var parsed = raw ? JSON.parse(raw) : null;
+          if (Array.isArray(parsed) && parsed.length) return parsed.filter(function(rule) { return rule.enabled !== false; });
+        } catch (err) {}
+        return defaultRules();
+      }
+
+      function normalizeRule(rule) {
+        var form = rule && rule.form ? rule.form : {};
+        var procurement = form.procurement || {};
+        var logisticsSites = Array.isArray(form.logisticsSites) ? form.logisticsSites : [];
+        return {
+          id: rule.id || '',
+          name: rule.name || '默认备货规则',
+          parentCodes: Array.isArray(form.parentCodes) ? form.parentCodes : [],
+          procurement: {
+            purchaseLead: toInt(procurement.purchaseLead, 30),
+            purchaseFrequency: toInt(procurement.purchaseFrequency, 15),
+            pickupPrep: toInt(procurement.pickupPrep, 7),
+            qualityInspection: toInt(procurement.qualityInspection, 2)
+          },
+          fbaSafetyDays: toInt(form.fbaSafetyDays, 28),
+          logisticsSites: logisticsSites.length ? logisticsSites : defaultRules()[0].form.logisticsSites,
+          calculation: form.calculation || { deductStockoutSales: true }
+        };
+      }
+
+      function siteGroup(site) {
+        if (/美|US|美国|加拿大|墨西哥/.test(site || '')) return '北美站';
+        return '欧洲站';
+      }
+
+      function logisticsKey(siteName) {
+        return siteName === '北美站' ? 'northAmerica' : 'europe';
+      }
+
+      function findRuleForParent(parent, rules) {
+        var matched = rules.map(normalizeRule).filter(function(rule) {
+          return rule.parentCodes.indexOf(parent.code) !== -1;
+        })[0];
+        return matched || normalizeRule(rules[0] || defaultRules()[0]);
+      }
+
+      function findLogistics(rule, siteName, methodName) {
+        var site = (rule.logisticsSites || []).filter(function(item) {
+          return item.key === logisticsKey(siteName) || item.name === siteName;
+        })[0] || {};
+        var methods = Array.isArray(site.methods) && site.methods.length ? site.methods : [{ name: methodName, leadTimeDays: siteName === '北美站' ? 35 : 40 }];
+        var method = methods.filter(function(item) { return item.name === methodName; })[0] || methods[0];
+        return {
+          siteName: site.name || siteName,
+          methodName: method.name || methodName,
+          leadTimeDays: toInt(method.leadTimeDays, siteName === '北美站' ? 35 : 40),
+          shipFrequencyDays: toInt(site.shipFrequencyDays, 7)
+        };
+      }
+
+      function getTagMeta(index) {
+        var sales = ['A - 爆款', 'B - 旺款', 'C - 利润款'][index % 3];
+        var lifecycle = ['新品（0-3月）', '新品（3-9月）', '老品（9个月以上）'][index % 3];
+        var color = ['主色', '次色', '边缘色'][index % 3];
+        var traffic = index % 2 === 0 ? 'OR 自然流量 ASIN' : 'AD 广告流量 ASIN';
+        var safety = sales.indexOf('A') === 0 || lifecycle.indexOf('新品（0-3月）') === 0 || color === '主色' || traffic.indexOf('OR') === 0 ? 45 : (sales.indexOf('B') === 0 ? 28 : 20);
+        return { sales: sales, lifecycle: lifecycle, color: color, traffic: traffic, safety: safety };
+      }
+
+      function forecastAt(base, day) {
+        var weekly = [1.05, 1.0, 0.94, 1.02, 1.08, 1.18, 1.12][day % 7];
+        var trend = 1 + Math.min(day, 120) * 0.0015;
+        return Math.max(1, Math.round(base * weekly * trend));
+      }
+
+      function forecastSum(base, days) {
+        var sum = 0;
+        for (var i = 0; i < days; i += 1) sum += forecastAt(base, i);
+        return sum;
+      }
+
+      function makeProjection(base, fbaInventory, inboundDay, inboundQty, horizon) {
+        var rows = [];
+        var stock = fbaInventory;
+        for (var day = 0; day < horizon; day += 1) {
+          var inbound = day === inboundDay ? inboundQty : 0;
+          var start = Math.max(0, stock) + inbound;
+          var forecast = forecastAt(base, day);
+          var fulfill = Math.min(start, forecast);
+          var loss = forecast - fulfill;
+          var end = Math.max(0, start - forecast);
+          rows.push({
+            day: day,
+            dateLabel: day === 0 ? 'D' : 'D+' + day,
+            forecastSales: forecast,
+            inboundQty: inbound,
+            startInventory: Math.round(start),
+            fulfillableSales: Math.round(fulfill),
+            stockoutLoss: Math.round(loss),
+            endInventory: Math.round(end)
+          });
+          stock = end;
+        }
+        return rows;
+      }
+
+      function stockoutDeduction(projection, earliestAvailableDays) {
+        return projection.filter(function(row) {
+          return row.day < earliestAvailableDays;
+        }).reduce(function(sum, row) {
+          return sum + row.stockoutLoss;
+        }, 0);
+      }
+
+      function stockoutRange(projection) {
+        var rows = projection.filter(function(row) { return row.stockoutLoss > 0; });
+        if (!rows.length) return '';
+        var first = rows[0].dateLabel;
+        var last = rows[rows.length - 1].dateLabel;
+        return first === last ? first : first + ' ~ ' + last;
+      }
+
+      function makeSuggestion(parent, index, rules) {
+        var rule = findRuleForParent(parent, rules);
+        var siteName = siteGroup(parent.site);
+        var methodName = index % 3 === 2 ? '空派' : (index % 2 === 0 ? '快船' : '慢船');
+        var logistics = findLogistics(rule, siteName, methodName);
+        if (methodName === '空派' && logistics.methodName !== '空派') {
+          logistics.methodName = '空派';
+          logistics.leadTimeDays = siteName === '北美站' ? 18 : 22;
+        }
+        var tags = getTagMeta(index);
+        var safetyDays = Math.max(rule.fbaSafetyDays, tags.safety);
+        var procurement = rule.procurement;
+        var procurementDelivery = procurement.purchaseLead + procurement.pickupPrep + procurement.qualityInspection;
+        var procurementCycle = procurementDelivery + procurement.purchaseFrequency;
+        var shipCoverageDays = logistics.leadTimeDays + safetyDays + logistics.shipFrequencyDays;
+        var orderCoverageDays = procurementCycle + logistics.leadTimeDays + safetyDays + logistics.shipFrequencyDays;
+        var orderEarliestAvailableDays = procurementDelivery + logistics.leadTimeDays;
+        var baseSales = [78, 52, 36, 64, 42, 28][index % 6];
+        var fbaInventory = [50, 650, 90, 120, 820, 20][index % 6];
+        var fbaInbound = [110, 520, 30, 260, 700, 0][index % 6];
+        var cnAvailable = [260, 180, 120, 300, 80, 40][index % 6];
+        var purchaseInbound = [170, 120, 60, 280, 540, 30][index % 6];
+        var inboundDay = [36, 68, 12, 45, 88, 30][index % 6];
+        var projection = makeProjection(baseSales, fbaInventory, inboundDay, fbaInbound, Math.min(orderCoverageDays, 150));
+        var shipForecastSum = forecastSum(baseSales, shipCoverageDays);
+        var orderForecastSum = forecastSum(baseSales, orderCoverageDays);
+        var deductEnabled = rule.calculation.deductStockoutSales !== false;
+        var shipDeduction = deductEnabled ? stockoutDeduction(projection, logistics.leadTimeDays) : 0;
+        var orderDeduction = deductEnabled ? stockoutDeduction(projection, orderEarliestAvailableDays) : 0;
+        var shipRaw = shipForecastSum - fbaInventory - fbaInbound - shipDeduction;
+        var orderRaw = orderForecastSum - fbaInventory - fbaInbound - cnAvailable - purchaseInbound - orderDeduction;
+        var shipSuggested = Math.max(0, Math.ceil(shipRaw));
+        var orderSuggested = Math.max(0, Math.ceil(orderRaw));
+        var totalLoss = projection.reduce(function(sum, row) { return sum + row.stockoutLoss; }, 0);
+        var range = stockoutRange(projection);
+        var riskCode = 'NORMAL';
+        var riskLabel = '正常';
+        var riskLevel = '低';
+        var actionCode = 'NO_ACTION';
+        if (totalLoss > 0 && shipSuggested > 0) {
+          riskCode = 'STOCKOUT_BEFORE_SHIP_ARRIVAL';
+          riskLabel = '断货风险';
+          riskLevel = totalLoss > 180 ? '高' : '中';
+          actionCode = 'CREATE_SHIPMENT_PLAN';
+        } else if (totalLoss > 0) {
+          riskCode = 'FUTURE_INVENTORY_RISK';
+          riskLabel = '远期库存风险';
+          riskLevel = '中';
+          actionCode = 'REVIEW_INBOUND_ETA';
+        } else if (orderSuggested > 0) {
+          riskCode = 'CREATE_PURCHASE_PLAN';
+          riskLabel = '采购缺口';
+          riskLevel = '中';
+          actionCode = 'CREATE_PURCHASE_PLAN';
+        }
+        var actionTextMap = {
+          CREATE_SHIPMENT_PLAN: '建议优先生成发货计划',
+          CREATE_PURCHASE_PLAN: '建议生成采购计划',
+          REVIEW_INBOUND_ETA: '建议复核在途到达时间',
+          CHECK_DATA: '建议检查预测或库存数据',
+          NO_ACTION: '暂不处理，继续观察'
+        };
+        return {
+          id: parent.code + '-' + logistics.methodName,
+          sku: parent.code,
+          asin: parent.asin || '-',
+          parentCode: parent.code,
+          site: siteName,
+          method: logistics.methodName,
+          ruleId: rule.id,
+          ruleName: rule.name,
+          tags: tags,
+          tagText: tags.sales + ' / ' + tags.lifecycle.replace('新品（', '新').replace('）', '') + ' / ' + tags.color,
+          safetyDays: safetyDays,
+          riskCode: riskCode,
+          riskLabel: riskLabel,
+          riskLevel: riskLevel,
+          actionCode: actionCode,
+          actionText: actionTextMap[actionCode],
+          shipSuggestedQty: shipSuggested,
+          orderSuggestedQty: orderSuggested,
+          stockoutLossQty: totalLoss,
+          stockoutDateRange: range || '-',
+          stockoutImpactDays: projection.filter(function(row) { return row.stockoutLoss > 0; }).length,
+          earliestStockoutDate: projection.filter(function(row) { return row.stockoutLoss > 0; })[0]?.dateLabel || '-',
+          logisticsLeadDays: logistics.leadTimeDays,
+          shipFrequencyDays: logistics.shipFrequencyDays,
+          procurementDeliveryDays: procurementDelivery,
+          procurementCycleDays: procurementCycle,
+          orderEarliestAvailableDays: orderEarliestAvailableDays,
+          shipCoverageDays: shipCoverageDays,
+          orderCoverageDays: orderCoverageDays,
+          shipForecastSum: shipForecastSum,
+          orderForecastSum: orderForecastSum,
+          shipDeduction: shipDeduction,
+          orderDeduction: orderDeduction,
+          fbaInventory: fbaInventory,
+          fbaInbound: fbaInbound,
+          cnAvailable: cnAvailable,
+          purchaseInbound: purchaseInbound,
+          projection: projection
+        };
+      }
+
+      function buildSuggestions() {
+        var parents = loadParents();
+        var rules = loadRules();
+        allSuggestions = parents.map(function(parent, index) {
+          return makeSuggestion(parent, index, rules);
+        }).sort(function(a, b) {
+          var score = { 高: 3, 中: 2, 低: 1 };
+          return (score[b.riskLevel] || 0) - (score[a.riskLevel] || 0) || (b.shipSuggestedQty + b.orderSuggestedQty) - (a.shipSuggestedQty + a.orderSuggestedQty);
+        });
+      }
+
+      function populateRuleFilter() {
+        var select = document.getElementById('filter-rule');
+        var rules = loadRules();
+        var seen = {};
+        rules.forEach(function(rule) {
+          if (seen[rule.id]) return;
+          seen[rule.id] = true;
+          var option = document.createElement('option');
+          option.value = rule.id;
+          option.textContent = rule.name || rule.id;
+          select.appendChild(option);
+        });
+      }
+
+      function currentFilters() {
+        return {
+          site: document.getElementById('filter-site').value,
+          keyword: (document.getElementById('filter-keyword').value || '').trim().toLowerCase(),
+          method: document.getElementById('filter-method').value,
+          ruleId: document.getElementById('filter-rule').value,
+          positiveOnly: document.getElementById('filter-positive').checked,
+          riskOnly: document.getElementById('filter-risk').checked
+        };
+      }
+
+      function filterSuggestions() {
+        var f = currentFilters();
+        return allSuggestions.filter(function(item) {
+          if (f.site && item.site !== f.site) return false;
+          if (f.method && item.method !== f.method) return false;
+          if (f.ruleId && item.ruleId !== f.ruleId) return false;
+          if (f.keyword) {
+            var hay = [item.sku, item.parentCode, item.asin].join(' ').toLowerCase();
+            if (hay.indexOf(f.keyword) === -1) return false;
+          }
+          if (f.positiveOnly && item.shipSuggestedQty <= 0 && item.orderSuggestedQty <= 0) return false;
+          if (f.riskOnly && item.riskCode === 'NORMAL') return false;
+          if (currentMetric === 'stockout' && item.riskCode !== 'STOCKOUT_BEFORE_SHIP_ARRIVAL') return false;
+          if (currentMetric === 'future' && item.riskCode !== 'FUTURE_INVENTORY_RISK') return false;
+          return true;
+        });
+      }
+
+      function riskTagClass(item) {
+        if (item.riskCode === 'STOCKOUT_BEFORE_SHIP_ARRIVAL') return 'tag-danger';
+        if (item.riskCode === 'FUTURE_INVENTORY_RISK' || item.riskCode === 'CREATE_PURCHASE_PLAN') return 'tag-warning';
+        return 'tag-success';
+      }
+
+      function renderMetrics(list) {
+        document.getElementById('metric-ship').textContent = formatNum(list.reduce(function(sum, item) { return sum + item.shipSuggestedQty; }, 0));
+        document.getElementById('metric-order').textContent = formatNum(list.reduce(function(sum, item) { return sum + item.orderSuggestedQty; }, 0));
+        document.getElementById('metric-stockout').textContent = formatNum(list.filter(function(item) { return item.riskCode === 'STOCKOUT_BEFORE_SHIP_ARRIVAL'; }).length);
+        document.getElementById('metric-future').textContent = formatNum(list.filter(function(item) { return item.riskCode === 'FUTURE_INVENTORY_RISK'; }).length);
+        document.querySelectorAll('.metric-card').forEach(function(card) {
+          card.classList.toggle('active', card.getAttribute('data-metric') === currentMetric && currentMetric !== 'all');
+        });
+      }
+
+      function renderTable() {
+        var list = filterSuggestions();
+        renderMetrics(list);
+        var tbody = document.getElementById('suggestion-tbody');
+        tbody.innerHTML = '';
+        if (!list.length) {
+          tbody.innerHTML = '<tr><td class="empty-row" colspan="10">暂无备货建议</td></tr>';
+        } else {
+          list.forEach(function(item) {
+            var tr = document.createElement('tr');
+            tr.setAttribute('data-id', item.id);
+            tr.innerHTML =
+              '<td><div class="sku-cell"><span class="sku-code">' + escapeHtml(item.sku) + '</span><span class="sku-sub">' + escapeHtml(item.asin) + '</span></div></td>' +
+              '<td>' + escapeHtml(item.site) + '</td>' +
+              '<td>' + escapeHtml(item.method) + '</td>' +
+              '<td>' + escapeHtml(item.tagText) + '</td>' +
+              '<td class="num">' + item.safetyDays + '</td>' +
+              '<td class="num strong-num">' + formatNum(item.shipSuggestedQty) + '</td>' +
+              '<td class="num strong-num">' + formatNum(item.orderSuggestedQty) + '</td>' +
+              '<td><span class="tag ' + riskTagClass(item) + '">' + escapeHtml(item.riskLabel) + '</span></td>' +
+              '<td>' + escapeHtml(item.actionText.replace('建议', '')) + '</td>' +
+              '<td><button type="button" class="btn-text" data-action="detail" data-id="' + escapeHtml(item.id) + '">查看明细</button></td>';
+            tbody.appendChild(tr);
+          });
+        }
+        document.getElementById('result-count').textContent = '共 ' + list.length + ' 条';
+      }
+
+      function riskReason(item) {
+        if (item.riskCode === 'STOCKOUT_BEFORE_SHIP_ARRIVAL') {
+          return item.stockoutDateRange + ' 存在预计断货损失，合计 ' + formatNum(item.stockoutLossQty) + ' 件。必断货扣除量占比较高，请关注到货节奏。';
+        }
+        if (item.riskCode === 'FUTURE_INVENTORY_RISK') {
+          return '部分库存预计到达时间较晚，虽然已在建议量中扣减，但短期仍可能出现断货，请关注库存投影。';
+        }
+        if (item.riskCode === 'CREATE_PURCHASE_PLAN') {
+          return '当前库存与在途可覆盖短期发货，但下单覆盖周期存在采购缺口。';
+        }
+        return '当前库存及在途库存基本覆盖目标周期，暂未识别明显断货风险。';
+      }
+
+      function consequenceText(item) {
+        if (item.stockoutImpactDays > 0) {
+          return '预计最早断货日：' + item.earliestStockoutDate + '；覆盖周期内断货损失：' + formatNum(item.stockoutLossQty) + ' 件；断货影响天数：' + item.stockoutImpactDays + ' 天。';
+        }
+        return '预计覆盖周期内无明显断货损失，建议持续观察销量与在途到达节奏。';
+      }
+
+      function renderProjectionChart(item) {
+        var rows = item.projection.slice(0, 30);
+        var maxValue = Math.max.apply(null, rows.map(function(row) {
+          return Math.max(row.startInventory, row.forecastSales, row.inboundQty);
+        }).concat([1]));
+        var width = 700;
+        var height = 220;
+        var pad = { left: 34, right: 16, top: 18, bottom: 28 };
+        var innerW = width - pad.left - pad.right;
+        var innerH = height - pad.top - pad.bottom;
+        var x = function(i) { return pad.left + (rows.length <= 1 ? 0 : i * innerW / (rows.length - 1)); };
+        var y = function(v) { return pad.top + innerH - (v / maxValue) * innerH; };
+        var inventoryPoints = rows.map(function(row, i) { return x(i).toFixed(1) + ',' + y(row.startInventory).toFixed(1); }).join(' ');
+        var forecastPoints = rows.map(function(row, i) { return x(i).toFixed(1) + ',' + y(row.forecastSales).toFixed(1); }).join(' ');
+        var riskRects = rows.map(function(row, i) {
+          if (row.stockoutLoss <= 0) return '';
+          var rx = x(i) - innerW / rows.length / 2;
+          var rw = Math.max(4, innerW / rows.length);
+          return '<rect x="' + rx.toFixed(1) + '" y="' + pad.top + '" width="' + rw.toFixed(1) + '" height="' + innerH + '" fill="rgba(245,108,108,0.16)" />';
+        }).join('');
+        var arrivalLine = rows.map(function(row, i) {
+          if (row.inboundQty <= 0) return '';
+          var px = x(i);
+          return '<line x1="' + px.toFixed(1) + '" y1="' + pad.top + '" x2="' + px.toFixed(1) + '" y2="' + (pad.top + innerH) + '" stroke="#67c23a" stroke-width="2" stroke-dasharray="4 4" />';
+        }).join('');
+        var labels = [0, 7, 14, 21, 29].filter(function(i) { return i < rows.length; }).map(function(i) {
+          return '<text x="' + x(i).toFixed(1) + '" y="' + (height - 8) + '" fill="#909399" font-size="11" text-anchor="middle">' + rows[i].dateLabel + '</text>';
+        }).join('');
+        var svg =
+          '<svg viewBox="0 0 ' + width + ' ' + height + '" role="img" aria-label="库存投影">' +
+            '<rect x="0" y="0" width="' + width + '" height="' + height + '" fill="#fafafa" />' +
+            riskRects +
+            '<line x1="' + pad.left + '" y1="' + (pad.top + innerH) + '" x2="' + (pad.left + innerW) + '" y2="' + (pad.top + innerH) + '" stroke="#dcdfe6" />' +
+            '<line x1="' + pad.left + '" y1="' + pad.top + '" x2="' + pad.left + '" y2="' + (pad.top + innerH) + '" stroke="#dcdfe6" />' +
+            arrivalLine +
+            '<polyline points="' + inventoryPoints + '" fill="none" stroke="#409eff" stroke-width="2.5" />' +
+            '<polyline points="' + forecastPoints + '" fill="none" stroke="#e6a23c" stroke-width="2.2" />' +
+            '<text x="8" y="' + (pad.top + 4) + '" fill="#909399" font-size="11">' + formatNum(maxValue) + '</text>' +
+            labels +
+          '</svg>';
+        document.getElementById('projection-chart').innerHTML = svg;
+      }
+
+      function renderProjectionTable(item) {
+        var tbody = document.getElementById('projection-tbody');
+        tbody.innerHTML = item.projection.slice(0, 8).map(function(row) {
+          return '<tr>' +
+            '<td>' + row.dateLabel + '</td>' +
+            '<td class="num">' + formatNum(row.forecastSales) + '</td>' +
+            '<td class="num">' + formatNum(row.inboundQty) + '</td>' +
+            '<td class="num">' + formatNum(row.startInventory) + '</td>' +
+            '<td class="num">' + formatNum(row.fulfillableSales) + '</td>' +
+            '<td class="num ' + (row.stockoutLoss > 0 ? 'strong-num' : '') + '">' + formatNum(row.stockoutLoss) + '</td>' +
+          '</tr>';
+        }).join('');
+      }
+
+      function renderCalcDetail(item) {
+        document.getElementById('calc-detail').innerHTML =
+          '<div class="formula-block"><strong>安全库存天数</strong><br>' +
+          '默认安全天数：' + item.safetyDays + ' 天；命中条件：' + escapeHtml(item.tags.sales) + '、' + escapeHtml(item.tags.lifecycle) + '、' + escapeHtml(item.tags.color) + '、' + escapeHtml(item.tags.traffic) + '。<br>' +
+          '最终安全天数 = max(默认安全天数, 命中条件安全天数) = ' + item.safetyDays + ' 天</div>' +
+          '<div class="formula-block"><strong>覆盖天数拆解</strong><br>' +
+          '发货覆盖天数 = CN仓至FBA时效 ' + item.logisticsLeadDays + ' + 安全天数 ' + item.safetyDays + ' + CN仓发货频率 ' + item.shipFrequencyDays + ' = ' + item.shipCoverageDays + ' 天<br>' +
+          '下单覆盖天数 = 采购周期覆盖天数 ' + item.procurementCycleDays + ' + CN仓至FBA时效 ' + item.logisticsLeadDays + ' + 安全天数 ' + item.safetyDays + ' + CN仓发货频率 ' + item.shipFrequencyDays + ' = ' + item.orderCoverageDays + ' 天</div>' +
+          '<div class="formula-block"><strong>预测销量区间</strong><br>' +
+          '发货预测销量 = Σ forecastSales(D ~ D+' + (item.shipCoverageDays - 1) + ') = ' + formatNum(item.shipForecastSum) + '<br>' +
+          '下单预测销量 = Σ forecastSales(D ~ D+' + (item.orderCoverageDays - 1) + ') = ' + formatNum(item.orderForecastSum) + '</div>' +
+          '<div class="formula-block"><strong>建议量计算</strong><br>' +
+          '建议发货量 = max(0, ceil(' + formatNum(item.shipForecastSum) + ' - FBA库存 ' + formatNum(item.fbaInventory) + ' - FBA在途 ' + formatNum(item.fbaInbound) + ' - 发货必断货扣除量 ' + formatNum(item.shipDeduction) + ')) = ' + formatNum(item.shipSuggestedQty) + '<br>' +
+          '建议下单量 = max(0, ceil(' + formatNum(item.orderForecastSum) + ' - FBA库存 ' + formatNum(item.fbaInventory) + ' - FBA在途 ' + formatNum(item.fbaInbound) + ' - CN仓可用 ' + formatNum(item.cnAvailable) + ' - 已下单未入库 ' + formatNum(item.purchaseInbound) + ' - 下单必断货扣除量 ' + formatNum(item.orderDeduction) + ')) = ' + formatNum(item.orderSuggestedQty) + '</div>';
+      }
+
+      function openDrawer(item) {
+        currentSuggestion = item;
+        document.querySelectorAll('#suggestion-tbody tr').forEach(function(row) {
+          row.classList.toggle('active', row.getAttribute('data-id') === item.id);
+        });
+        document.getElementById('drawer-title').textContent = item.sku + ' 决策详情';
+        document.getElementById('drawer-subtitle').textContent = item.site + ' / ' + item.method + ' / ' + item.ruleName + ' / 决策日 ' + document.getElementById('filter-date').value;
+        document.getElementById('drawer-risk-level').textContent = item.riskLevel;
+        document.getElementById('drawer-action').textContent = item.actionText;
+        document.getElementById('drawer-ship-qty').textContent = formatNum(item.shipSuggestedQty);
+        document.getElementById('drawer-order-qty').textContent = formatNum(item.orderSuggestedQty);
+        document.getElementById('drawer-risk-text').textContent = riskReason(item);
+        document.getElementById('drawer-consequence-text').textContent = consequenceText(item);
+        renderProjectionChart(item);
+        renderProjectionTable(item);
+        renderCalcDetail(item);
+        document.getElementById('drawer-mask').classList.add('show');
+        document.getElementById('detail-drawer').classList.add('open');
+        document.getElementById('detail-drawer').setAttribute('aria-hidden', 'false');
+        document.getElementById('drawer-body').scrollTop = 0;
+      }
+
+      function closeDrawer() {
+        document.getElementById('drawer-mask').classList.remove('show');
+        document.getElementById('detail-drawer').classList.remove('open');
+        document.getElementById('detail-drawer').setAttribute('aria-hidden', 'true');
+      }
+
+      function findSuggestion(id) {
+        return allSuggestions.filter(function(item) { return item.id === id; })[0];
+      }
+
+      function render() {
+        renderTable();
+      }
+
+      function resetFilters() {
+        currentMetric = 'all';
+        document.getElementById('filter-date').value = todayString();
+        document.getElementById('filter-site').value = '';
+        document.getElementById('filter-keyword').value = '';
+        document.getElementById('filter-method').value = '';
+        document.getElementById('filter-rule').value = '';
+        document.getElementById('filter-positive').checked = false;
+        document.getElementById('filter-risk').checked = false;
+        render();
+      }
+
+      function showAction(message) {
+        alert(message);
+      }
+
+      function initSidebarMenu() {
+        var appLayout = document.querySelector('.app-layout');
+        var backdrop = document.getElementById('sidebar-backdrop');
+        var replenishTrigger = document.querySelector('.primary-item[data-submenu="replenish"]');
+        var protoTrigger = document.querySelector('.primary-item[data-submenu="proto"]');
+        var systemTrigger = document.querySelector('.primary-item[data-submenu="system"]');
+        var replenishPanel = document.getElementById('replenish-submenu');
+        var protoPanel = document.getElementById('proto-submenu');
+        var systemPanel = document.getElementById('system-submenu');
+        if (!appLayout || !backdrop) return;
+
+        function restorePrimaryCurrent() {
+          document.querySelectorAll('.primary-item[data-primary-current]').forEach(function(el) {
+            el.classList.add('active');
+          });
+        }
+
+        function closeAllSubmenus() {
+          appLayout.classList.remove('submenu-open');
+          [replenishPanel, protoPanel, systemPanel].forEach(function(panel) {
+            if (panel) panel.classList.remove('open');
+          });
+          [replenishTrigger, protoTrigger, systemTrigger].forEach(function(trigger) {
+            if (trigger) trigger.classList.remove('active');
+          });
+          restorePrimaryCurrent();
+        }
+
+        function bindToggle(trigger, panel) {
+          if (!trigger || !panel) return;
+          trigger.addEventListener('click', function(e) {
+            e.preventDefault();
+            var willOpen = !panel.classList.contains('open');
+            closeAllSubmenus();
+            if (willOpen) {
+              appLayout.classList.add('submenu-open');
+              panel.classList.add('open');
+              trigger.classList.add('active');
+            }
+          });
+        }
+
+        bindToggle(replenishTrigger, replenishPanel);
+        bindToggle(protoTrigger, protoPanel);
+        bindToggle(systemTrigger, systemPanel);
+        backdrop.addEventListener('click', closeAllSubmenus);
+        document.querySelectorAll('.sidebar-submenu-panel a.submenu-item').forEach(function(a) {
+          a.addEventListener('click', closeAllSubmenus);
+        });
+        document.querySelectorAll('.primary-item[href="#"]:not([data-submenu])').forEach(function(item) {
+          item.addEventListener('click', function(e) { e.preventDefault(); });
+        });
+      }
+
+      document.getElementById('filter-date').value = todayString();
+      populateRuleFilter();
+      buildSuggestions();
+      render();
+      initSidebarMenu();
+
+      document.getElementById('btn-search').addEventListener('click', function() {
+        currentMetric = 'all';
+        render();
+      });
+      document.getElementById('btn-reset').addEventListener('click', resetFilters);
+      document.getElementById('metric-grid').addEventListener('click', function(e) {
+        var card = e.target.closest('.metric-card');
+        if (!card) return;
+        currentMetric = card.getAttribute('data-metric') || 'all';
+        render();
+      });
+      document.getElementById('suggestion-tbody').addEventListener('click', function(e) {
+        var row = e.target.closest('tr[data-id]');
+        if (!row) return;
+        var item = findSuggestion(row.getAttribute('data-id'));
+        if (item) openDrawer(item);
+      });
+      document.getElementById('drawer-mask').addEventListener('click', closeDrawer);
+      document.getElementById('drawer-close').addEventListener('click', closeDrawer);
+      document.querySelectorAll('.drawer-anchor').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var body = document.getElementById('drawer-body');
+          var target = document.getElementById(btn.getAttribute('data-anchor'));
+          if (!target) return;
+          body.scrollTop = target.offsetTop - body.offsetTop - 4;
+          document.querySelectorAll('.drawer-anchor').forEach(function(item) {
+            item.classList.toggle('active', item === btn);
+          });
+        });
+      });
+      document.getElementById('drawer-create-ship').addEventListener('click', function() {
+        showAction('已生成发货计划入口：' + (currentSuggestion ? currentSuggestion.sku : ''));
+      });
+      document.getElementById('drawer-create-order').addEventListener('click', function() {
+        showAction('已生成采购计划入口：' + (currentSuggestion ? currentSuggestion.sku : ''));
+      });
+      document.getElementById('drawer-export').addEventListener('click', function() {
+        showAction('导出计算明细入口：' + (currentSuggestion ? currentSuggestion.sku : ''));
+      });
+      ['btn-export-top', 'btn-export-table'].forEach(function(id) {
+        document.getElementById(id).addEventListener('click', function() {
+          showAction('导出备货建议入口');
+        });
+      });
+      ['btn-plan-top', 'btn-plan-table'].forEach(function(id) {
+        document.getElementById(id).addEventListener('click', function() {
+          showAction('生成计划入口');
+        });
+      });
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeDrawer();
+      });
+    })();
+  </script>
+</body>
+</html>

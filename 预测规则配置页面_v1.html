@@ -769,6 +769,10 @@
       .tabs { overflow-x: auto; flex-wrap: nowrap; }
       .tab { white-space: nowrap; }
     }
+    .primary-item[data-submenu="proto"],
+    #proto-submenu {
+      display: none !important;
+    }
   </style>
 </head>
 <body>
@@ -794,10 +798,12 @@
       </div>
       <div class="sidebar-submenu-panel" id="replenish-submenu">
         <a class="submenu-item" href="./补货列表.html">补货列表</a>
+        <a class="submenu-item" href="./备货建议.html">备货建议</a>
       </div>
       <div class="sidebar-submenu-panel" id="system-submenu">
         <div class="submenu-title">系统配置</div>
         <a class="submenu-item" href="./销量预测规则.html">销量预测规则</a>
+        <a class="submenu-item" href="./备货规则配置.html">备货规则</a>
       </div>
       <div class="sidebar-submenu-panel" id="proto-submenu">
         <div class="submenu-title">初始原型</div>
@@ -1031,9 +1037,6 @@
                   </tbody>
                 </table>
               </div>
-              <div style="font-size: 12px; color: #909399; margin-top: 4px;">
-                采购到货可发周期 = 采购交期 + 质检 + 提货准备 = <strong id="proc-cycle-sum" style="color: #409eff;">39</strong> 天
-              </div>
             </div>
 
             <!-- FBA仓 -->
@@ -1053,8 +1056,8 @@
 
               <!-- 模式切换 -->
               <div style="margin-bottom: 15px;">
-                <button class="btn btn-primary" id="btn-direct-mode" onclick="switchShipMode('direct')">本地/海外仓直发模式</button>
-                <button class="btn btn-secondary" id="btn-transit-mode" style="margin-left: 10px;" onclick="switchShipMode('transit')">海外仓中转模式</button>
+                <button class="btn btn-primary" id="btn-direct-mode" onclick="switchShipMode('direct')">本地仓直发模式</button>
+                <button class="btn btn-secondary" id="btn-transit-mode" style="margin-left: 10px;" onclick="switchShipMode('transit')">海外仓中转模式（废弃）</button>
               </div>
 
               <!-- 直发模式 -->
@@ -1244,11 +1247,11 @@
                 <label style="display: flex; align-items: center; cursor: pointer; font-size: 14px;">
                   <input type="checkbox" id="deduct-stock" checked style="margin-right: 8px;" />
                   建议量扣除必断货量
-                  <span style="font-size: 12px; color: #909399; margin-left: 6px;" title="扣除在补货到达前不可避免的断货期间的销量">ⓘ</span>
+                  <span style="font-size: 12px; color: #909399; margin-left: 6px;" title="扣除在补货到达前不可避免的断货期间的销量(例如，根据销量预测，平台仓+物流在途库存会在未来35天断货，发货从今天算最快40天到达，则断货的那5天销量不算在建议量里)">ⓘ</span>
                 </label>
                 <label style="display: flex; align-items: center; cursor: pointer; font-size: 14px;">
                   <input type="checkbox" id="exclude-outage" checked style="margin-right: 8px;" />
-                  历史销量排除断货数据
+                  历史销量排除断货数据 (废弃，跟销量的断货去噪重复)
                   <span style="font-size: 12px; color: #909399; margin-left: 6px;" title="计算历史日均销量时，剔除缺货期间的零销量数据，避免拉低均值">ⓘ</span>
                 </label>
               </div>
@@ -1261,12 +1264,12 @@
               <div style="margin-bottom: 12px;">
                 <div style="font-size: 13px; font-weight: 500; color: #303133; margin-bottom: 6px;">直发模式（CN仓/海外仓 → FBA仓）</div>
                 <div style="font-size: 12px; color: #606266; line-height: 1.8; padding-left: 12px; border-left: 2px solid #d9ecff;">
-                  <div><strong>本地仓建议备货量</strong> = （CN仓至FBA时效 + 安全天数 + CN仓发货频率）× 日销量(动态) − （FBA库存 + FBA在途 + 海外仓可用）</div>
-                  <div><strong>海外仓至FBA建议量</strong> = （海外仓至FBA时效 + 安全天数 + 海外仓发货频率）× 日销量(动态) − （FBA库存 + FBA在途）</div>
+                  <div><strong>本地仓建议发货量</strong> = （CN仓至FBA时效+安全天数+CN仓发货频率）*日销量（动态）-（FBA库存 + FBA在途 + 本地仓预发货库存）</div>
+                  <div><strong>本地仓建议采购量</strong> = （CN仓至FBA时效 + 安全天数 + CN仓发货频率+采购交期 + 质检 + 提货准备 +采购频率）× 日销量(动态) − （FBA库存 + FBA在途 + 本地仓总库存+已确认但未发送供应商的采购单下单数量）</div>
                 </div>
               </div>
 
-              <div>
+              <div style="display: none;">
                 <div style="font-size: 13px; font-weight: 500; color: #303133; margin-bottom: 6px;">中转模式（CN仓 → 海外仓 → FBA仓）</div>
                 <div style="font-size: 12px; color: #606266; line-height: 1.8; padding-left: 12px; border-left: 2px solid #d9ecff;">
                   <div><strong>CN仓建议采购量</strong> = （采购交期 + 质检 + 提货准备 + CN至海外仓时效 + 海外仓至FBA时效 + 安全天数 + 采购频率）× 日销量(动态) − （FBA库存 + FBA在途 + 海外仓可用 + 海外仓在途 + CN仓可用）</div>
@@ -1795,7 +1798,7 @@
             <!-- === 第二部分：安全库存天数调整 === -->
             <div class="page-section-title page-section-title--orange" style="margin-top: 32px;">安全库存天数调整系数</div>
             <div style="font-size: 12px; color: #909399; margin-bottom: 16px;">
-              以下维度可覆盖备货规则中的默认安全天数（28天），不同维度取最高优先级的值
+              以下维度可覆盖备货规则中的默认安全天数（28天），命中多个取最高的天数作为安全库存天数
             </div>
 
             <!-- 销售层级系数 -->
@@ -1910,7 +1913,7 @@
                   </thead>
                   <tbody>
                     <tr>
-                      <td style="font-weight:500;">主颜色</td>
+                      <td style="font-weight:500;">主色</td>
                       <td>
                         <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
                           <input type="number" class="form-control" id="safety-main-color" value="45" style="width:70px;text-align:center;" />
@@ -1920,7 +1923,7 @@
                       <td style="font-size:12px;color:#909399;">销量占比高的主力颜色，需要更高安全库存</td>
                     </tr>
                     <tr>
-                      <td style="font-weight:500;">次颜色</td>
+                      <td style="font-weight:500;">次色</td>
                       <td>
                         <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
                           <input type="number" class="form-control" id="safety-sub-color" value="28" style="width:70px;text-align:center;" />
@@ -2707,14 +2710,14 @@
 
       preview.innerHTML =
         `<strong>当前参数试算（以北美站快船为例）：</strong><br>` +
-        `直发备货天数 = ${naTime}(物流时效) + ${safety}(安全天数) + ${naFreq}(发货频率) = <strong style="color:#409eff;">${directDays}天</strong><br>` +
-        `中转全链路天数 = ${leadtime}(采购交期) + ${qc}(质检) + ${pickup}(提货准备) + ${naTime}(CN至海外仓时效) + ${safety}(安全天数) + ${parseInt(document.getElementById('proc-frequency').value) || 0}(采购频率) = <strong style="color:#409eff;">${transitDays}天</strong>`;
+        `直发备货天数 = ${naTime}(物流时效) + ${safety}(安全天数) + ${naFreq}(发货频率) = <strong style="color:#409eff;">${directDays}天</strong><br>` ;
+        // `中转全链路天数 = ${leadtime}(采购交期) + ${qc}(质检) + ${pickup}(提货准备) + ${naTime}(CN至海外仓时效) + ${safety}(安全天数) + ${parseInt(document.getElementById('proc-frequency').value) || 0}(采购频率) = <strong style="color:#409eff;">${transitDays}天</strong>`;
     }
 
     // ========== 日销量规则：权重校验 ==========
     const DAILY_PERIODS = ['3d','7d','14d','30d','60d','90d'];
 
-    function onDailyWeightChange() {
+    function onDailyWeightChange() {  
       const sum = getDailyWeightSum();
       const sumEl = document.getElementById('daily-weight-sum');
       const statusEl = document.getElementById('daily-weight-status');

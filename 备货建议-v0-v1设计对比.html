@@ -1,0 +1,495 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>备货建议 V0 / V1 UI 设计对比</title>
+  <style>
+    :root{--bg:oklch(97% 0.004 250);--surface:oklch(100% 0 0);--surface-soft:oklch(98% 0.006 250);--fg:oklch(22% 0.02 245);--muted:oklch(49% 0.018 245);--subtle:oklch(64% 0.014 245);--border:oklch(89% 0.008 245);--border-strong:oklch(82% 0.012 245);--primary:oklch(54% 0.17 255);--primary-soft:oklch(95% 0.035 255);--secondary:oklch(55% 0.12 180);--secondary-soft:oklch(95% 0.04 180);--danger:oklch(57% 0.19 28);--danger-soft:oklch(96% 0.045 28);--warn:oklch(70% 0.15 78);--warn-soft:oklch(97% 0.045 78);--success:oklch(58% 0.13 150);--success-soft:oklch(96% 0.04 150);--font-display:"Microsoft YaHei","PingFang SC",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;--font-body:"Microsoft YaHei","PingFang SC",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;--font-mono:"SFMono-Regular",Consolas,"Liberation Mono",monospace;--radius-sm:4px;--radius-md:6px;--radius-lg:8px;}
+    *{box-sizing:border-box;}
+    body{margin:0;min-width:1180px;background:linear-gradient(180deg,oklch(98% 0.006 250),var(--bg) 320px),var(--bg);color:var(--fg);font-family:var(--font-body);font-size:13px;}
+    button,input,select{font:inherit;}
+    button{cursor:pointer;}
+    .page{width:min(1760px,calc(100vw - 48px));margin:0 auto;padding:24px 0 32px;}
+    .topbar{display:grid;grid-template-columns:1fr auto;gap:24px;align-items:end;margin-bottom:16px;}
+    .eyebrow{margin:0 0 8px;color:var(--primary);font-size:12px;font-weight:700;}
+    h1{margin:0;font-family:var(--font-display);font-size:28px;line-height:1.2;font-weight:700;letter-spacing:0;}
+    .summary{max-width:860px;margin:10px 0 0;color:var(--muted);line-height:1.65;text-wrap:pretty;}
+    .segmented{display:inline-flex;align-items:center;padding:3px;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--surface);box-shadow:0 1px 2px rgba(15,23,42,0.04);}
+    .segmented button{border:0;border-radius:var(--radius-sm);padding:7px 12px;background:transparent;color:var(--muted);font-weight:600;}
+    .segmented button.active{background:var(--fg);color:white;}
+    .upgrade-strip{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-bottom:16px;}
+    .upgrade-item{min-height:74px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-lg);background:var(--surface);}
+    .upgrade-item strong{display:block;margin-bottom:5px;font-size:12px;color:var(--fg);}
+    .upgrade-item span{display:block;color:var(--muted);font-size:12px;line-height:1.45;}
+    .compare-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:18px;align-items:start;}
+    .version-card{overflow:hidden;border:1px solid var(--border);border-radius:var(--radius-lg);background:var(--surface);box-shadow:0 10px 30px rgba(15,23,42,0.07);}
+    .version-head{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:start;padding:14px 16px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,var(--surface),var(--surface-soft));}
+    .version-title{display:flex;align-items:center;gap:8px;margin:0 0 4px;font-size:16px;font-weight:700;}
+    .version-badge{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:999px;background:var(--primary-soft);color:var(--primary);font-size:12px;font-weight:700;}
+    .v1 .version-badge{background:var(--secondary-soft);color:var(--secondary);}
+    .version-subtitle{margin:0;color:var(--muted);font-size:12px;line-height:1.5;}
+    .purpose{display:grid;gap:4px;justify-items:end;color:var(--muted);font-size:12px;white-space:nowrap;}
+    .purpose strong{color:var(--fg);font-size:15px;font-family:var(--font-mono);}
+    .workspace{background:#f5f7fa;padding:14px;}
+    .app-chrome{overflow:hidden;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--surface);}
+    .chrome-bar{display:flex;justify-content:space-between;align-items:center;height:34px;padding:0 12px;border-bottom:1px solid var(--border);background:#f9fafc;color:var(--muted);font-size:12px;}
+    .chrome-dots{display:flex;gap:5px;}
+    .chrome-dots span{width:8px;height:8px;border-radius:999px;background:var(--border-strong);}
+    .mock-app{display:grid;grid-template-columns:56px 1fr;min-height:760px;}
+    .side-nav{padding:8px 6px;background:#1f2a78;color:white;}
+    .nav-logo{display:grid;place-items:center;width:32px;height:32px;margin:2px auto 12px;border-radius:8px;background:rgba(255,255,255,0.15);font-weight:800;}
+    .nav-pill{height:42px;margin-bottom:6px;border-radius:8px;background:rgba(255,255,255,0.1);}
+    .nav-pill.active{background:#0d5bff;}
+    .app-body{min-width:0;padding:14px;background:#fff;}
+    .screen-title{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px;}
+    .screen-title h2{margin:0 0 4px;font-size:18px;font-weight:700;}
+    .screen-title p{margin:0;color:var(--muted);font-size:12px;}
+    .mini-actions{display:flex;gap:6px;align-items:center;white-space:nowrap;}
+    .btn{min-height:28px;padding:0 10px;border:1px solid var(--border-strong);border-radius:var(--radius-sm);background:var(--surface);color:var(--fg);font-weight:600;}
+    .btn.primary{border-color:var(--primary);background:var(--primary);color:white;}
+    .btn.secondary{border-color:var(--secondary);background:var(--secondary);color:white;}
+    .filter-panel,.section-panel,.drawer-section{border:1px solid var(--border);border-radius:var(--radius-md);background:var(--surface);}
+    .filter-panel{padding:10px;margin-bottom:10px;}
+    .filter-title,.section-title{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;color:var(--fg);font-size:13px;font-weight:700;}
+    .filters{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;}
+    .filters.v1-filters{grid-template-columns:repeat(4,minmax(0,1fr));}
+    .field{min-height:34px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius-sm);background:#fff;}
+    .field-label{display:block;margin-bottom:3px;color:var(--subtle);font-size:11px;}
+    .field-value{display:block;overflow:hidden;color:var(--fg);font-size:12px;font-weight:600;text-overflow:ellipsis;white-space:nowrap;}
+    .filter-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;}
+    .check-group{display:flex;flex-wrap:wrap;gap:8px;color:var(--muted);font-size:12px;}
+    .check{display:inline-flex;align-items:center;gap:5px;}
+    .box{display:inline-block;width:13px;height:13px;border:1px solid var(--border-strong);border-radius:2px;background:var(--primary);box-shadow:inset 0 0 0 2px white;vertical-align:middle;}
+    .metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:10px;}
+    .metrics.v1-metrics{grid-template-columns:repeat(7,minmax(0,1fr));}
+    .metric{min-height:74px;padding:10px;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--surface);text-align:left;}
+    button.metric{width:100%;}
+    .metric:hover,.metric.active{border-color:var(--primary);background:var(--primary-soft);}
+    .metric .label{display:block;margin-bottom:8px;color:var(--muted);font-size:12px;line-height:1.3;}
+    .metric .value{display:block;font-family:var(--font-mono);font-size:22px;font-weight:800;color:var(--fg);line-height:1;}
+    .metric .hint{display:block;margin-top:7px;color:var(--subtle);font-size:11px;}
+    .two-stack{display:grid;gap:10px;}
+    .queue-table{margin-bottom:10px;}
+    .section-panel{overflow:hidden;margin-bottom:10px;}
+    .section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border-bottom:1px solid var(--border);background:#fbfcfe;}
+    .section-head h3{margin:0;font-size:14px;}
+    .section-tools{display:flex;gap:6px;align-items:center;}
+    .table-wrap{overflow:auto;}
+    table{width:100%;border-collapse:collapse;table-layout:fixed;}
+    th,td{height:34px;padding:0 8px;border-bottom:1px solid var(--border);text-align:left;vertical-align:middle;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    th{background:#f7f9fc;color:var(--muted);font-size:12px;font-weight:700;}
+    tbody tr:hover,tbody tr.active{background:var(--primary-soft);}
+    .num{font-family:var(--font-mono);font-variant-numeric:tabular-nums;text-align:right;}
+    .strong-num{color:var(--primary);font-weight:800;}
+    .tag{display:inline-flex;align-items:center;max-width:100%;height:22px;padding:0 7px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap;}
+    .tag.danger{background:var(--danger-soft);color:var(--danger);}
+    .tag.warn{background:var(--warn-soft);color:oklch(51% 0.13 72);}
+    .tag.success{background:var(--success-soft);color:var(--success);}
+    .tag.info{background:var(--primary-soft);color:var(--primary);}
+    .tag.gray{background:#f0f2f5;color:var(--muted);}
+    .link-btn{border:0;background:transparent;color:var(--primary);font-weight:700;white-space:nowrap;}
+    .projection{padding:12px;}
+    .projection-grid{display:grid;grid-template-columns:1.35fr 0.65fr;gap:12px;align-items:stretch;}
+    .chart{position:relative;min-height:138px;border:1px solid var(--border);border-radius:var(--radius-md);background:linear-gradient(to right,transparent 24%,var(--border) 24.3%,transparent 24.7%,transparent 49%,var(--border) 49.3%,transparent 49.7%,transparent 74%,var(--border) 74.3%,transparent 74.7%),linear-gradient(to bottom,transparent 24%,var(--border) 24.3%,transparent 24.7%,transparent 49%,var(--border) 49.3%,transparent 49.7%,transparent 74%,var(--border) 74.3%,transparent 74.7%),#fff;overflow:hidden;}
+    .line{position:absolute;left:8%;right:7%;height:2px;transform-origin:left center;background:var(--primary);}
+    .line.one{top:35%;transform:rotate(10deg);width:34%;}
+    .line.two{top:51%;left:40%;transform:rotate(-18deg);width:28%;background:var(--danger);}
+    .line.three{top:43%;left:64%;width:28%;transform:rotate(-3deg);background:var(--secondary);}
+    .risk-band{position:absolute;left:38%;top:0;width:19%;height:100%;background:color-mix(in oklch,var(--danger-soft) 78%,transparent);border-left:1px dashed var(--danger);border-right:1px dashed var(--danger);}
+    .arrival{position:absolute;right:22%;top:0;bottom:0;border-left:2px solid var(--secondary);}
+    .chart-label{position:absolute;left:10px;bottom:9px;color:var(--muted);font-size:11px;}
+    .projection-meta{display:grid;gap:8px;}
+    .meta-card{padding:8px;border:1px solid var(--border);border-radius:var(--radius-sm);background:#fff;}
+    .meta-card span{display:block;color:var(--subtle);font-size:11px;}
+    .meta-card strong{display:block;margin-top:4px;font-family:var(--font-mono);font-size:15px;}
+    .drawer-layout{display:grid;grid-template-columns:minmax(420px,1fr) minmax(520px,42%);gap:12px;align-items:start;padding:14px;background:#f5f7fa;}
+    .drawer-stage{min-height:650px;border:1px dashed var(--border-strong);border-radius:var(--radius-md);background:repeating-linear-gradient(45deg,#fff,#fff 10px,#fafbfc 10px,#fafbfc 20px);padding:16px;}
+    .stage-note{max-width:430px;padding:14px;border:1px solid var(--border);border-radius:var(--radius-md);background:#fff;color:var(--muted);line-height:1.65;}
+    .drawer{overflow:hidden;border:1px solid var(--border-strong);border-radius:var(--radius-md);background:var(--surface);box-shadow:-10px 0 30px rgba(15,23,42,0.08);}
+    .drawer-head{display:flex;justify-content:space-between;align-items:center;padding:12px;border-bottom:1px solid var(--border);background:#fbfcfe;}
+    .drawer-head h3{margin:0;font-size:15px;}
+    .drawer-close{border:1px solid var(--border);border-radius:var(--radius-sm);background:#fff;color:var(--muted);min-height:26px;padding:0 8px;}
+    .drawer-content{display:grid;gap:10px;max-height:598px;overflow:auto;padding:12px;}
+    .drawer-section{padding:10px;}
+    .drawer-section h4{display:flex;align-items:center;gap:7px;margin:0 0 8px;font-size:13px;}
+    .drawer-section h4::before{content:"";width:3px;height:13px;border-radius:2px;background:#a0cfff;flex:0 0 auto;}
+    .kv-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+    .kv{min-height:42px;padding:7px 8px;border:1px solid var(--border);border-radius:var(--radius-sm);background:#fff;}
+    .kv span{display:block;color:var(--subtle);font-size:11px;}
+    .kv strong{display:block;margin-top:4px;overflow:hidden;font-size:12px;text-overflow:ellipsis;white-space:nowrap;}
+    .formula{margin:0;padding:9px;border-radius:var(--radius-sm);background:#f8fafc;color:var(--fg);font-family:var(--font-mono);font-size:12px;line-height:1.65;white-space:pre-wrap;}
+    .decision-card{padding:10px;border:1px solid color-mix(in oklch,var(--primary) 45%,var(--border));border-radius:var(--radius-md);background:var(--primary-soft);}
+    .decision-card .big{display:block;margin:6px 0;color:var(--primary);font-size:20px;font-weight:800;}
+    .consequence{border-color:color-mix(in oklch,var(--danger) 45%,var(--border));background:var(--danger-soft);}
+    .consequence .big{color:var(--danger);}
+    .action-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+    .flow-view{padding:14px;background:#f5f7fa;}
+    .flow-grid{display:grid;grid-template-columns:minmax(0,0.85fr) minmax(0,1.15fr);gap:12px;}
+    .flow-card{min-height:560px;padding:14px;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--surface);}
+    .flow-card h3{margin:0 0 10px;font-size:15px;}
+    .flow-muted{color:var(--muted);line-height:1.6;}
+    .flow-map{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;align-items:center;margin-top:16px;}
+    .state-node{min-height:74px;display:grid;place-items:center;padding:10px;border:1px solid var(--border-strong);border-radius:var(--radius-md);background:#fff;text-align:center;font-weight:700;}
+    .state-node.primary{border-color:var(--primary);background:var(--primary-soft);color:var(--primary);}
+    .state-node.success{border-color:var(--success);background:var(--success-soft);color:var(--success);}
+    .arrow{color:var(--muted);text-align:center;font-family:var(--font-mono);font-weight:800;}
+    .upgrade-note{padding:8px 10px;border:1px solid color-mix(in oklch,var(--secondary) 35%,var(--border));border-radius:var(--radius-sm);background:var(--secondary-soft);color:color-mix(in oklch,var(--secondary) 80%,black);font-size:12px;line-height:1.5;}
+    .mini-spec{display:grid;gap:8px;margin-top:12px;}
+    .spec-row{display:grid;grid-template-columns:92px 1fr;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
+    .spec-row:last-child{border-bottom:0;}
+    .spec-row strong{color:var(--fg);}
+    .spec-row span{color:var(--muted);line-height:1.55;}
+    .view{display:none;}
+    .view.active{display:block;}
+    .compare-grid .view.active{display:block;}
+    .selection-status{margin-left:8px;color:var(--muted);font-size:12px;}
+    .compact-table th,.compact-table td{height:30px;font-size:12px;}
+    .v0 .app-body>.section-panel .table-wrap table{table-layout:auto;min-width:1040px;}
+    .v1 .app-body>.section-panel .table-wrap table{min-width:1120px;}
+    .v1 .app-body>.queue-table .table-wrap table{min-width:1040px;}
+    .v0 .app-body>.section-panel th:nth-child(1),.v0 .app-body>.section-panel td:nth-child(1){width:44px;}
+    .v0 .app-body>.section-panel th:nth-child(2),.v0 .app-body>.section-panel td:nth-child(2){width:48px;}
+    .v0 .app-body>.section-panel th:nth-child(3),.v0 .app-body>.section-panel td:nth-child(3){width:52px;}
+    .v0 .app-body>.section-panel th:nth-child(5),.v0 .app-body>.section-panel td:nth-child(5){width:62px;}
+    .v0 .app-body>.section-panel th:nth-child(9),.v0 .app-body>.section-panel td:nth-child(9){width:86px;}
+    @media (max-width:1280px){body{min-width:1024px;}.page{width:calc(100vw - 28px);}.upgrade-strip{grid-template-columns:repeat(3,minmax(0,1fr));}.metrics.v1-metrics{grid-template-columns:repeat(4,minmax(0,1fr));}.drawer-layout{grid-template-columns:minmax(360px,1fr) minmax(460px,44%);}}
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">备货建议页面 UI 对比 · 中保真</p>
+        <h1>V0 验证计算结果，V1 驱动日常补货处理</h1>
+        <p class="summary">
+          同一套业务规则下，V0 保持“看结果、看公式、看风险”的验证路径；V1 在此基础上把优先级、建议动作、处理状态和批量闭环前置，适合正式上线后的运营工作台。
+        </p>
+      </div>
+      <div class="segmented" aria-label="视图切换">
+        <button type="button" class="active" data-view="main">主页面</button>
+        <button type="button" data-view="drawer">右侧抽屉</button>
+        <button type="button" data-view="flow">升级点 / 状态</button>
+      </div>
+    </header>
+
+    <section class="upgrade-strip" aria-label="核心升级点">
+      <div class="upgrade-item"><strong>1. 页面定位</strong><span>从结果页升级为今日处理台，用户先看待办优先级。</span></div>
+      <div class="upgrade-item"><strong>2. 主表重点</strong><span>从建议量与公式透明，升级为风险等级、建议动作、处理状态。</span></div>
+      <div class="upgrade-item"><strong>3. 处理路径</strong><span>V1 支持批量生成、复核、忽略和状态流转。</span></div>
+      <div class="upgrade-item"><strong>4. 明细抽屉</strong><span>公式后置，第一屏先回答做什么、不做会怎样。</span></div>
+      <div class="upgrade-item"><strong>5. 库存投影</strong><span>从页面预览改为绑定单个 SKU 的决策证据。</span></div>
+    </section>
+
+    <section class="compare-grid">
+      <article class="version-card v0">
+        <div class="version-head">
+          <div>
+            <h2 class="version-title"><span class="version-badge">V0</span> 备货建议页</h2>
+            <p class="version-subtitle">试做验证版本：让业务确认建议量、公式解释和风险提示是否能被理解。</p>
+          </div>
+          <div class="purpose"><span>核心问题</span><strong>为什么是这个数？</strong></div>
+        </div>
+
+        <div class="view active" data-panel="main">
+          <div class="workspace">
+            <div class="app-chrome">
+              <div class="chrome-bar"><div class="chrome-dots"><span></span><span></span><span></span></div><span>OMS / 补货 / 备货建议</span></div>
+              <div class="mock-app">
+                <aside class="side-nav"><div class="nav-logo">OMS</div><div class="nav-pill"></div><div class="nav-pill active"></div><div class="nav-pill"></div><div class="nav-pill"></div></aside>
+                <div class="app-body">
+                  <div class="screen-title">
+                    <div><h2>备货建议</h2><p>基于预测销量、库存、采购与物流时效生成发货建议和下单建议</p></div>
+                    <div class="mini-actions"><button class="btn">导出</button><button class="btn primary">生成计划</button></div>
+                  </div>
+
+                  <section class="filter-panel">
+                    <div class="filter-title">筛选条件</div>
+                    <div class="filters">
+                      <div class="field"><span class="field-label">决策日期 D</span><span class="field-value">2026-05-26</span></div>
+                      <div class="field"><span class="field-label">站点</span><span class="field-value">全部站点</span></div>
+                      <div class="field"><span class="field-label">父体 / SKU</span><span class="field-value">输入父体或 SKU</span></div>
+                      <div class="field"><span class="field-label">运输方式</span><span class="field-value">全部方式</span></div>
+                      <div class="field"><span class="field-label">适用规则</span><span class="field-value">默认备货规则</span></div>
+                    </div>
+                    <div class="filter-row">
+                      <div class="check-group"><span class="check"><span class="box"></span>只看有建议量</span><span class="check"><span class="box"></span>只看异常风险</span></div>
+                      <div class="mini-actions"><button class="btn">重置</button><button class="btn primary">查询</button></div>
+                    </div>
+                  </section>
+
+                  <div class="metrics">
+                    <div class="metric"><span class="label">建议发货总量</span><span class="value">12,480</span><span class="hint">结果验证核心</span></div>
+                    <div class="metric"><span class="label">建议下单总量</span><span class="value">28,960</span><span class="hint">结果验证核心</span></div>
+                    <div class="metric"><span class="label">断货风险 SKU</span><span class="value">36</span><span class="hint">需查看明细</span></div>
+                    <div class="metric"><span class="label">远期库存风险</span><span class="value">12</span><span class="hint">辅助判断</span></div>
+                  </div>
+
+                  <section class="section-panel">
+                    <div class="section-head">
+                      <h3>备货建议列表</h3>
+                      <span class="selection-status" id="v0-status">默认按风险优先级排序</span>
+                    </div>
+                    <div class="table-wrap">
+                      <table>
+                        <thead><tr><th>SKU</th><th>站点</th><th>运输</th><th>标签</th><th class="num">安全天数</th><th class="num">发货建议</th><th class="num">下单建议</th><th>风险</th><th>操作</th></tr></thead>
+                        <tbody>
+                          <tr class="active" data-sku="A1"><td>A1</td><td>NA</td><td>快船</td><td>A / 新</td><td class="num">45</td><td class="num strong-num">320</td><td class="num strong-num">860</td><td><span class="tag danger">断货风险</span></td><td><button class="link-btn" data-open="drawer">查看明细</button></td></tr>
+                          <tr data-sku="A2"><td>A2</td><td>NA</td><td>慢船</td><td>B / 主</td><td class="num">45</td><td class="num">0</td><td class="num strong-num">240</td><td><span class="tag warn">远期库存</span></td><td><button class="link-btn" data-open="drawer">查看明细</button></td></tr>
+                          <tr data-sku="A3"><td>A3</td><td>EU</td><td>快船</td><td>C / 次</td><td class="num">28</td><td class="num strong-num">120</td><td class="num strong-num">300</td><td><span class="tag success">正常</span></td><td><button class="link-btn" data-open="drawer">查看明细</button></td></tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </section>
+
+                  <section class="section-panel projection">
+                    <div class="section-title"><span>库存投影预览</span><span class="tag info" id="v0-projection-tag">当前 SKU：A1</span></div>
+                    <div class="projection-grid">
+                      <div class="chart"><div class="risk-band"></div><div class="arrival"></div><div class="line one"></div><div class="line two"></div><div class="line three"></div><span class="chart-label">库存趋势 / 断货区间 / 到货节点</span></div>
+                      <div class="projection-meta">
+                        <div class="meta-card"><span>发货最早可用</span><strong>D+35</strong></div>
+                        <div class="meta-card"><span>下单覆盖区间</span><strong>D ~ D+140</strong></div>
+                      </div>
+                    </div>
+                  </section>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="view" data-panel="drawer">
+          <div class="drawer-layout">
+            <div class="drawer-stage"><div class="stage-note">V0 的抽屉服务于解释：用户从列表点进来后，按基础信息、命中规则、覆盖天数、建议量公式、风险提示逐段确认计算是否可信。</div></div>
+            <aside class="drawer">
+              <div class="drawer-head"><h3>SKU A1 计算明细</h3><button class="drawer-close">关闭</button></div>
+              <div class="drawer-content">
+                <section class="drawer-section"><h4>基础信息</h4><div class="kv-grid"><div class="kv"><span>站点</span><strong>NA</strong></div><div class="kv"><span>运输方式</span><strong>快船</strong></div><div class="kv"><span>命中规则</span><strong>默认备货规则</strong></div><div class="kv"><span>决策日</span><strong>D</strong></div></div></section>
+                <section class="drawer-section"><h4>安全库存天数</h4><pre class="formula">默认安全天数：28 天
+命中条件：A - 爆款 → 45 天
+生命周期：新品（0-3 月）→ 45 天
+最终安全天数 = max(...) = 45 天</pre></section>
+                <section class="drawer-section"><h4>覆盖天数拆解</h4><pre class="formula">发货覆盖天数 = 物流35 + 安全45 + 发货频率7 = 87 天
+下单覆盖天数 = 采购周期54 + 物流35 + 安全45 + 发货频率7 = 141 天</pre></section>
+                <section class="drawer-section"><h4>建议量计算</h4><pre class="formula">发货预测销量 = Σ forecastSales(D ... D+86)
+下单预测销量 = Σ forecastSales(D ... D+140)
+
+建议发货量 = 预测销量 - FBA库存 - FBA在途 - 发货必断货扣除量
+建议下单量 = 预测销量 - FBA库存 - FBA在途 - CN仓可用 - 已下单未入库 - 下单必断货扣除量</pre></section>
+                <section class="drawer-section"><h4>风险提示</h4><div class="kv-grid"><div class="kv"><span>预计风险</span><strong>存在必断货区间</strong></div><div class="kv"><span>处理方式</span><strong>已扣除无法挽回损失</strong></div></div></section>
+                <section class="drawer-section"><h4>操作</h4><div class="action-grid"><button class="btn primary">生成发货计划</button><button class="btn">生成采购计划</button><button class="btn">导出明细</button></div></section>
+              </div>
+            </aside>
+          </div>
+        </div>
+
+        <div class="view" data-panel="flow">
+          <div class="flow-view">
+            <div class="flow-card">
+              <h3>V0 不主打状态流转</h3>
+              <p class="flow-muted">V0 更像验证工具：用户查看结果、核对公式、导出明细或生成计划。它可以保留“已生成计划”的轻状态，但不需要在第一版承载完整处理队列。</p>
+              <div class="mini-spec">
+                <div class="spec-row"><strong>适用阶段</strong><span>试做、内部验证、业务确认公式与风险口径。</span></div>
+                <div class="spec-row"><strong>主要动作</strong><span>查看明细、导出明细、生成发货计划、生成采购计划。</span></div>
+                <div class="spec-row"><strong>设计重点</strong><span>把建议发货量、建议下单量、风险标签和公式拆解做清楚。</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="version-card v1">
+        <div class="version-head">
+          <div>
+            <h2 class="version-title"><span class="version-badge">V1</span> 备货建议工作台</h2>
+            <p class="version-subtitle">正式工作台方向：把“今天先处理谁、做什么、不做会怎样、处理后状态”前置。</p>
+          </div>
+          <div class="purpose"><span>核心问题</span><strong>今天先处理谁？</strong></div>
+        </div>
+
+        <div class="view active" data-panel="main">
+          <div class="workspace">
+            <div class="app-chrome">
+              <div class="chrome-bar"><div class="chrome-dots"><span></span><span></span><span></span></div><span>OMS / 补货 / 备货工作台</span></div>
+              <div class="mock-app">
+                <aside class="side-nav"><div class="nav-logo">OMS</div><div class="nav-pill"></div><div class="nav-pill active"></div><div class="nav-pill"></div><div class="nav-pill"></div></aside>
+                <div class="app-body">
+                  <div class="screen-title">
+                    <div><h2>备货建议工作台</h2><p>今日需要处理的发货、下单、断货和异常建议</p></div>
+                    <div class="mini-actions"><button class="btn">导出</button><button class="btn secondary">批量处理</button></div>
+                  </div>
+
+                  <section class="filter-panel">
+                    <div class="filter-title">筛选条件 <span class="upgrade-note">升级：新增处理状态、风险等级、建议动作</span></div>
+                    <div class="filters v1-filters">
+                      <div class="field"><span class="field-label">决策日期 D</span><span class="field-value">2026-05-26</span></div>
+                      <div class="field"><span class="field-label">站点 / 父体</span><span class="field-value">NA / 全部父体</span></div>
+                      <div class="field"><span class="field-label">处理状态</span><span class="field-value" id="v1-filter-state">待处理 + 需复核</span></div>
+                      <div class="field"><span class="field-label">风险 / 动作</span><span class="field-value">高优先级 / 发货</span></div>
+                    </div>
+                    <div class="filter-row">
+                      <div class="check-group"><span class="check"><span class="box"></span>只看未处理</span><span class="check"><span class="box"></span>只看高风险</span><span class="check"><span class="box"></span>只看可批量处理</span></div>
+                      <div class="mini-actions"><button class="btn">重置</button><button class="btn primary">查询</button></div>
+                    </div>
+                  </section>
+
+                  <div class="metrics v1-metrics">
+                    <button class="metric active" data-filter="严重断货风险"><span class="label">严重断货风险</span><span class="value">12</span><span class="hint">点击过滤</span></button>
+                    <button class="metric" data-filter="待生成发货"><span class="label">待生成发货</span><span class="value">36</span><span class="hint">批量入口</span></button>
+                    <button class="metric" data-filter="待生成采购"><span class="label">待生成采购</span><span class="value">48</span><span class="hint">批量入口</span></button>
+                    <button class="metric" data-filter="数据异常待复核"><span class="label">异常待复核</span><span class="value">3</span><span class="hint">复核入口</span></button>
+                    <button class="metric" data-filter="远期库存风险"><span class="label">远期库存风险</span><span class="value">8</span><span class="hint">节奏检查</span></button>
+                    <button class="metric" data-filter="已处理建议"><span class="label">已处理建议</span><span class="value">52</span><span class="hint">今日完成</span></button>
+                    <button class="metric" data-filter="今日建议总量"><span class="label">今日建议总量</span><span class="value">41,440</span><span class="hint">汇总</span></button>
+                  </div>
+
+                  <section class="section-panel queue-table">
+                    <div class="section-head">
+                      <h3>优先处理队列</h3>
+                      <span class="upgrade-note">升级：把“先处理谁”从列表排序里显性抽出来</span>
+                    </div>
+                    <div class="table-wrap">
+                      <table class="compact-table">
+                        <thead><tr><th>优先级</th><th>SKU</th><th>风险原因</th><th>建议动作</th><th class="num">建议量</th><th>状态</th></tr></thead>
+                        <tbody>
+                          <tr class="active"><td><span class="tag danger">高</span></td><td>A1</td><td>D~D+6 断货损失</td><td>优先生成发货</td><td class="num strong-num">320</td><td><span class="tag info">待处理</span></td></tr>
+                          <tr><td><span class="tag danger">高</span></td><td>A8</td><td>远期库存风险</td><td>查看到达节奏</td><td class="num">0</td><td><span class="tag warn">需复核</span></td></tr>
+                          <tr><td><span class="tag warn">中</span></td><td>B2</td><td>下单缺口较大</td><td>生成采购计划</td><td class="num strong-num">860</td><td><span class="tag info">待处理</span></td></tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </section>
+
+                  <section class="section-panel">
+                    <div class="section-head">
+                      <h3>备货建议列表</h3>
+                      <div class="section-tools"><button class="btn secondary">批量生成发货</button><button class="btn">批量生成采购</button></div>
+                    </div>
+                    <div class="table-wrap">
+                      <table>
+                        <thead><tr><th style="width:34px"></th><th>SKU</th><th>站点</th><th>运输</th><th>风险等级</th><th>建议动作</th><th class="num">发货建议</th><th class="num">下单建议</th><th>处理状态</th></tr></thead>
+                        <tbody>
+                          <tr class="active" data-sku="A1"><td><span class="box"></span></td><td>A1</td><td>NA</td><td>快船</td><td><span class="tag danger">高</span></td><td>发货</td><td class="num strong-num">320</td><td class="num strong-num">860</td><td><span class="tag info">待处理</span></td></tr>
+                          <tr data-sku="A2"><td><span class="box"></span></td><td>A2</td><td>NA</td><td>慢船</td><td><span class="tag warn">中</span></td><td>复核</td><td class="num">0</td><td class="num strong-num">240</td><td><span class="tag warn">需复核</span></td></tr>
+                          <tr data-sku="A3"><td></td><td>A3</td><td>EU</td><td>快船</td><td><span class="tag success">低</span></td><td>暂不处理</td><td class="num">120</td><td class="num">300</td><td><span class="tag success">已处理</span></td></tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </section>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="view" data-panel="drawer">
+          <div class="drawer-layout">
+            <div class="drawer-stage"><div class="stage-note">V1 的抽屉变成决策面板：第一屏先展示建议动作和不处理后果，再给库存投影与计算明细，最后完成处理闭环。</div></div>
+            <aside class="drawer">
+              <div class="drawer-head"><h3>SKU A1 决策详情</h3><button class="drawer-close">关闭</button></div>
+              <div class="drawer-content">
+                <section class="drawer-section decision-card"><h4>建议动作</h4><span>优先级：高</span><strong class="big">优先生成发货计划</strong><div class="kv-grid"><div class="kv"><span>建议发货量</span><strong>320</strong></div><div class="kv"><span>建议下单量</span><strong>860</strong></div><div class="kv"><span>处理状态</span><strong>待处理</strong></div><div class="kv"><span>可批量处理</span><strong>是</strong></div></div></section>
+                <section class="drawer-section decision-card consequence"><h4>不处理后果</h4><span>如果今日不生成发货计划</span><strong class="big">D 起预计断货，覆盖期损失 180</strong><div class="kv-grid"><div class="kv"><span>影响天数</span><strong>6 天</strong></div><div class="kv"><span>恢复可售日</span><strong>D+35</strong></div></div></section>
+                <section class="drawer-section"><h4>库存投影</h4><div class="chart"><div class="risk-band"></div><div class="arrival"></div><div class="line one"></div><div class="line two"></div><div class="line three"></div><span class="chart-label">绑定 SKU A1：断货区间 / 发货最早可用日 / 到货日</span></div><table class="compact-table" style="margin-top:8px"><thead><tr><th>日期</th><th class="num">预测销</th><th class="num">日初库</th><th class="num">可满足</th><th class="num">断货损失</th></tr></thead><tbody><tr><td>D</td><td class="num">80</td><td class="num">50</td><td class="num">50</td><td class="num strong-num">30</td></tr><tr><td>D+1</td><td class="num">90</td><td class="num">0</td><td class="num">0</td><td class="num strong-num">90</td></tr><tr><td>D+35</td><td class="num">100</td><td class="num">500</td><td class="num">100</td><td class="num">0</td></tr></tbody></table></section>
+                <section class="drawer-section"><h4>计算明细</h4><pre class="formula">最终安全天数 = max(默认28, A爆款45, 新品45)
+发货覆盖天数 = 35 + 45 + 7 = 87 天
+下单覆盖天数 = 54 + 35 + 45 + 7 = 141 天
+发货预测销量 = Σ forecastSales(D ... D+86)
+下单预测销量 = Σ forecastSales(D ... D+140)</pre></section>
+                <section class="drawer-section"><h4>操作闭环</h4><div class="action-grid"><button class="btn primary">生成发货计划</button><button class="btn">生成采购计划</button><button class="btn">标记复核</button><button class="btn">忽略本次建议</button><button class="btn">导出计算明细</button></div></section>
+              </div>
+            </aside>
+          </div>
+        </div>
+
+        <div class="view" data-panel="flow">
+          <div class="flow-view">
+            <div class="flow-grid">
+              <div class="flow-card">
+                <h3>V1 状态流转</h3>
+                <p class="flow-muted">V1 把“是否处理过、怎么处理的”作为主数据，避免建议生成后无人跟进。</p>
+                <div class="flow-map">
+                  <div class="state-node primary">待处理</div><div class="arrow">→</div><div class="state-node">已生成发货计划</div>
+                  <div class="state-node primary">待处理</div><div class="arrow">→</div><div class="state-node">已生成采购计划</div>
+                  <div class="state-node">需人工复核</div><div class="arrow">→</div><div class="state-node success">已处理</div>
+                  <div class="state-node">忽略本次建议</div><div class="arrow">→</div><div class="state-node success">已处理</div>
+                </div>
+              </div>
+              <div class="flow-card">
+                <h3>升级点说明</h3>
+                <div class="mini-spec">
+                  <div class="spec-row"><strong>总览</strong><span>V0 展示建议量汇总；V1 展示今日待处理、待生成发货、待生成采购、异常待复核等可点击待办。</span></div>
+                  <div class="spec-row"><strong>队列</strong><span>V1 新增优先处理队列，直接给出高风险 SKU、风险原因、建议动作和处理状态。</span></div>
+                  <div class="spec-row"><strong>表格</strong><span>V0 表格服务于核对结果；V1 表格服务于执行处理，增加复选框、批量处理和状态列。</span></div>
+                  <div class="spec-row"><strong>抽屉</strong><span>V0 抽屉先解释公式；V1 抽屉先给决策建议与不处理后果，公式作为可信度补充。</span></div>
+                  <div class="spec-row"><strong>闭环</strong><span>V1 有生成计划、标记复核、忽略本次建议、导出明细等闭环动作，状态可回写列表。</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      var viewButtons = document.querySelectorAll('[data-view]');
+      var panels = document.querySelectorAll('[data-panel]');
+      function setView(viewName) {
+        viewButtons.forEach(function (btn) {
+          btn.classList.toggle('active', btn.getAttribute('data-view') === viewName);
+        });
+        panels.forEach(function (panel) {
+          panel.classList.toggle('active', panel.getAttribute('data-panel') === viewName);
+        });
+      }
+      viewButtons.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          setView(btn.getAttribute('data-view'));
+        });
+      });
+      document.querySelectorAll('[data-open="drawer"]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          setView('drawer');
+        });
+      });
+
+      document.querySelectorAll('.v0 tbody tr[data-sku]').forEach(function (row) {
+        row.addEventListener('click', function () {
+          document.querySelectorAll('.v0 tbody tr[data-sku]').forEach(function (r) {
+            r.classList.remove('active');
+          });
+          row.classList.add('active');
+          var sku = row.getAttribute('data-sku');
+          var status = document.getElementById('v0-status');
+          var projection = document.getElementById('v0-projection-tag');
+          if (status) status.textContent = '已选中 ' + sku + '，可查看计算明细';
+          if (projection) projection.textContent = '当前 SKU：' + sku;
+        });
+      });
+
+      document.querySelectorAll('.v1 .metric').forEach(function (metric) {
+        metric.addEventListener('click', function () {
+          document.querySelectorAll('.v1 .metric').forEach(function (item) {
+            item.classList.remove('active');
+          });
+          metric.classList.add('active');
+          var label = metric.getAttribute('data-filter');
+          var state = document.getElementById('v1-filter-state');
+          if (state) state.textContent = label;
+        });
+      });
+
+      document.querySelectorAll('.v1 tbody tr[data-sku]').forEach(function (row) {
+        row.addEventListener('click', function () {
+          document.querySelectorAll('.v1 tbody tr[data-sku]').forEach(function (r) {
+            r.classList.remove('active');
+          });
+          row.classList.add('active');
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
