@@ -411,7 +411,7 @@
 
     .data-table {
       width: 100%;
-      min-width: 1180px;
+      min-width: 940px;
       border-collapse: collapse;
       table-layout: fixed;
       color: #606266;
@@ -941,10 +941,6 @@
                 <input type="checkbox" id="filter-positive" />
                 只看有建议量
               </label>
-              <label class="checkbox-line">
-                <input type="checkbox" id="filter-risk" />
-                只看异常风险
-              </label>
               <div class="filter-actions">
                 <button type="button" class="btn btn-primary" id="btn-search">查询</button>
                 <button type="button" class="btn" id="btn-reset">重置</button>
@@ -962,15 +958,15 @@
                 <strong class="metric-value" id="metric-order">0</strong>
                 <span class="metric-hint">当前筛选合计</span>
               </button>
-              <button type="button" class="metric-card" data-metric="stockout">
-                <span class="metric-label">断货风险 SKU</span>
-                <strong class="metric-value" id="metric-stockout">0</strong>
-                <span class="metric-hint">点击过滤断货风险</span>
+              <button type="button" class="metric-card" data-metric="ship">
+                <span class="metric-label">有发货建议 SKU</span>
+                <strong class="metric-value" id="metric-ship-sku">0</strong>
+                <span class="metric-hint">点击过滤发货建议</span>
               </button>
-              <button type="button" class="metric-card" data-metric="future">
-                <span class="metric-label">远期库存风险</span>
-                <strong class="metric-value" id="metric-future">0</strong>
-                <span class="metric-hint">已扣减但短期仍可能断货</span>
+              <button type="button" class="metric-card" data-metric="order">
+                <span class="metric-label">有下单建议 SKU</span>
+                <strong class="metric-value" id="metric-order-sku">0</strong>
+                <span class="metric-hint">点击过滤下单建议</span>
               </button>
             </div>
           </div>
@@ -981,7 +977,7 @@
             <div class="section-head">
               <div>
                 <div class="section-title">备货建议列表</div>
-                <div class="section-note">默认按风险等级和建议量排序。</div>
+                <div class="section-note">默认按建议量排序。</div>
               </div>
               <div class="table-actions">
                 <button type="button" class="btn" id="btn-export-table">导出</button>
@@ -1000,8 +996,6 @@
                     <th style="width: 90px;" class="num">安全天数</th>
                     <th style="width: 120px;" class="num">发货建议量</th>
                     <th style="width: 120px;" class="num">下单建议量</th>
-                    <th style="width: 130px;">风险</th>
-                    <th style="width: 130px;">建议动作</th>
                     <th style="width: 90px;">操作</th>
                   </tr>
                 </thead>
@@ -1435,8 +1429,7 @@
         allSuggestions = parents.map(function(parent, index) {
           return makeSuggestion(parent, index, rules);
         }).sort(function(a, b) {
-          var score = { 高: 3, 中: 2, 低: 1 };
-          return (score[b.riskLevel] || 0) - (score[a.riskLevel] || 0) || (b.shipSuggestedQty + b.orderSuggestedQty) - (a.shipSuggestedQty + a.orderSuggestedQty);
+          return (b.shipSuggestedQty + b.orderSuggestedQty) - (a.shipSuggestedQty + a.orderSuggestedQty) || b.safetyDays - a.safetyDays;
         });
       }
 
@@ -1455,13 +1448,14 @@
       }
 
       function currentFilters() {
+        var riskInput = document.getElementById('filter-risk');
         return {
           site: document.getElementById('filter-site').value,
           keyword: (document.getElementById('filter-keyword').value || '').trim().toLowerCase(),
           method: document.getElementById('filter-method').value,
           ruleId: document.getElementById('filter-rule').value,
           positiveOnly: document.getElementById('filter-positive').checked,
-          riskOnly: document.getElementById('filter-risk').checked
+          riskOnly: riskInput ? riskInput.checked : false
         };
       }
 
@@ -1477,8 +1471,8 @@
           }
           if (f.positiveOnly && item.shipSuggestedQty <= 0 && item.orderSuggestedQty <= 0) return false;
           if (f.riskOnly && item.riskCode === 'NORMAL') return false;
-          if (currentMetric === 'stockout' && item.riskCode !== 'STOCKOUT_BEFORE_SHIP_ARRIVAL') return false;
-          if (currentMetric === 'future' && item.riskCode !== 'FUTURE_INVENTORY_RISK') return false;
+          if (currentMetric === 'ship' && item.shipSuggestedQty <= 0) return false;
+          if (currentMetric === 'order' && item.orderSuggestedQty <= 0) return false;
           return true;
         });
       }
@@ -1492,8 +1486,8 @@
       function renderMetrics(list) {
         document.getElementById('metric-ship').textContent = formatNum(list.reduce(function(sum, item) { return sum + item.shipSuggestedQty; }, 0));
         document.getElementById('metric-order').textContent = formatNum(list.reduce(function(sum, item) { return sum + item.orderSuggestedQty; }, 0));
-        document.getElementById('metric-stockout').textContent = formatNum(list.filter(function(item) { return item.riskCode === 'STOCKOUT_BEFORE_SHIP_ARRIVAL'; }).length);
-        document.getElementById('metric-future').textContent = formatNum(list.filter(function(item) { return item.riskCode === 'FUTURE_INVENTORY_RISK'; }).length);
+        document.getElementById('metric-ship-sku').textContent = formatNum(list.filter(function(item) { return item.shipSuggestedQty > 0; }).length);
+        document.getElementById('metric-order-sku').textContent = formatNum(list.filter(function(item) { return item.orderSuggestedQty > 0; }).length);
         document.querySelectorAll('.metric-card').forEach(function(card) {
           card.classList.toggle('active', card.getAttribute('data-metric') === currentMetric && currentMetric !== 'all');
         });
@@ -1505,7 +1499,7 @@
         var tbody = document.getElementById('suggestion-tbody');
         tbody.innerHTML = '';
         if (!list.length) {
-          tbody.innerHTML = '<tr><td class="empty-row" colspan="10">暂无备货建议</td></tr>';
+          tbody.innerHTML = '<tr><td class="empty-row" colspan="8">暂无备货建议</td></tr>';
         } else {
           list.forEach(function(item) {
             var tr = document.createElement('tr');
@@ -1518,8 +1512,6 @@
               '<td class="num">' + item.safetyDays + '</td>' +
               '<td class="num strong-num">' + formatNum(item.shipSuggestedQty) + '</td>' +
               '<td class="num strong-num">' + formatNum(item.orderSuggestedQty) + '</td>' +
-              '<td><span class="tag ' + riskTagClass(item) + '">' + escapeHtml(item.riskLabel) + '</span></td>' +
-              '<td>' + escapeHtml(item.actionText.replace('建议', '')) + '</td>' +
               '<td><button type="button" class="btn-text" data-action="detail" data-id="' + escapeHtml(item.id) + '">查看明细</button></td>';
             tbody.appendChild(tr);
           });
@@ -1664,7 +1656,8 @@
         document.getElementById('filter-method').value = '';
         document.getElementById('filter-rule').value = '';
         document.getElementById('filter-positive').checked = false;
-        document.getElementById('filter-risk').checked = false;
+        var riskInput = document.getElementById('filter-risk');
+        if (riskInput) riskInput.checked = false;
         render();
       }
 

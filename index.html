@@ -173,8 +173,15 @@
       background: #fff;
     }
 
-    .home-cache-card {
+    .home-page {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
       margin: 24px;
+      align-items: flex-start;
+    }
+
+    .home-card {
       max-width: 520px;
       padding: 20px 22px;
       background: #fff;
@@ -183,30 +190,37 @@
       box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
     }
 
-    .home-cache-card h1 {
+    .home-card h1 {
       font-size: 16px;
       font-weight: 600;
       color: #303133;
       margin-bottom: 8px;
     }
 
-    .home-cache-card p {
+    .home-card p {
       font-size: 13px;
       color: #909399;
       line-height: 1.6;
       margin-bottom: 14px;
     }
 
-    .home-cache-btn {
+    .home-action {
       display: inline-flex;
       align-items: center;
       padding: 8px 16px;
       font-size: 13px;
+      text-decoration: none;
       color: #606266;
       background: #fff;
       border: 1px solid #dcdfe6;
       border-radius: 4px;
       cursor: pointer;
+    }
+
+    .home-action:hover {
+      color: #0d5bff;
+      border-color: #a9c7ff;
+      background: #f0f6ff;
     }
 
     .home-cache-btn:hover {
@@ -264,10 +278,17 @@
     <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
 
     <main class="main-content">
-      <div class="home-cache-card">
-        <h1>原型调试</h1>
-        <p>一键清除本原型在浏览器中保存的 localStorage（父体列表、销量预测规则、预警规则等），刷新后恢复默认种子数据。</p>
-        <button type="button" class="home-cache-btn" id="home-btn-clear-cache">清除本地缓存</button>
+      <div class="home-page">
+        <div class="home-card">
+          <h1>需求文档</h1>
+          <p>查看备货规则配置页面 PRD，包含页面范围、计算口径、验收标准和待确认项。</p>
+          <a class="home-action" href="./备货规则配置页面需求.html">打开文档</a>
+        </div>
+        <div class="home-card">
+          <h1>原型调试</h1>
+          <p>一键清除本原型在浏览器中保存的 localStorage（父体列表、销量预测规则、预警规则等），刷新后恢复默认种子数据。</p>
+          <button type="button" class="home-action home-cache-btn" id="home-btn-clear-cache">清除本地缓存</button>
+        </div>
       </div>
     </main>
   </div>
