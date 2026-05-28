@@ -411,7 +411,7 @@
 
     .data-table {
       width: 100%;
-      min-width: 940px;
+      min-width: 1180px;
       border-collapse: collapse;
       table-layout: fixed;
       color: #606266;
@@ -892,10 +892,10 @@
 
     <main class="main-content">
       <div class="page-wrap">
-        <div class="page-head">
-          <div>
+        <div class="page-head", style="display: none;">
+          <div >
             <div class="page-title">备货建议</div>
-            <div class="page-subtitle">基于预测销量、库存、采购与物流时效生成发货建议和下单建议。</div>
+            <div class="page-subtitle">基于预测销量、库存、采购与物流时效生成父体维度备货建议。</div>
           </div>
           <div class="head-actions">
             <button type="button" class="btn" id="btn-export-top">导出</button>
@@ -911,15 +911,7 @@
                 <input class="filter-control w-140" id="filter-date" type="date" />
               </div>
               <div class="filter-item">
-                <span class="filter-label">站点</span>
-                <select class="filter-control w-120" id="filter-site">
-                  <option value="">全部</option>
-                  <option value="北美站">北美站</option>
-                  <option value="欧洲站">欧洲站</option>
-                </select>
-              </div>
-              <div class="filter-item">
-                <span class="filter-label">父体 / SKU</span>
+                <span class="filter-label">父体 / 子体</span>
                 <input class="filter-control w-200" id="filter-keyword" type="text" placeholder="请输入父体或 SKU" />
               </div>
               <div class="filter-item">
@@ -958,15 +950,15 @@
                 <strong class="metric-value" id="metric-order">0</strong>
                 <span class="metric-hint">当前筛选合计</span>
               </button>
-              <button type="button" class="metric-card" data-metric="ship">
-                <span class="metric-label">有发货建议 SKU</span>
-                <strong class="metric-value" id="metric-ship-sku">0</strong>
-                <span class="metric-hint">点击过滤发货建议</span>
+              <button type="button" class="metric-card" data-metric="all">
+                <span class="metric-label">父体数量</span>
+                <strong class="metric-value" id="metric-parent-count">0</strong>
+                <span class="metric-hint">当前筛选父体</span>
               </button>
-              <button type="button" class="metric-card" data-metric="order">
-                <span class="metric-label">有下单建议 SKU</span>
-                <strong class="metric-value" id="metric-order-sku">0</strong>
-                <span class="metric-hint">点击过滤下单建议</span>
+              <button type="button" class="metric-card" data-metric="all">
+                <span class="metric-label">子体数量</span>
+                <strong class="metric-value" id="metric-child-count">0</strong>
+                <span class="metric-hint">参与聚合子体</span>
               </button>
             </div>
           </div>
@@ -977,7 +969,7 @@
             <div class="section-head">
               <div>
                 <div class="section-title">备货建议列表</div>
-                <div class="section-note">默认按建议量排序。</div>
+                <div class="section-note">主列表按父体汇总展示，建议量由子体最终建议量合计。</div>
               </div>
               <div class="table-actions">
                 <button type="button" class="btn" id="btn-export-table">导出</button>
@@ -989,13 +981,11 @@
               <table class="data-table">
                 <thead>
                   <tr>
-                    <th style="width: 170px;">SKU</th>
-                    <th style="width: 90px;">站点</th>
-                    <th style="width: 90px;">运输方式</th>
-                    <th style="width: 170px;">标签</th>
-                    <th style="width: 90px;" class="num">安全天数</th>
-                    <th style="width: 120px;" class="num">发货建议量</th>
-                    <th style="width: 120px;" class="num">下单建议量</th>
+                    <th style="width: 220px;">父体编号</th>
+                    <th style="width: 100px;" class="num">子体数</th>
+                    <th style="width: 180px;">运输方式</th>
+                    <th style="width: 150px;" class="num">发货建议总量</th>
+                    <th style="width: 150px;" class="num">下单建议总量</th>
                     <th style="width: 90px;">操作</th>
                   </tr>
                 </thead>
@@ -1014,33 +1004,34 @@
     <div class="drawer-fixed">
       <div class="drawer-title-row">
         <div>
-          <div class="drawer-title" id="drawer-title">SKU 决策详情</div>
+          <div class="drawer-title" id="drawer-title">父体备货详情</div>
           <div class="drawer-subtitle" id="drawer-subtitle">-</div>
         </div>
         <button type="button" class="drawer-close" id="drawer-close" aria-label="关闭">×</button>
       </div>
       <div class="decision-summary">
         <div class="decision-item">
-          <span>风险等级</span>
-          <strong id="drawer-risk-level">-</strong>
-        </div>
-        <div class="decision-item">
-          <span>建议动作</span>
-          <strong id="drawer-action">-</strong>
-        </div>
-        <div class="decision-item">
-          <span>建议发货量</span>
+          <span>发货建议总量</span>
           <strong id="drawer-ship-qty">0</strong>
         </div>
         <div class="decision-item">
-          <span>建议下单量</span>
+          <span>下单建议总量</span>
           <strong id="drawer-order-qty">0</strong>
+        </div>
+        <div class="decision-item">
+          <span>子体数量</span>
+          <strong id="drawer-child-count">0</strong>
+        </div>
+        <div class="decision-item">
+          <span>运输方式</span>
+          <strong id="drawer-methods">-</strong>
         </div>
       </div>
       <div class="drawer-anchor-row">
         <div class="drawer-anchors">
-          <button type="button" class="drawer-anchor active" data-anchor="drawer-risk-section">建议动作</button>
-          <button type="button" class="drawer-anchor" data-anchor="drawer-projection-section">库存投影</button>
+          <button type="button" class="drawer-anchor active" data-anchor="drawer-summary-section">汇总信息</button>
+          <button type="button" class="drawer-anchor" data-anchor="drawer-child-section">子体明细</button>
+          <button type="button" class="drawer-anchor" data-anchor="drawer-method-section">运输方式拆分</button>
           <button type="button" class="drawer-anchor" data-anchor="drawer-calc-section">计算明细</button>
         </div>
         <div class="drawer-actions">
@@ -1051,49 +1042,28 @@
       </div>
     </div>
     <div class="drawer-body" id="drawer-body">
-      <section class="drawer-section" id="drawer-risk-section">
+      <section class="drawer-section" id="drawer-summary-section">
         <div class="drawer-subhead" role="heading" aria-level="3">
           <span class="drawer-subhead-bar" aria-hidden="true"></span>
-          <span class="drawer-subhead-text">风险说明与不处理后果</span>
+          <span class="drawer-subhead-text">汇总信息</span>
         </div>
-        <div class="info-grid">
-          <div class="info-box danger">
-            <div class="info-box-title">风险说明</div>
-            <div class="info-box-text" id="drawer-risk-text">-</div>
-          </div>
-          <div class="info-box warn">
-            <div class="info-box-title">不处理后果</div>
-            <div class="info-box-text" id="drawer-consequence-text">-</div>
-          </div>
-        </div>
+        <div id="summary-detail"></div>
       </section>
 
-      <section class="drawer-section" id="drawer-projection-section">
+      <section class="drawer-section" id="drawer-child-section">
         <div class="drawer-subhead" role="heading" aria-level="3">
           <span class="drawer-subhead-bar" aria-hidden="true"></span>
-          <span class="drawer-subhead-text">库存投影</span>
+          <span class="drawer-subhead-text">子体明细</span>
         </div>
-        <div class="projection-wrap">
-          <div class="projection-chart" id="projection-chart"></div>
-          <div class="chart-legend">
-            <span><i class="legend-line blue"></i>预计库存</span>
-            <span><i class="legend-line orange"></i>预测销量</span>
-            <span><i class="legend-block red"></i>断货区间</span>
-          </div>
-          <table class="detail-table">
-            <thead>
-              <tr>
-                <th>日期</th>
-                <th class="num">预测销量</th>
-                <th class="num">预计入库</th>
-                <th class="num">日初库存</th>
-                <th class="num">可满足销量</th>
-                <th class="num">断货损失</th>
-              </tr>
-            </thead>
-            <tbody id="projection-tbody"></tbody>
-          </table>
+        <div id="child-detail"></div>
+      </section>
+
+      <section class="drawer-section" id="drawer-method-section">
+        <div class="drawer-subhead" role="heading" aria-level="3">
+          <span class="drawer-subhead-bar" aria-hidden="true"></span>
+          <span class="drawer-subhead-text">运输方式拆分</span>
         </div>
+        <div id="method-detail"></div>
       </section>
 
       <section class="drawer-section" id="drawer-calc-section">
@@ -1107,11 +1077,11 @@
   </aside>
 
   <script>
-    (function initStockingSuggestionPage() {
+    (function initParentLevelStockingSuggestionPage() {
       var PARENT_STORAGE_KEY = 'sf_replenish_parent_list_v1';
       var RULE_STORAGE_KEY = 'stocking_rule_config_rules_v2';
-      var currentMetric = 'all';
-      var allSuggestions = [];
+      var childSuggestions = [];
+      var parentSuggestions = [];
       var currentSuggestion = null;
 
       function escapeHtml(value) {
@@ -1174,8 +1144,8 @@
               procurement: { purchaseLead: 30, purchaseFrequency: 15, pickupPrep: 7, qualityInspection: 2 },
               fbaSafetyDays: 28,
               logisticsSites: [
-                { key: 'northAmerica', name: '北美站', enabled: true, shipFrequencyDays: 7, methods: [{ key: 'fastShip', name: '快船', leadTimeDays: 35 }, { key: 'slowShip', name: '慢船', leadTimeDays: 55 }] },
-                { key: 'europe', name: '欧洲站', enabled: true, shipFrequencyDays: 7, methods: [{ key: 'fastShip', name: '快船', leadTimeDays: 40 }, { key: 'slowShip', name: '慢船', leadTimeDays: 60 }] }
+                { key: 'northAmerica', name: '北美站', enabled: true, shipFrequencyDays: 7, methods: [{ key: 'fastShip', name: '快船', leadTimeDays: 35 }, { key: 'slowShip', name: '普船', leadTimeDays: 55 }] },
+                { key: 'europe', name: '欧洲站', enabled: true, shipFrequencyDays: 7, methods: [{ key: 'fastShip', name: '快船', leadTimeDays: 40 }, { key: 'slowShip', name: '普船', leadTimeDays: 60 }] }
               ],
               calculation: { deductStockoutSales: true }
             }
@@ -1189,8 +1159,8 @@
               procurement: { purchaseLead: 32, purchaseFrequency: 16, pickupPrep: 7, qualityInspection: 3 },
               fbaSafetyDays: 30,
               logisticsSites: [
-                { key: 'northAmerica', name: '北美站', enabled: true, shipFrequencyDays: 7, methods: [{ key: 'fastShip', name: '快船', leadTimeDays: 35 }, { key: 'slowShip', name: '慢船', leadTimeDays: 55 }] },
-                { key: 'europe', name: '欧洲站', enabled: true, shipFrequencyDays: 7, methods: [{ key: 'fastShip', name: '快船', leadTimeDays: 40 }, { key: 'slowShip', name: '慢船', leadTimeDays: 60 }] }
+                { key: 'northAmerica', name: '北美站', enabled: true, shipFrequencyDays: 7, methods: [{ key: 'fastShip', name: '快船', leadTimeDays: 35 }, { key: 'slowShip', name: '普船', leadTimeDays: 55 }] },
+                { key: 'europe', name: '欧洲站', enabled: true, shipFrequencyDays: 7, methods: [{ key: 'fastShip', name: '快船', leadTimeDays: 40 }, { key: 'slowShip', name: '普船', leadTimeDays: 60 }] }
               ],
               calculation: { deductStockoutSales: true }
             }
@@ -1237,24 +1207,49 @@
       }
 
       function findRuleForParent(parent, rules) {
-        var matched = rules.map(normalizeRule).filter(function(rule) {
+        var normalized = rules.map(normalizeRule);
+        var matched = normalized.filter(function(rule) {
           return rule.parentCodes.indexOf(parent.code) !== -1;
         })[0];
-        return matched || normalizeRule(rules[0] || defaultRules()[0]);
+        var unbound = normalized.filter(function(rule) {
+          return !rule.parentCodes.length;
+        })[0];
+        return matched || unbound || normalized[0] || normalizeRule(defaultRules()[0]);
       }
 
-      function findLogistics(rule, siteName, methodName) {
+      function availableMethods(rule, siteName) {
         var site = (rule.logisticsSites || []).filter(function(item) {
           return item.key === logisticsKey(siteName) || item.name === siteName;
         })[0] || {};
-        var methods = Array.isArray(site.methods) && site.methods.length ? site.methods : [{ name: methodName, leadTimeDays: siteName === '北美站' ? 35 : 40 }];
-        var method = methods.filter(function(item) { return item.name === methodName; })[0] || methods[0];
-        return {
-          siteName: site.name || siteName,
-          methodName: method.name || methodName,
-          leadTimeDays: toInt(method.leadTimeDays, siteName === '北美站' ? 35 : 40),
-          shipFrequencyDays: toInt(site.shipFrequencyDays, 7)
-        };
+        return (Array.isArray(site.methods) ? site.methods : []).filter(function(method) {
+          return method && method.name && method.leadTimeDays != null;
+        }).map(function(method) {
+          return {
+            siteName: site.name || siteName,
+            methodName: method.name,
+            leadTimeDays: toInt(method.leadTimeDays, siteName === '北美站' ? 35 : 40),
+            shipFrequencyDays: toInt(site.shipFrequencyDays, 7)
+          };
+        });
+      }
+
+      function findLogistics(rule, siteName, index) {
+        var methods = availableMethods(rule, siteName);
+        if (!methods.length) return null;
+        return methods[index % methods.length];
+      }
+
+      function childCountForParent(index) {
+        return [4, 3, 5, 2, 4, 3][index % 6];
+      }
+
+      function pad2(value) {
+        return value < 10 ? '0' + value : String(value);
+      }
+
+      function childAsin(parent, childIndex) {
+        var base = (parent.asin || 'ASIN000000').replace(/[^A-Z0-9]/gi, '').toUpperCase();
+        return base.slice(0, 8) + pad2(childIndex + 1);
       }
 
       function getTagMeta(index) {
@@ -1285,19 +1280,9 @@
           var inbound = day === inboundDay ? inboundQty : 0;
           var start = Math.max(0, stock) + inbound;
           var forecast = forecastAt(base, day);
-          var fulfill = Math.min(start, forecast);
-          var loss = forecast - fulfill;
+          var loss = forecast - Math.min(start, forecast);
           var end = Math.max(0, start - forecast);
-          rows.push({
-            day: day,
-            dateLabel: day === 0 ? 'D' : 'D+' + day,
-            forecastSales: forecast,
-            inboundQty: inbound,
-            startInventory: Math.round(start),
-            fulfillableSales: Math.round(fulfill),
-            stockoutLoss: Math.round(loss),
-            endInventory: Math.round(end)
-          });
+          rows.push({ day: day, forecastSales: forecast, stockoutLoss: Math.round(loss) });
           stock = end;
         }
         return rows;
@@ -1311,24 +1296,13 @@
         }, 0);
       }
 
-      function stockoutRange(projection) {
-        var rows = projection.filter(function(row) { return row.stockoutLoss > 0; });
-        if (!rows.length) return '';
-        var first = rows[0].dateLabel;
-        var last = rows[rows.length - 1].dateLabel;
-        return first === last ? first : first + ' ~ ' + last;
-      }
-
-      function makeSuggestion(parent, index, rules) {
+      function makeChildSuggestion(parent, parentIndex, childIndex, rules) {
         var rule = findRuleForParent(parent, rules);
         var siteName = siteGroup(parent.site);
-        var methodName = index % 3 === 2 ? '空派' : (index % 2 === 0 ? '快船' : '慢船');
-        var logistics = findLogistics(rule, siteName, methodName);
-        if (methodName === '空派' && logistics.methodName !== '空派') {
-          logistics.methodName = '空派';
-          logistics.leadTimeDays = siteName === '北美站' ? 18 : 22;
-        }
-        var tags = getTagMeta(index);
+        var logistics = findLogistics(rule, siteName, parentIndex + childIndex);
+        if (!rule || !logistics) return null;
+        var sequence = parentIndex * 5 + childIndex;
+        var tags = getTagMeta(sequence);
         var safetyDays = Math.max(rule.fbaSafetyDays, tags.safety);
         var procurement = rule.procurement;
         var procurementDelivery = procurement.purchaseLead + procurement.pickupPrep + procurement.qualityInspection;
@@ -1336,56 +1310,36 @@
         var shipCoverageDays = logistics.leadTimeDays + safetyDays + logistics.shipFrequencyDays;
         var orderCoverageDays = procurementCycle + logistics.leadTimeDays + safetyDays + logistics.shipFrequencyDays;
         var orderEarliestAvailableDays = procurementDelivery + logistics.leadTimeDays;
-        var baseSales = [78, 52, 36, 64, 42, 28][index % 6];
-        var fbaInventory = [50, 650, 90, 120, 820, 20][index % 6];
-        var fbaInbound = [110, 520, 30, 260, 700, 0][index % 6];
-        var cnAvailable = [260, 180, 120, 300, 80, 40][index % 6];
-        var purchaseInbound = [170, 120, 60, 280, 540, 30][index % 6];
-        var inboundDay = [36, 68, 12, 45, 88, 30][index % 6];
+        var baseSales = [78, 52, 36, 64, 42, 28, 58, 46][sequence % 8];
+        var fbaInventory = [50, 650, 90, 120, 820, 20, 340, 180][sequence % 8];
+        var fbaInbound = [110, 520, 30, 260, 700, 0, 220, 90][sequence % 8];
+        var cnAvailable = [260, 180, 120, 300, 80, 40, 160, 210][sequence % 8];
+        var purchaseInbound = [170, 120, 60, 280, 540, 30, 110, 190][sequence % 8];
+        var inboundDay = [36, 68, 12, 45, 88, 30, 52, 24][sequence % 8];
+        if (sequence % 8 === 4) {
+          fbaInventory = forecastSum(baseSales, orderCoverageDays) + 500;
+          fbaInbound = 0;
+          cnAvailable = 600;
+          purchaseInbound = 800;
+          inboundDay = 0;
+        }
         var projection = makeProjection(baseSales, fbaInventory, inboundDay, fbaInbound, Math.min(orderCoverageDays, 150));
         var shipForecastSum = forecastSum(baseSales, shipCoverageDays);
         var orderForecastSum = forecastSum(baseSales, orderCoverageDays);
         var deductEnabled = rule.calculation.deductStockoutSales !== false;
         var shipDeduction = deductEnabled ? stockoutDeduction(projection, logistics.leadTimeDays) : 0;
         var orderDeduction = deductEnabled ? stockoutDeduction(projection, orderEarliestAvailableDays) : 0;
-        var shipRaw = shipForecastSum - fbaInventory - fbaInbound - shipDeduction;
-        var orderRaw = orderForecastSum - fbaInventory - fbaInbound - cnAvailable - purchaseInbound - orderDeduction;
-        var shipSuggested = Math.max(0, Math.ceil(shipRaw));
-        var orderSuggested = Math.max(0, Math.ceil(orderRaw));
-        var totalLoss = projection.reduce(function(sum, row) { return sum + row.stockoutLoss; }, 0);
-        var range = stockoutRange(projection);
-        var riskCode = 'NORMAL';
-        var riskLabel = '正常';
-        var riskLevel = '低';
-        var actionCode = 'NO_ACTION';
-        if (totalLoss > 0 && shipSuggested > 0) {
-          riskCode = 'STOCKOUT_BEFORE_SHIP_ARRIVAL';
-          riskLabel = '断货风险';
-          riskLevel = totalLoss > 180 ? '高' : '中';
-          actionCode = 'CREATE_SHIPMENT_PLAN';
-        } else if (totalLoss > 0) {
-          riskCode = 'FUTURE_INVENTORY_RISK';
-          riskLabel = '远期库存风险';
-          riskLevel = '中';
-          actionCode = 'REVIEW_INBOUND_ETA';
-        } else if (orderSuggested > 0) {
-          riskCode = 'CREATE_PURCHASE_PLAN';
-          riskLabel = '采购缺口';
-          riskLevel = '中';
-          actionCode = 'CREATE_PURCHASE_PLAN';
-        }
-        var actionTextMap = {
-          CREATE_SHIPMENT_PLAN: '建议优先生成发货计划',
-          CREATE_PURCHASE_PLAN: '建议生成采购计划',
-          REVIEW_INBOUND_ETA: '建议复核在途到达时间',
-          CHECK_DATA: '建议检查预测或库存数据',
-          NO_ACTION: '暂不处理，继续观察'
-        };
+        var shipInventoryDeduction = fbaInventory + fbaInbound;
+        var orderInventoryDeduction = fbaInventory + fbaInbound + cnAvailable + purchaseInbound;
+        var shipSuggested = Math.max(0, Math.ceil(shipForecastSum - shipInventoryDeduction - shipDeduction));
+        var orderSuggested = Math.max(0, Math.ceil(orderForecastSum - orderInventoryDeduction - orderDeduction));
         return {
-          id: parent.code + '-' + logistics.methodName,
-          sku: parent.code,
-          asin: parent.asin || '-',
+          id: parent.code + '-SKU' + pad2(childIndex + 1) + '-' + logistics.methodName,
+          childSku: parent.code + '-SKU' + pad2(childIndex + 1),
+          asin: childAsin(parent, childIndex),
           parentCode: parent.code,
+          parentName: parent.spu || parent.code,
+          store: parent.store || '-',
           site: siteName,
           method: logistics.methodName,
           ruleId: rule.id,
@@ -1393,44 +1347,52 @@
           tags: tags,
           tagText: tags.sales + ' / ' + tags.lifecycle.replace('新品（', '新').replace('）', '') + ' / ' + tags.color,
           safetyDays: safetyDays,
-          riskCode: riskCode,
-          riskLabel: riskLabel,
-          riskLevel: riskLevel,
-          actionCode: actionCode,
-          actionText: actionTextMap[actionCode],
           shipSuggestedQty: shipSuggested,
           orderSuggestedQty: orderSuggested,
-          stockoutLossQty: totalLoss,
-          stockoutDateRange: range || '-',
-          stockoutImpactDays: projection.filter(function(row) { return row.stockoutLoss > 0; }).length,
-          earliestStockoutDate: projection.filter(function(row) { return row.stockoutLoss > 0; })[0]?.dateLabel || '-',
           logisticsLeadDays: logistics.leadTimeDays,
           shipFrequencyDays: logistics.shipFrequencyDays,
-          procurementDeliveryDays: procurementDelivery,
           procurementCycleDays: procurementCycle,
-          orderEarliestAvailableDays: orderEarliestAvailableDays,
           shipCoverageDays: shipCoverageDays,
           orderCoverageDays: orderCoverageDays,
           shipForecastSum: shipForecastSum,
           orderForecastSum: orderForecastSum,
+          shipInventoryDeduction: shipInventoryDeduction,
+          orderInventoryDeduction: orderInventoryDeduction,
           shipDeduction: shipDeduction,
-          orderDeduction: orderDeduction,
-          fbaInventory: fbaInventory,
-          fbaInbound: fbaInbound,
-          cnAvailable: cnAvailable,
-          purchaseInbound: purchaseInbound,
-          projection: projection
+          orderDeduction: orderDeduction
         };
       }
 
       function buildSuggestions() {
         var parents = loadParents();
         var rules = loadRules();
-        allSuggestions = parents.map(function(parent, index) {
-          return makeSuggestion(parent, index, rules);
-        }).sort(function(a, b) {
-          return (b.shipSuggestedQty + b.orderSuggestedQty) - (a.shipSuggestedQty + a.orderSuggestedQty) || b.safetyDays - a.safetyDays;
+        childSuggestions = [];
+        parents.forEach(function(parent, parentIndex) {
+          for (var i = 0; i < childCountForParent(parentIndex); i += 1) {
+            var item = makeChildSuggestion(parent, parentIndex, i, rules);
+            if (item) childSuggestions.push(item);
+          }
         });
+      }
+
+      function uniqueList(list) {
+        var seen = {};
+        return list.filter(function(item) {
+          if (!item || seen[item]) return false;
+          seen[item] = true;
+          return true;
+        }).sort(function(a, b) {
+          return String(a).localeCompare(String(b), 'zh-CN');
+        });
+      }
+
+      function methodText(methods) {
+        if (!methods.length) return '-';
+        return methods.slice(0, 3).join(' / ') + (methods.length > 3 ? ' +' + (methods.length - 3) : '');
+      }
+
+      function coverageText(start, end) {
+        return 'D+' + start + ' ~ D+' + end;
       }
 
       function populateRuleFilter() {
@@ -1448,168 +1410,182 @@
       }
 
       function currentFilters() {
-        var riskInput = document.getElementById('filter-risk');
         return {
-          site: document.getElementById('filter-site').value,
           keyword: (document.getElementById('filter-keyword').value || '').trim().toLowerCase(),
           method: document.getElementById('filter-method').value,
           ruleId: document.getElementById('filter-rule').value,
-          positiveOnly: document.getElementById('filter-positive').checked,
-          riskOnly: riskInput ? riskInput.checked : false
+          positiveOnly: document.getElementById('filter-positive').checked
         };
       }
 
-      function filterSuggestions() {
+      function filterChildren() {
         var f = currentFilters();
-        return allSuggestions.filter(function(item) {
-          if (f.site && item.site !== f.site) return false;
+        return childSuggestions.filter(function(item) {
           if (f.method && item.method !== f.method) return false;
           if (f.ruleId && item.ruleId !== f.ruleId) return false;
           if (f.keyword) {
-            var hay = [item.sku, item.parentCode, item.asin].join(' ').toLowerCase();
+            var hay = [item.childSku, item.parentCode, item.asin, item.parentName].join(' ').toLowerCase();
             if (hay.indexOf(f.keyword) === -1) return false;
           }
-          if (f.positiveOnly && item.shipSuggestedQty <= 0 && item.orderSuggestedQty <= 0) return false;
-          if (f.riskOnly && item.riskCode === 'NORMAL') return false;
-          if (currentMetric === 'ship' && item.shipSuggestedQty <= 0) return false;
-          if (currentMetric === 'order' && item.orderSuggestedQty <= 0) return false;
           return true;
         });
       }
 
-      function riskTagClass(item) {
-        if (item.riskCode === 'STOCKOUT_BEFORE_SHIP_ARRIVAL') return 'tag-danger';
-        if (item.riskCode === 'FUTURE_INVENTORY_RISK' || item.riskCode === 'CREATE_PURCHASE_PLAN') return 'tag-warning';
-        return 'tag-success';
+      function aggregateParentSuggestions(children) {
+        var map = {};
+        children.forEach(function(child) {
+          if (!map[child.parentCode]) {
+            map[child.parentCode] = {
+              id: child.parentCode,
+              parentCode: child.parentCode,
+              parentName: child.parentName,
+              ruleNames: [],
+              methods: [],
+              childItems: [],
+              shipSuggestedQty: 0,
+              orderSuggestedQty: 0
+            };
+          }
+          var parent = map[child.parentCode];
+          parent.childItems.push(child);
+          parent.shipSuggestedQty += child.shipSuggestedQty;
+          parent.orderSuggestedQty += child.orderSuggestedQty;
+          parent.ruleNames.push(child.ruleName);
+          parent.methods.push(child.method);
+        });
+        return Object.keys(map).map(function(key) {
+          var parent = map[key];
+          parent.ruleNames = uniqueList(parent.ruleNames);
+          parent.methods = uniqueList(parent.methods);
+          parent.childCount = parent.childItems.length;
+          parent.methodText = methodText(parent.methods);
+          parent.ruleText = parent.ruleNames.join(' / ');
+          return parent;
+        }).filter(function(parent) {
+          var f = currentFilters();
+          return !f.positiveOnly || parent.shipSuggestedQty > 0 || parent.orderSuggestedQty > 0;
+        }).sort(function(a, b) {
+          return (b.shipSuggestedQty + b.orderSuggestedQty) - (a.shipSuggestedQty + a.orderSuggestedQty) ||
+            a.parentCode.localeCompare(b.parentCode);
+        });
+      }
+
+      function currentParentList() {
+        parentSuggestions = aggregateParentSuggestions(filterChildren());
+        return parentSuggestions;
       }
 
       function renderMetrics(list) {
         document.getElementById('metric-ship').textContent = formatNum(list.reduce(function(sum, item) { return sum + item.shipSuggestedQty; }, 0));
         document.getElementById('metric-order').textContent = formatNum(list.reduce(function(sum, item) { return sum + item.orderSuggestedQty; }, 0));
-        document.getElementById('metric-ship-sku').textContent = formatNum(list.filter(function(item) { return item.shipSuggestedQty > 0; }).length);
-        document.getElementById('metric-order-sku').textContent = formatNum(list.filter(function(item) { return item.orderSuggestedQty > 0; }).length);
-        document.querySelectorAll('.metric-card').forEach(function(card) {
-          card.classList.toggle('active', card.getAttribute('data-metric') === currentMetric && currentMetric !== 'all');
-        });
+        document.getElementById('metric-parent-count').textContent = formatNum(list.length);
+        document.getElementById('metric-child-count').textContent = formatNum(list.reduce(function(sum, item) { return sum + item.childCount; }, 0));
       }
 
       function renderTable() {
-        var list = filterSuggestions();
+        var list = currentParentList();
         renderMetrics(list);
         var tbody = document.getElementById('suggestion-tbody');
         tbody.innerHTML = '';
         if (!list.length) {
-          tbody.innerHTML = '<tr><td class="empty-row" colspan="8">暂无备货建议</td></tr>';
+          tbody.innerHTML = '<tr><td class="empty-row" colspan="6">暂无备货建议</td></tr>';
         } else {
           list.forEach(function(item) {
             var tr = document.createElement('tr');
             tr.setAttribute('data-id', item.id);
             tr.innerHTML =
-              '<td><div class="sku-cell"><span class="sku-code">' + escapeHtml(item.sku) + '</span><span class="sku-sub">' + escapeHtml(item.asin) + '</span></div></td>' +
-              '<td>' + escapeHtml(item.site) + '</td>' +
-              '<td>' + escapeHtml(item.method) + '</td>' +
-              '<td>' + escapeHtml(item.tagText) + '</td>' +
-              '<td class="num">' + item.safetyDays + '</td>' +
+              '<td><div class="sku-cell"><span class="sku-code">' + escapeHtml(item.parentCode) + '</span><span class="sku-sub">' + escapeHtml(item.ruleText || '-') + '</span></div></td>' +
+              '<td class="num">' + formatNum(item.childCount) + '</td>' +
+              '<td>' + escapeHtml(item.methodText) + '</td>' +
               '<td class="num strong-num">' + formatNum(item.shipSuggestedQty) + '</td>' +
               '<td class="num strong-num">' + formatNum(item.orderSuggestedQty) + '</td>' +
-              '<td><button type="button" class="btn-text" data-action="detail" data-id="' + escapeHtml(item.id) + '">查看明细</button></td>';
+              '<td><button type="button" class="btn-text" data-action="detail" data-id="' + escapeHtml(item.id) + '">查看详情</button></td>';
             tbody.appendChild(tr);
           });
         }
         document.getElementById('result-count').textContent = '共 ' + list.length + ' 条';
       }
 
-      function riskReason(item) {
-        if (item.riskCode === 'STOCKOUT_BEFORE_SHIP_ARRIVAL') {
-          return item.stockoutDateRange + ' 存在预计断货损失，合计 ' + formatNum(item.stockoutLossQty) + ' 件。必断货扣除量占比较高，请关注到货节奏。';
-        }
-        if (item.riskCode === 'FUTURE_INVENTORY_RISK') {
-          return '部分库存预计到达时间较晚，虽然已在建议量中扣减，但短期仍可能出现断货，请关注库存投影。';
-        }
-        if (item.riskCode === 'CREATE_PURCHASE_PLAN') {
-          return '当前库存与在途可覆盖短期发货，但下单覆盖周期存在采购缺口。';
-        }
-        return '当前库存及在途库存基本覆盖目标周期，暂未识别明显断货风险。';
+      function renderSummaryDetail(item) {
+        document.getElementById('summary-detail').innerHTML =
+          '<div class="formula-block"><strong>父体编号</strong><br>' + escapeHtml(item.parentCode) + '</div>' +
+          '<div class="formula-block"><strong>适用规则</strong><br>' + escapeHtml(item.ruleText || '-') + '</div>' +
+          '<div class="formula-block"><strong>父体建议量口径</strong><br>' +
+          '父体发货建议总量 = Σ 子体发货最终建议量 = ' + formatNum(item.shipSuggestedQty) + '<br>' +
+          '父体下单建议总量 = Σ 子体下单最终建议量 = ' + formatNum(item.orderSuggestedQty) + '</div>';
       }
 
-      function consequenceText(item) {
-        if (item.stockoutImpactDays > 0) {
-          return '预计最早断货日：' + item.earliestStockoutDate + '；覆盖周期内断货损失：' + formatNum(item.stockoutLossQty) + ' 件；断货影响天数：' + item.stockoutImpactDays + ' 天。';
-        }
-        return '预计覆盖周期内无明显断货损失，建议持续观察销量与在途到达节奏。';
-      }
-
-      function renderProjectionChart(item) {
-        var rows = item.projection.slice(0, 30);
-        var maxValue = Math.max.apply(null, rows.map(function(row) {
-          return Math.max(row.startInventory, row.forecastSales, row.inboundQty);
-        }).concat([1]));
-        var width = 700;
-        var height = 220;
-        var pad = { left: 34, right: 16, top: 18, bottom: 28 };
-        var innerW = width - pad.left - pad.right;
-        var innerH = height - pad.top - pad.bottom;
-        var x = function(i) { return pad.left + (rows.length <= 1 ? 0 : i * innerW / (rows.length - 1)); };
-        var y = function(v) { return pad.top + innerH - (v / maxValue) * innerH; };
-        var inventoryPoints = rows.map(function(row, i) { return x(i).toFixed(1) + ',' + y(row.startInventory).toFixed(1); }).join(' ');
-        var forecastPoints = rows.map(function(row, i) { return x(i).toFixed(1) + ',' + y(row.forecastSales).toFixed(1); }).join(' ');
-        var riskRects = rows.map(function(row, i) {
-          if (row.stockoutLoss <= 0) return '';
-          var rx = x(i) - innerW / rows.length / 2;
-          var rw = Math.max(4, innerW / rows.length);
-          return '<rect x="' + rx.toFixed(1) + '" y="' + pad.top + '" width="' + rw.toFixed(1) + '" height="' + innerH + '" fill="rgba(245,108,108,0.16)" />';
-        }).join('');
-        var arrivalLine = rows.map(function(row, i) {
-          if (row.inboundQty <= 0) return '';
-          var px = x(i);
-          return '<line x1="' + px.toFixed(1) + '" y1="' + pad.top + '" x2="' + px.toFixed(1) + '" y2="' + (pad.top + innerH) + '" stroke="#67c23a" stroke-width="2" stroke-dasharray="4 4" />';
-        }).join('');
-        var labels = [0, 7, 14, 21, 29].filter(function(i) { return i < rows.length; }).map(function(i) {
-          return '<text x="' + x(i).toFixed(1) + '" y="' + (height - 8) + '" fill="#909399" font-size="11" text-anchor="middle">' + rows[i].dateLabel + '</text>';
-        }).join('');
-        var svg =
-          '<svg viewBox="0 0 ' + width + ' ' + height + '" role="img" aria-label="库存投影">' +
-            '<rect x="0" y="0" width="' + width + '" height="' + height + '" fill="#fafafa" />' +
-            riskRects +
-            '<line x1="' + pad.left + '" y1="' + (pad.top + innerH) + '" x2="' + (pad.left + innerW) + '" y2="' + (pad.top + innerH) + '" stroke="#dcdfe6" />' +
-            '<line x1="' + pad.left + '" y1="' + pad.top + '" x2="' + pad.left + '" y2="' + (pad.top + innerH) + '" stroke="#dcdfe6" />' +
-            arrivalLine +
-            '<polyline points="' + inventoryPoints + '" fill="none" stroke="#409eff" stroke-width="2.5" />' +
-            '<polyline points="' + forecastPoints + '" fill="none" stroke="#e6a23c" stroke-width="2.2" />' +
-            '<text x="8" y="' + (pad.top + 4) + '" fill="#909399" font-size="11">' + formatNum(maxValue) + '</text>' +
-            labels +
-          '</svg>';
-        document.getElementById('projection-chart').innerHTML = svg;
-      }
-
-      function renderProjectionTable(item) {
-        var tbody = document.getElementById('projection-tbody');
-        tbody.innerHTML = item.projection.slice(0, 8).map(function(row) {
+      function renderChildDetail(item) {
+        var rows = item.childItems.map(function(child) {
           return '<tr>' +
-            '<td>' + row.dateLabel + '</td>' +
-            '<td class="num">' + formatNum(row.forecastSales) + '</td>' +
-            '<td class="num">' + formatNum(row.inboundQty) + '</td>' +
-            '<td class="num">' + formatNum(row.startInventory) + '</td>' +
-            '<td class="num">' + formatNum(row.fulfillableSales) + '</td>' +
-            '<td class="num ' + (row.stockoutLoss > 0 ? 'strong-num' : '') + '">' + formatNum(row.stockoutLoss) + '</td>' +
+            '<td><div class="sku-cell"><span class="sku-code">' + escapeHtml(child.childSku) + '</span><span class="sku-sub">' + escapeHtml(child.tagText) + '</span></div></td>' +
+            '<td>' + escapeHtml(child.asin) + '</td>' +
+            '<td>' + escapeHtml(child.method) + '</td>' +
+            '<td class="num">' + formatNum(child.safetyDays) + '</td>' +
+            '<td class="num strong-num">' + formatNum(child.shipSuggestedQty) + '</td>' +
+            '<td class="num strong-num">' + formatNum(child.orderSuggestedQty) + '</td>' +
           '</tr>';
         }).join('');
+        document.getElementById('child-detail').innerHTML =
+          '<table class="detail-table"><thead><tr>' +
+          '<th>子体 / SKU</th><th>ASIN</th><th>运输方式</th><th class="num">安全天数</th><th class="num">发货建议</th><th class="num">下单建议</th>' +
+          '</tr></thead><tbody>' + rows + '</tbody></table>';
+      }
+
+      function renderMethodDetail(item) {
+        var map = {};
+        item.childItems.forEach(function(child) {
+          if (!map[child.method]) {
+            map[child.method] = {
+              method: child.method,
+              childCount: 0,
+              shipSuggestedQty: 0,
+              orderSuggestedQty: 0,
+              start: child.logisticsLeadDays,
+              end: child.shipCoverageDays - 1
+            };
+          }
+          var row = map[child.method];
+          row.childCount += 1;
+          row.shipSuggestedQty += child.shipSuggestedQty;
+          row.orderSuggestedQty += child.orderSuggestedQty;
+          row.start = Math.min(row.start, child.logisticsLeadDays);
+          row.end = Math.max(row.end, child.shipCoverageDays - 1);
+        });
+        var rows = Object.keys(map).sort().map(function(key) {
+          var row = map[key];
+          return '<tr>' +
+            '<td>' + escapeHtml(row.method) + '</td>' +
+            '<td>' + coverageText(row.start, row.end) + '</td>' +
+            '<td class="num">' + formatNum(row.childCount) + '</td>' +
+            '<td class="num strong-num">' + formatNum(row.shipSuggestedQty) + '</td>' +
+            '<td class="num strong-num">' + formatNum(row.orderSuggestedQty) + '</td>' +
+          '</tr>';
+        }).join('');
+        document.getElementById('method-detail').innerHTML =
+          '<table class="detail-table"><thead><tr>' +
+          '<th>运输方式</th><th>覆盖区间</th><th class="num">子体数</th><th class="num">发货建议</th><th class="num">下单建议</th>' +
+          '</tr></thead><tbody>' + rows + '</tbody></table>';
       }
 
       function renderCalcDetail(item) {
+        var rows = item.childItems.map(function(child) {
+          return '<tr>' +
+            '<td>' + escapeHtml(child.childSku) + '</td>' +
+            '<td class="num">' + formatNum(child.shipForecastSum) + ' / ' + formatNum(child.orderForecastSum) + '</td>' +
+            '<td class="num">' + formatNum(child.shipInventoryDeduction) + ' / ' + formatNum(child.orderInventoryDeduction) + '</td>' +
+            '<td class="num">' + formatNum(child.shipDeduction) + ' / ' + formatNum(child.orderDeduction) + '</td>' +
+            '<td class="num strong-num">' + formatNum(child.shipSuggestedQty) + ' / ' + formatNum(child.orderSuggestedQty) + '</td>' +
+          '</tr>';
+        }).join('');
         document.getElementById('calc-detail').innerHTML =
-          '<div class="formula-block"><strong>安全库存天数</strong><br>' +
-          '默认安全天数：' + item.safetyDays + ' 天；命中条件：' + escapeHtml(item.tags.sales) + '、' + escapeHtml(item.tags.lifecycle) + '、' + escapeHtml(item.tags.color) + '、' + escapeHtml(item.tags.traffic) + '。<br>' +
-          '最终安全天数 = max(默认安全天数, 命中条件安全天数) = ' + item.safetyDays + ' 天</div>' +
-          '<div class="formula-block"><strong>覆盖天数拆解</strong><br>' +
-          '发货覆盖天数 = CN仓至FBA时效 ' + item.logisticsLeadDays + ' + 安全天数 ' + item.safetyDays + ' + CN仓发货频率 ' + item.shipFrequencyDays + ' = ' + item.shipCoverageDays + ' 天<br>' +
-          '下单覆盖天数 = 采购周期覆盖天数 ' + item.procurementCycleDays + ' + CN仓至FBA时效 ' + item.logisticsLeadDays + ' + 安全天数 ' + item.safetyDays + ' + CN仓发货频率 ' + item.shipFrequencyDays + ' = ' + item.orderCoverageDays + ' 天</div>' +
-          '<div class="formula-block"><strong>预测销量区间</strong><br>' +
-          '发货预测销量 = Σ forecastSales(D ~ D+' + (item.shipCoverageDays - 1) + ') = ' + formatNum(item.shipForecastSum) + '<br>' +
-          '下单预测销量 = Σ forecastSales(D ~ D+' + (item.orderCoverageDays - 1) + ') = ' + formatNum(item.orderForecastSum) + '</div>' +
-          '<div class="formula-block"><strong>建议量计算</strong><br>' +
-          '建议发货量 = max(0, ceil(' + formatNum(item.shipForecastSum) + ' - FBA库存 ' + formatNum(item.fbaInventory) + ' - FBA在途 ' + formatNum(item.fbaInbound) + ' - 发货必断货扣除量 ' + formatNum(item.shipDeduction) + ')) = ' + formatNum(item.shipSuggestedQty) + '<br>' +
-          '建议下单量 = max(0, ceil(' + formatNum(item.orderForecastSum) + ' - FBA库存 ' + formatNum(item.fbaInventory) + ' - FBA在途 ' + formatNum(item.fbaInbound) + ' - CN仓可用 ' + formatNum(item.cnAvailable) + ' - 已下单未入库 ' + formatNum(item.purchaseInbound) + ' - 下单必断货扣除量 ' + formatNum(item.orderDeduction) + ')) = ' + formatNum(item.orderSuggestedQty) + '</div>';
+          '<div class="formula-block"><strong>父体聚合口径</strong><br>' +
+          '父体发货建议总量 = Σ 子体发货最终建议量 = ' + formatNum(item.shipSuggestedQty) + '<br>' +
+          '父体下单建议总量 = Σ 子体下单最终建议量 = ' + formatNum(item.orderSuggestedQty) + '<br>' +
+          '子体建议量仍按预测销量、库存、采购时效、物流时效计算；多运输方式按到货时间分段，库存扣减项不重复扣减。</div>' +
+          '<table class="detail-table"><thead><tr>' +
+          '<th>子体 / SKU</th><th class="num">预测销量<br>发货/下单</th><th class="num">库存扣减<br>发货/下单</th><th class="num">扣减项<br>发货/下单</th><th class="num">最终建议<br>发货/下单</th>' +
+          '</tr></thead><tbody>' + rows + '</tbody></table>';
       }
 
       function openDrawer(item) {
@@ -1617,16 +1593,15 @@
         document.querySelectorAll('#suggestion-tbody tr').forEach(function(row) {
           row.classList.toggle('active', row.getAttribute('data-id') === item.id);
         });
-        document.getElementById('drawer-title').textContent = item.sku + ' 决策详情';
-        document.getElementById('drawer-subtitle').textContent = item.site + ' / ' + item.method + ' / ' + item.ruleName + ' / 决策日 ' + document.getElementById('filter-date').value;
-        document.getElementById('drawer-risk-level').textContent = item.riskLevel;
-        document.getElementById('drawer-action').textContent = item.actionText;
+        document.getElementById('drawer-title').textContent = '父体 ' + item.parentCode + ' 备货详情';
+        document.getElementById('drawer-subtitle').textContent = (item.ruleText || '-') + ' / 决策日 ' + document.getElementById('filter-date').value;
         document.getElementById('drawer-ship-qty').textContent = formatNum(item.shipSuggestedQty);
         document.getElementById('drawer-order-qty').textContent = formatNum(item.orderSuggestedQty);
-        document.getElementById('drawer-risk-text').textContent = riskReason(item);
-        document.getElementById('drawer-consequence-text').textContent = consequenceText(item);
-        renderProjectionChart(item);
-        renderProjectionTable(item);
+        document.getElementById('drawer-child-count').textContent = formatNum(item.childCount);
+        document.getElementById('drawer-methods').textContent = item.methodText;
+        renderSummaryDetail(item);
+        renderChildDetail(item);
+        renderMethodDetail(item);
         renderCalcDetail(item);
         document.getElementById('drawer-mask').classList.add('show');
         document.getElementById('detail-drawer').classList.add('open');
@@ -1641,7 +1616,7 @@
       }
 
       function findSuggestion(id) {
-        return allSuggestions.filter(function(item) { return item.id === id; })[0];
+        return parentSuggestions.filter(function(item) { return item.id === id; })[0];
       }
 
       function render() {
@@ -1649,15 +1624,11 @@
       }
 
       function resetFilters() {
-        currentMetric = 'all';
         document.getElementById('filter-date').value = todayString();
-        document.getElementById('filter-site').value = '';
         document.getElementById('filter-keyword').value = '';
         document.getElementById('filter-method').value = '';
         document.getElementById('filter-rule').value = '';
         document.getElementById('filter-positive').checked = false;
-        var riskInput = document.getElementById('filter-risk');
-        if (riskInput) riskInput.checked = false;
         render();
       }
 
@@ -1725,17 +1696,8 @@
       render();
       initSidebarMenu();
 
-      document.getElementById('btn-search').addEventListener('click', function() {
-        currentMetric = 'all';
-        render();
-      });
+      document.getElementById('btn-search').addEventListener('click', render);
       document.getElementById('btn-reset').addEventListener('click', resetFilters);
-      document.getElementById('metric-grid').addEventListener('click', function(e) {
-        var card = e.target.closest('.metric-card');
-        if (!card) return;
-        currentMetric = card.getAttribute('data-metric') || 'all';
-        render();
-      });
       document.getElementById('suggestion-tbody').addEventListener('click', function(e) {
         var row = e.target.closest('tr[data-id]');
         if (!row) return;
@@ -1756,13 +1718,13 @@
         });
       });
       document.getElementById('drawer-create-ship').addEventListener('click', function() {
-        showAction('已生成发货计划入口：' + (currentSuggestion ? currentSuggestion.sku : ''));
+        showAction('生成发货计划入口：' + (currentSuggestion ? currentSuggestion.parentCode : ''));
       });
       document.getElementById('drawer-create-order').addEventListener('click', function() {
-        showAction('已生成采购计划入口：' + (currentSuggestion ? currentSuggestion.sku : ''));
+        showAction('生成采购计划入口：' + (currentSuggestion ? currentSuggestion.parentCode : ''));
       });
       document.getElementById('drawer-export').addEventListener('click', function() {
-        showAction('导出计算明细入口：' + (currentSuggestion ? currentSuggestion.sku : ''));
+        showAction('导出计算明细入口：' + (currentSuggestion ? currentSuggestion.parentCode : ''));
       });
       ['btn-export-top', 'btn-export-table'].forEach(function(id) {
         document.getElementById(id).addEventListener('click', function() {

@@ -844,10 +844,6 @@
       padding: 12px;
     }
 
-    .site-card.is-disabled .site-body {
-      opacity: 0.62;
-    }
-
     .site-frequency {
       display: flex;
       align-items: center;
@@ -1303,7 +1299,7 @@
           </div>
         </div>
         <div class="drawer-form-row">
-          <span class="drawer-label required">适用父体</span>
+          <span class="drawer-label">适用父体</span>
           <div class="drawer-field">
             <input class="drawer-input drawer-input--readonly" id="rule-parent-display" type="text" readonly placeholder="未选择父体" value="" />
             <button type="button" class="btn" id="rule-parent-pick">选择父体</button>
@@ -1412,18 +1408,13 @@
             <span class="stocking-subhead-bar" aria-hidden="true"></span>
             <span class="stocking-subhead-text">直发物流时效</span>
           </div>
-          <p class="rule-hint">当前仅支持 CN 仓 / 本地仓直发至 FBA，站点固定为北美站和欧洲站。</p>
           <div class="site-card" data-site-key="northAmerica">
             <div class="site-card-head">
-              <div class="site-title"><span class="tag tag-blue">北美站</span><span>CN 仓 / 本地仓 → FBA</span></div>
-              <label class="safety-category-toggle">
-                <span>站点启用</span>
-                <span class="switch"><input class="site-enabled" type="checkbox" checked /><span class="switch-slider"></span></span>
-              </label>
+              <div class="site-title"><span class="tag tag-blue">北美站</span><span>本地仓 → FBA</span></div>
             </div>
             <div class="site-body">
               <div class="site-frequency">
-                <span>CN 仓发货频率</span>
+                <span>本地仓发货频率</span>
                 <input class="drawer-input numeric-input site-frequency-input" type="number" min="0" value="7" />
                 <span class="input-suffix">天</span>
               </div>
@@ -1456,15 +1447,11 @@
 
           <div class="site-card" data-site-key="europe">
             <div class="site-card-head">
-              <div class="site-title"><span class="tag tag-blue">欧洲站</span><span>CN 仓 / 本地仓 → FBA</span></div>
-              <label class="safety-category-toggle">
-                <span>站点启用</span>
-                <span class="switch"><input class="site-enabled" type="checkbox" checked /><span class="switch-slider"></span></span>
-              </label>
+              <div class="site-title"><span class="tag tag-blue">欧洲站</span><span>本地仓 → FBA</span></div>
             </div>
             <div class="site-body">
               <div class="site-frequency">
-                <span>CN 仓发货频率</span>
+                <span>本地仓发货频率</span>
                 <input class="drawer-input numeric-input site-frequency-input" type="number" min="0" value="7" />
                 <span class="input-suffix">天</span>
               </div>
@@ -1523,7 +1510,7 @@
               <label class="settings-checkbox">
                 <input type="checkbox" id="deduct-stockout-sales" checked />
                 建议量扣除必断货量
-                <span class="settings-info" title="扣除在补货到达前不可避免的断货期间的销量，例如根据销量预测和库存投影识别到未来必断货日期，则这些日期的预测销量不继续计入本次建议量。">ⓘ</span>
+                <span class="settings-info" title="扣除最快物流方式无法填补的断货期间的销量">ⓘ</span>
               </label>
             </div>
           </div>
@@ -1916,7 +1903,7 @@
           return {
             key: site.key,
             name: site.name,
-            enabled: foundSite.enabled !== false,
+            enabled: true,
             shipFrequencyDays: foundSite.shipFrequencyDays != null ? foundSite.shipFrequencyDays : site.shipFrequencyDays,
             methods: sourceMethods.map(function(method, index) {
               var defaultMethod = site.methods.filter(function(x) { return x.key === method.key; })[0] || {};
@@ -2230,7 +2217,7 @@
           return {
             key: card.getAttribute('data-site-key'),
             name: card.querySelector('.tag').textContent.trim(),
-            enabled: card.querySelector('.site-enabled').checked,
+            enabled: true,
             shipFrequencyDays: toInt(card.querySelector('.site-frequency-input').value, 0),
             methods: collectLogisticsMethods(card)
           };
@@ -2271,9 +2258,7 @@
         });
         document.querySelectorAll('.site-card').forEach(function(card) {
           var site = map[card.getAttribute('data-site-key')] || {};
-          var siteEnabled = site.enabled !== false;
-          card.classList.toggle('is-disabled', !siteEnabled);
-          card.querySelector('.site-enabled').checked = siteEnabled;
+          card.classList.remove('is-disabled');
           card.querySelector('.site-frequency-input').value = site.shipFrequencyDays != null ? site.shipFrequencyDays : 0;
           renderLogisticsMethodRows(card, site.methods || []);
         });
@@ -2366,10 +2351,6 @@
           return;
         }
         form.name = name;
-        if (!form.parentCodes || !form.parentCodes.length) {
-          alert('请选择适用父体');
-          return;
-        }
         var duplicateSafety = findDuplicateSafetyCondition(form);
         if (duplicateSafety) {
           setActiveDrawerTab('drawer-tab-safety');
@@ -2598,13 +2579,6 @@
             row.querySelector('.safety-condition-days').value = option.defaultDays;
           }
           renderSafetyCategories(collectSafetyAdjustments());
-        }
-      });
-
-      document.getElementById('drawer-tab-logistics').addEventListener('change', function(e) {
-        if (e.target.matches('.site-enabled')) {
-          var card = e.target.closest('.site-card');
-          card.classList.toggle('is-disabled', !e.target.checked);
         }
       });
 

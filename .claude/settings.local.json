@@ -5,7 +5,14 @@
       "WebFetch(domain:www.google.com)",
       "WebFetch(domain:www.bing.com)",
       "WebFetch(domain:en.wikipedia.org)",
-      "WebFetch(domain:www.msn.com)"
+      "WebFetch(domain:www.msn.com)",
+      "PowerShell(Get-ChildItem -Force -Directory | Where-Object { $_.Name -match \"codex|skill|claude\" } | Select-Object Name)",
+      "WebFetch(domain:www.anthropic.com)",
+      "WebFetch(domain:claude.ai)",
+      "Bash(ls -la .claude/ 2>/dev/null && echo \"---\" && ls -la ~/.claude/ 2>/dev/null | head -30)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:www.gstack.cn)",
+      "Bash(gh search *)"
     ]
   }
 }

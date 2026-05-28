@@ -51,7 +51,7 @@ await new Promise((resolve) => setTimeout(resolve, 800));
 
 const homeState = await client.send('Runtime.evaluate', {
   expression: `(() => {
-    const link = document.querySelector('a[href*="%E5%A4%87%E8%B4%A7%E8%A7%84%E5%88%99%E9%85%8D%E7%BD%AE"]');
+    const link = document.querySelector('a[href="./prd/备货规则配置页面需求.html"]');
     return JSON.stringify({
       title: document.title,
       hasEntry: !!link,
@@ -71,7 +71,7 @@ const screenshot = await client.send('Page.captureScreenshot', {
 await fs.writeFile(outPath, Buffer.from(screenshot.data, 'base64'));
 
 await client.send('Runtime.evaluate', {
-  expression: `document.querySelector('a[href*="%E5%A4%87%E8%B4%A7%E8%A7%84%E5%88%99%E9%85%8D%E7%BD%AE"]').click()`,
+  expression: `document.querySelector('a[href="./prd/备货规则配置页面需求.html"]').click()`,
 });
 await new Promise((resolve) => setTimeout(resolve, 1200));
 
