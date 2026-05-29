@@ -308,6 +308,14 @@
       border-color: #66b1ff;
     }
 
+    .btn:disabled,
+    .btn:disabled:hover {
+      color: #c0c4cc;
+      border-color: #e4e7ed;
+      background: #f5f7fa;
+      cursor: not-allowed;
+    }
+
     .btn-text {
       border: none;
       background: transparent;
@@ -341,7 +349,7 @@
 
     .metric-grid {
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 12px;
       margin-top: 12px;
     }
@@ -403,6 +411,80 @@
       font-size: 12px;
     }
 
+    .source-switch-row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .source-switch-label {
+      color: #606266;
+      font-size: 13px;
+    }
+
+    .source-switch {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      background: #f5f7fa;
+    }
+
+    .source-toggle {
+      height: 28px;
+      min-width: 96px;
+      padding: 0 12px;
+      border: none;
+      border-radius: 3px;
+      background: transparent;
+      color: #606266;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    .source-toggle:hover,
+    .source-toggle.active {
+      background: #409eff;
+      color: #fff;
+    }
+
+    .batch-strip {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 12px;
+      padding: 10px 12px;
+      border: 1px solid #ebeef5;
+      border-radius: 4px;
+      background: #fafafa;
+    }
+
+    .batch-main {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px 18px;
+      color: #606266;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .batch-item strong {
+      color: #909399;
+      font-weight: 400;
+    }
+
+    .batch-warning {
+      flex-shrink: 0;
+      color: #e6a23c;
+      border-color: #f5dab1;
+      background: #fdf6ec;
+    }
+
     .table-wrap {
       overflow-x: auto;
       border: 1px solid #ebeef5;
@@ -411,7 +493,7 @@
 
     .data-table {
       width: 100%;
-      min-width: 1180px;
+      min-width: 1280px;
       border-collapse: collapse;
       table-layout: fixed;
       color: #606266;
@@ -436,6 +518,14 @@
       font-weight: 600;
     }
 
+    .th-note {
+      display: block;
+      margin-top: 2px;
+      color: #909399;
+      font-size: 12px;
+      font-weight: 400;
+    }
+
     .data-table tbody tr {
       cursor: pointer;
     }
@@ -445,8 +535,26 @@
       background: #fafcff;
     }
 
+    .table-action-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      white-space: nowrap;
+    }
+
+    .select-cell {
+      text-align: center !important;
+    }
+
+    .select-cell input {
+      width: 15px;
+      height: 15px;
+      accent-color: #409eff;
+      cursor: pointer;
+    }
+
     .num {
-      text-align: right !important;
+      text-align: middle !important;
       font-variant-numeric: tabular-nums;
     }
 
@@ -536,7 +644,7 @@
       position: fixed;
       top: 0;
       right: 0;
-      width: 760px;
+      width: 960px;
       max-width: 96vw;
       height: 100vh;
       background: #fff;
@@ -591,9 +699,41 @@
       line-height: 1;
     }
 
+    .drawer-meta-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px 12px;
+      margin-top: 12px;
+      padding: 10px 12px;
+      border: 1px solid #ebeef5;
+      border-radius: 4px;
+      background: #fafafa;
+    }
+
+    .drawer-meta-item {
+      min-width: 0;
+      color: #606266;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .drawer-meta-item strong {
+      display: block;
+      margin-bottom: 2px;
+      color: #909399;
+      font-weight: 400;
+    }
+
+    .drawer-meta-item span {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
     .decision-summary {
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 10px;
       margin-top: 14px;
     }
@@ -625,7 +765,7 @@
     .drawer-anchor-row {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: flex-start;
       gap: 12px;
       margin-top: 14px;
       flex-wrap: wrap;
@@ -659,13 +799,23 @@
       align-items: center;
       gap: 8px;
       flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .drawer-footer {
+      flex-shrink: 0;
+      display: flex;
+      justify-content: flex-end;
+      padding: 12px 20px;
+      border-top: 1px solid #ebeef5;
+      background: #fff;
     }
 
     .drawer-body {
       flex: 1;
       min-height: 0;
       overflow-y: auto;
-      padding: 16px 20px 24px;
+      padding: 16px 20px;
     }
 
     .drawer-section {
@@ -810,6 +960,80 @@
       padding: 28px !important;
     }
 
+    .modal-mask {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 1300;
+      background: rgba(0, 0, 0, 0.35);
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .modal-mask.show {
+      display: flex;
+    }
+
+    .missing-modal {
+      width: 760px;
+      max-width: 96vw;
+      max-height: 82vh;
+      background: #fff;
+      border-radius: 4px;
+      box-shadow: 0 10px 32px rgba(0, 0, 0, 0.18);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .modal-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 18px;
+      border-bottom: 1px solid #ebeef5;
+    }
+
+    .modal-title {
+      color: #303133;
+      font-size: 16px;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+
+    .modal-note {
+      margin-top: 4px;
+      color: #909399;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .modal-close {
+      width: 28px;
+      height: 28px;
+      border: 0;
+      background: transparent;
+      color: #909399;
+      cursor: pointer;
+      font-size: 20px;
+      line-height: 1;
+    }
+
+    .modal-body {
+      min-height: 0;
+      overflow: auto;
+      padding: 16px 18px;
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      padding: 12px 18px;
+      border-top: 1px solid #ebeef5;
+      background: #fff;
+    }
+
     .primary-item[data-submenu="proto"],
     #proto-submenu {
       display: none !important;
@@ -821,6 +1045,7 @@
       }
 
       .decision-summary,
+      .drawer-meta-grid,
       .info-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
@@ -846,8 +1071,18 @@
         margin-top: 10px;
       }
 
+      .batch-strip {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .batch-warning {
+        width: 100%;
+      }
+
       .metric-grid,
       .decision-summary,
+      .drawer-meta-grid,
       .info-grid {
         grid-template-columns: 1fr;
       }
@@ -907,20 +1142,13 @@
           <div class="panel-body">
             <div class="filter-bar">
               <div class="filter-item">
-                <span class="filter-label">决策日期 D</span>
-                <input class="filter-control w-140" id="filter-date" type="date" />
-              </div>
-              <div class="filter-item">
                 <span class="filter-label">父体 / 子体</span>
                 <input class="filter-control w-200" id="filter-keyword" type="text" placeholder="请输入父体或 SKU" />
               </div>
               <div class="filter-item">
-                <span class="filter-label">运输方式</span>
-                <select class="filter-control w-120" id="filter-method">
-                  <option value="">全部</option>
-                  <option value="快船">快船</option>
-                  <option value="慢船">慢船</option>
-                  <option value="空派">空派</option>
+                <span class="filter-label">运营负责人</span>
+                <select class="filter-control w-160" id="filter-owner">
+                  <option value="">全部负责人</option>
                 </select>
               </div>
               <div class="filter-item">
@@ -938,6 +1166,20 @@
                 <button type="button" class="btn" id="btn-reset">重置</button>
               </div>
             </div>
+            <div class="source-switch-row" style="display: none;">                  
+                  <div class="source-switch" aria-label="切换计算数据源">
+                    <button type="button" class="source-toggle active" data-source="annual">年规目标</button>
+                    <button type="button" class="source-toggle" data-source="forecast">预测日销量</button>
+                  </div>
+                </div>
+            <div class="batch-strip">
+              <div class="batch-main">
+                <span class="batch-item"><strong>计算时间：</strong><span id="calc-time">-</span></span>
+                <span class="batch-item"><strong>数据来源：</strong><span id="calc-source">-</span></span>
+                <span class="batch-item" style="display: none;"><strong>规则版本：</strong><span id="calc-rules">-</span></span>
+              </div>
+              <button type="button" class="btn batch-warning" id="btn-missing">未生成建议：0</button>
+            </div>
 
             <div class="metric-grid" id="metric-grid">
               <button type="button" class="metric-card" data-metric="all">
@@ -950,16 +1192,6 @@
                 <strong class="metric-value" id="metric-order">0</strong>
                 <span class="metric-hint">当前筛选合计</span>
               </button>
-              <button type="button" class="metric-card" data-metric="all">
-                <span class="metric-label">父体数量</span>
-                <strong class="metric-value" id="metric-parent-count">0</strong>
-                <span class="metric-hint">当前筛选父体</span>
-              </button>
-              <button type="button" class="metric-card" data-metric="all">
-                <span class="metric-label">子体数量</span>
-                <strong class="metric-value" id="metric-child-count">0</strong>
-                <span class="metric-hint">参与聚合子体</span>
-              </button>
             </div>
           </div>
         </section>
@@ -969,11 +1201,12 @@
             <div class="section-head">
               <div>
                 <div class="section-title">备货建议列表</div>
-                <div class="section-note">主列表按父体汇总展示，建议量由子体最终建议量合计。</div>
+                <div class="section-note">主列表按父体汇总展示，发货建议和下单建议同时展示，建议量由子体最终建议量合计。</div>
               </div>
               <div class="table-actions">
-                <button type="button" class="btn" id="btn-export-table">导出</button>
-                <button type="button" class="btn btn-primary" id="btn-plan-table">生成计划</button>
+                <button type="button" class="btn btn-primary" id="btn-batch-ship" disabled>批量生成发货</button>
+                <button type="button" class="btn" id="btn-batch-order" disabled>批量生成采购</button>
+                <button type="button" class="btn" id="btn-export-table" style="display: none;">导出</button>
               </div>
             </div>
 
@@ -981,18 +1214,23 @@
               <table class="data-table">
                 <thead>
                   <tr>
-                    <th style="width: 220px;">父体编号</th>
-                    <th style="width: 100px;" class="num">子体数</th>
-                    <th style="width: 180px;">运输方式</th>
-                    <th style="width: 150px;" class="num">发货建议总量</th>
-                    <th style="width: 150px;" class="num">下单建议总量</th>
-                    <th style="width: 90px;">操作</th>
+                    <th class="select-cell" style="width: 46px;"><input type="checkbox" id="check-all-suggestions" aria-label="全选备货建议" /></th>
+                    <th style="width: 120px;">父体编号</th>
+                    <th style="width: 112px;">父ASIN</th>
+                    <th style="width: 90px;">SPU</th>
+                    <th style="width: 72px;">站点</th>
+                    <th style="width: 90px;">运营负责人</th>
+                    <th style="width: 140px;">匹配规则</th>
+                    <th style="width: 120px;">发货备货周期<span class="th-note">覆盖周期 / 安全天数</span></th>
+                    <th style="width: 90px;" class="num">发货建议量</th>
+                    <th style="width: 120px;">下单备货周期<span class="th-note">覆盖周期 / 安全天数</span></th>
+                    <th style="width: 90px;" class="num">下单建议量</th>
+                    <th style="width: 72px;">操作</th>
                   </tr>
                 </thead>
                 <tbody id="suggestion-tbody"></tbody>
               </table>
             </div>
-            <div class="section-note" style="margin-top: 12px;" id="result-count">共 0 条</div>
           </div>
         </section>
       </div>
@@ -1009,6 +1247,7 @@
         </div>
         <button type="button" class="drawer-close" id="drawer-close" aria-label="关闭">×</button>
       </div>
+      <div id="summary-detail"></div>
       <div class="decision-summary">
         <div class="decision-item">
           <span>发货建议总量</span>
@@ -1019,51 +1258,24 @@
           <strong id="drawer-order-qty">0</strong>
         </div>
         <div class="decision-item">
-          <span>子体数量</span>
-          <strong id="drawer-child-count">0</strong>
-        </div>
-        <div class="decision-item">
-          <span>运输方式</span>
+          <span>物流方式</span>
           <strong id="drawer-methods">-</strong>
         </div>
       </div>
       <div class="drawer-anchor-row">
         <div class="drawer-anchors">
-          <button type="button" class="drawer-anchor active" data-anchor="drawer-summary-section">汇总信息</button>
-          <button type="button" class="drawer-anchor" data-anchor="drawer-child-section">子体明细</button>
-          <button type="button" class="drawer-anchor" data-anchor="drawer-method-section">运输方式拆分</button>
+          <button type="button" class="drawer-anchor active" data-anchor="drawer-child-section">子体明细</button>
           <button type="button" class="drawer-anchor" data-anchor="drawer-calc-section">计算明细</button>
-        </div>
-        <div class="drawer-actions">
-          <button type="button" class="btn btn-primary" id="drawer-create-ship">生成发货计划</button>
-          <button type="button" class="btn" id="drawer-create-order">生成采购计划</button>
-          <button type="button" class="btn" id="drawer-export">导出明细</button>
         </div>
       </div>
     </div>
     <div class="drawer-body" id="drawer-body">
-      <section class="drawer-section" id="drawer-summary-section">
-        <div class="drawer-subhead" role="heading" aria-level="3">
-          <span class="drawer-subhead-bar" aria-hidden="true"></span>
-          <span class="drawer-subhead-text">汇总信息</span>
-        </div>
-        <div id="summary-detail"></div>
-      </section>
-
       <section class="drawer-section" id="drawer-child-section">
         <div class="drawer-subhead" role="heading" aria-level="3">
           <span class="drawer-subhead-bar" aria-hidden="true"></span>
           <span class="drawer-subhead-text">子体明细</span>
         </div>
         <div id="child-detail"></div>
-      </section>
-
-      <section class="drawer-section" id="drawer-method-section">
-        <div class="drawer-subhead" role="heading" aria-level="3">
-          <span class="drawer-subhead-bar" aria-hidden="true"></span>
-          <span class="drawer-subhead-text">运输方式拆分</span>
-        </div>
-        <div id="method-detail"></div>
       </section>
 
       <section class="drawer-section" id="drawer-calc-section">
@@ -1074,7 +1286,43 @@
         <div id="calc-detail"></div>
       </section>
     </div>
+    <div class="drawer-footer">
+      <div class="drawer-actions">
+        <button type="button" class="btn btn-primary" id="drawer-create-ship">生成发货计划</button>
+        <button type="button" class="btn" id="drawer-create-order">生成采购计划</button>
+        <button type="button" class="btn" id="drawer-export" style="display: none;">导出明细</button>
+      </div>
+    </div>
   </aside>
+
+  <div class="modal-mask" id="missing-mask" aria-hidden="true">
+    <div class="missing-modal" role="dialog" aria-modal="true" aria-labelledby="missing-title">
+      <div class="modal-head">
+        <div>
+          <div class="modal-title" id="missing-title">未生成建议</div>
+          <div class="modal-note">以下对象因数据或配置不完整，未进入备货建议主列表。</div>
+        </div>
+        <button type="button" class="modal-close" id="missing-close" aria-label="关闭">×</button>
+      </div>
+      <div class="modal-body">
+        <table class="detail-table">
+          <thead>
+            <tr>
+              <th>父体编号</th>
+              <th>站点</th>
+              <th>运营负责人</th>
+              <th>未生成原因</th>
+              <th>处理方向</th>
+            </tr>
+          </thead>
+          <tbody id="missing-tbody"></tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn" id="missing-ok">关闭</button>
+      </div>
+    </div>
+  </div>
 
   <script>
     (function initParentLevelStockingSuggestionPage() {
@@ -1082,7 +1330,18 @@
       var RULE_STORAGE_KEY = 'stocking_rule_config_rules_v2';
       var childSuggestions = [];
       var parentSuggestions = [];
+      var missingSuggestions = [];
       var currentSuggestion = null;
+      var activeCalculationSource = 'annual';
+      var selectedSuggestionIds = {};
+      var DATA_SOURCE_META = {
+        annual: { label: '年规模板' },
+        forecast: { label: '预测日销量' }
+      };
+      var CALC_INFO = {
+        time: '2026-05-28 09:30',
+        source: '年规模板'
+      };
 
       function escapeHtml(value) {
         return String(value == null ? '' : value)
@@ -1103,10 +1362,12 @@
         return Number(value || 0).toLocaleString('zh-CN');
       }
 
-      function todayString() {
-        var d = new Date();
-        var pad = function(n) { return n < 10 ? '0' + n : String(n); };
-        return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+      function currentSourceLabel() {
+        return (DATA_SOURCE_META[activeCalculationSource] || DATA_SOURCE_META.annual).label;
+      }
+
+      function hasSuggestedQty(item) {
+        return item.shipSuggestedQty > 0 || item.orderSuggestedQty > 0;
       }
 
       function defaultParentList() {
@@ -1117,6 +1378,14 @@
           { code: 'LFT00000783', asin: 'B0F8GGJ7LK', platform: 'Amazon', site: '英国', store: 'STEP QUEEN INC-UK', spu: 'STK2527157', owner: '余滢', days: '0/0' },
           { code: 'LFT00000778', asin: 'B0F8GTKXQK', platform: 'Amazon', site: '德国', store: 'STEP QUEEN INC-DE', spu: 'STK2527157', owner: '余滢', days: '0/0' },
           { code: 'LFT00000755', asin: 'B0GLNK47Y9', platform: 'Amazon', site: '美国', store: 'STQ Inc-US', spu: 'WT82527258', owner: '黄利萍', days: '0/5' }
+        ];
+      }
+
+      function defaultMissingSuggestions() {
+        return [
+          { parentCode: 'LFT00003018', site: '北美站', owner: '陈柏宏', reason: '缺少预测日销量', action: '补齐预测销量后重新计算' },
+          { parentCode: 'LFT00003027', site: '欧洲站', owner: '余滢', reason: '未命中启用的备货规则', action: '绑定备货规则或启用规则' },
+          { parentCode: 'LFT00003039', site: '北美站', owner: '黄国阳', reason: '缺少物流时效配置', action: '维护站点物流时效后重新计算' }
         ];
       }
 
@@ -1168,11 +1437,33 @@
         ];
       }
 
+      function seedParentCodesForRule(ruleId) {
+        var map = {
+          BR20260521001: ['LFT00002261', 'LFT00002260', 'LFT00000755'],
+          BR20260521002: ['LFT00000784', 'LFT00000783', 'LFT00000778']
+        };
+        return map[ruleId] ? map[ruleId].slice() : null;
+      }
+
+      function alignSeedRule(rule) {
+        var seedCodes = seedParentCodesForRule(rule.id);
+        if (!seedCodes) return rule;
+        rule.form = rule.form || {};
+        rule.form.parentCodes = seedCodes;
+        if (rule.id === 'BR20260521001') {
+          rule.enabled = true;
+          rule.form.enabled = true;
+        }
+        return rule;
+      }
+
       function loadRules() {
         try {
           var raw = localStorage.getItem(RULE_STORAGE_KEY);
           var parsed = raw ? JSON.parse(raw) : null;
-          if (Array.isArray(parsed) && parsed.length) return parsed.filter(function(rule) { return rule.enabled !== false; });
+          if (Array.isArray(parsed) && parsed.length) {
+            return parsed.map(alignSeedRule).filter(function(rule) { return rule.enabled !== false; });
+          }
         } catch (err) {}
         return defaultRules();
       }
@@ -1296,6 +1587,41 @@
         }, 0);
       }
 
+      function makeSourceResult(shipForecastSum, orderForecastSum, shipInventoryDeduction, orderInventoryDeduction, shipDeduction, orderDeduction, factor) {
+        var sourceShipForecast = Math.round(shipForecastSum * factor);
+        var sourceOrderForecast = Math.round(orderForecastSum * factor);
+        var sourceShipDeduction = Math.round(shipDeduction * factor);
+        var sourceOrderDeduction = Math.round(orderDeduction * factor);
+        return {
+          shipSuggestedQty: Math.max(0, Math.ceil(sourceShipForecast - shipInventoryDeduction - sourceShipDeduction)),
+          orderSuggestedQty: Math.max(0, Math.ceil(sourceOrderForecast - orderInventoryDeduction - sourceOrderDeduction)),
+          shipForecastSum: sourceShipForecast,
+          orderForecastSum: sourceOrderForecast,
+          shipInventoryDeduction: shipInventoryDeduction,
+          orderInventoryDeduction: orderInventoryDeduction,
+          shipDeduction: sourceShipDeduction,
+          orderDeduction: sourceOrderDeduction
+        };
+      }
+
+      function sourceResult(child) {
+        var results = child.sourceResults || {};
+        return results[activeCalculationSource] || results.annual || results.forecast || child;
+      }
+
+      function childWithActiveSource(child) {
+        var view = {};
+        Object.keys(child).forEach(function(key) {
+          if (key !== 'sourceResults') view[key] = child[key];
+        });
+        var result = sourceResult(child);
+        Object.keys(result).forEach(function(key) {
+          view[key] = result[key];
+        });
+        view.sourceLabel = currentSourceLabel();
+        return view;
+      }
+
       function makeChildSuggestion(parent, parentIndex, childIndex, rules) {
         var rule = findRuleForParent(parent, rules);
         var siteName = siteGroup(parent.site);
@@ -1310,7 +1636,7 @@
         var shipCoverageDays = logistics.leadTimeDays + safetyDays + logistics.shipFrequencyDays;
         var orderCoverageDays = procurementCycle + logistics.leadTimeDays + safetyDays + logistics.shipFrequencyDays;
         var orderEarliestAvailableDays = procurementDelivery + logistics.leadTimeDays;
-        var baseSales = [78, 52, 36, 64, 42, 28, 58, 46][sequence % 8];
+        var baseSales = [24, 16, 12, 20, 14, 9, 18, 14][sequence % 8];
         var fbaInventory = [50, 650, 90, 120, 820, 20, 340, 180][sequence % 8];
         var fbaInbound = [110, 520, 30, 260, 700, 0, 220, 90][sequence % 8];
         var cnAvailable = [260, 180, 120, 300, 80, 40, 160, 210][sequence % 8];
@@ -1333,12 +1659,35 @@
         var orderInventoryDeduction = fbaInventory + fbaInbound + cnAvailable + purchaseInbound;
         var shipSuggested = Math.max(0, Math.ceil(shipForecastSum - shipInventoryDeduction - shipDeduction));
         var orderSuggested = Math.max(0, Math.ceil(orderForecastSum - orderInventoryDeduction - orderDeduction));
+        var forecastResult = {
+          shipSuggestedQty: shipSuggested,
+          orderSuggestedQty: orderSuggested,
+          shipForecastSum: shipForecastSum,
+          orderForecastSum: orderForecastSum,
+          shipInventoryDeduction: shipInventoryDeduction,
+          orderInventoryDeduction: orderInventoryDeduction,
+          shipDeduction: shipDeduction,
+          orderDeduction: orderDeduction
+        };
+        var annualFactor = [0.92, 1.06, 0.95, 1.1, 0.9, 1.04, 0.98, 1.08][sequence % 8];
+        var annualResult = makeSourceResult(
+          shipForecastSum,
+          orderForecastSum,
+          shipInventoryDeduction,
+          orderInventoryDeduction,
+          shipDeduction,
+          orderDeduction,
+          annualFactor
+        );
         return {
           id: parent.code + '-SKU' + pad2(childIndex + 1) + '-' + logistics.methodName,
           childSku: parent.code + '-SKU' + pad2(childIndex + 1),
           asin: childAsin(parent, childIndex),
+          parentAsin: parent.asin || '-',
           parentCode: parent.code,
           parentName: parent.spu || parent.code,
+          spu: parent.spu || '-',
+          owner: parent.owner || '-',
           store: parent.store || '-',
           site: siteName,
           method: logistics.methodName,
@@ -1347,19 +1696,23 @@
           tags: tags,
           tagText: tags.sales + ' / ' + tags.lifecycle.replace('新品（', '新').replace('）', '') + ' / ' + tags.color,
           safetyDays: safetyDays,
-          shipSuggestedQty: shipSuggested,
-          orderSuggestedQty: orderSuggested,
+          shipSuggestedQty: annualResult.shipSuggestedQty,
+          orderSuggestedQty: annualResult.orderSuggestedQty,
           logisticsLeadDays: logistics.leadTimeDays,
           shipFrequencyDays: logistics.shipFrequencyDays,
           procurementCycleDays: procurementCycle,
           shipCoverageDays: shipCoverageDays,
           orderCoverageDays: orderCoverageDays,
-          shipForecastSum: shipForecastSum,
-          orderForecastSum: orderForecastSum,
-          shipInventoryDeduction: shipInventoryDeduction,
-          orderInventoryDeduction: orderInventoryDeduction,
-          shipDeduction: shipDeduction,
-          orderDeduction: orderDeduction
+          shipForecastSum: annualResult.shipForecastSum,
+          orderForecastSum: annualResult.orderForecastSum,
+          shipInventoryDeduction: annualResult.shipInventoryDeduction,
+          orderInventoryDeduction: annualResult.orderInventoryDeduction,
+          shipDeduction: annualResult.shipDeduction,
+          orderDeduction: annualResult.orderDeduction,
+          sourceResults: {
+            annual: annualResult,
+            forecast: forecastResult
+          }
         };
       }
 
@@ -1367,6 +1720,7 @@
         var parents = loadParents();
         var rules = loadRules();
         childSuggestions = [];
+        missingSuggestions = defaultMissingSuggestions();
         parents.forEach(function(parent, parentIndex) {
           for (var i = 0; i < childCountForParent(parentIndex); i += 1) {
             var item = makeChildSuggestion(parent, parentIndex, i, rules);
@@ -1391,8 +1745,9 @@
         return methods.slice(0, 3).join(' / ') + (methods.length > 3 ? ' +' + (methods.length - 3) : '');
       }
 
-      function coverageText(start, end) {
-        return 'D+' + start + ' ~ D+' + end;
+      function coverageCycleText(coverageDays, safetyDays) {
+        if (!coverageDays || !safetyDays) return '-';
+        return 'D+0 ~ D+' + (coverageDays - 1) + ' / ' + safetyDays + '天';
       }
 
       function populateRuleFilter() {
@@ -1409,10 +1764,25 @@
         });
       }
 
+      function populateOwnerFilter() {
+        var select = document.getElementById('filter-owner');
+        var owners = uniqueList(childSuggestions.map(function(item) {
+          return item.owner;
+        }).filter(function(owner) {
+          return owner && owner !== '-';
+        }));
+        owners.forEach(function(owner) {
+          var option = document.createElement('option');
+          option.value = owner;
+          option.textContent = owner;
+          select.appendChild(option);
+        });
+      }
+
       function currentFilters() {
         return {
           keyword: (document.getElementById('filter-keyword').value || '').trim().toLowerCase(),
-          method: document.getElementById('filter-method').value,
+          owner: document.getElementById('filter-owner').value,
           ruleId: document.getElementById('filter-rule').value,
           positiveOnly: document.getElementById('filter-positive').checked
         };
@@ -1421,10 +1791,10 @@
       function filterChildren() {
         var f = currentFilters();
         return childSuggestions.filter(function(item) {
-          if (f.method && item.method !== f.method) return false;
+          if (f.owner && item.owner !== f.owner) return false;
           if (f.ruleId && item.ruleId !== f.ruleId) return false;
           if (f.keyword) {
-            var hay = [item.childSku, item.parentCode, item.asin, item.parentName].join(' ').toLowerCase();
+            var hay = [item.childSku, item.parentCode, item.asin, item.parentAsin, item.spu, item.parentName, item.owner].join(' ').toLowerCase();
             if (hay.indexOf(f.keyword) === -1) return false;
           }
           return true;
@@ -1433,15 +1803,23 @@
 
       function aggregateParentSuggestions(children) {
         var map = {};
-        children.forEach(function(child) {
+        children.forEach(function(baseChild) {
+          var child = childWithActiveSource(baseChild);
           if (!map[child.parentCode]) {
             map[child.parentCode] = {
               id: child.parentCode,
               parentCode: child.parentCode,
               parentName: child.parentName,
+              parentAsins: [],
+              spus: [],
+              sites: [],
+              owners: [],
               ruleNames: [],
               methods: [],
               childItems: [],
+              shipCoverageDays: 0,
+              orderCoverageDays: 0,
+              safetyDays: 0,
               shipSuggestedQty: 0,
               orderSuggestedQty: 0
             };
@@ -1450,20 +1828,36 @@
           parent.childItems.push(child);
           parent.shipSuggestedQty += child.shipSuggestedQty;
           parent.orderSuggestedQty += child.orderSuggestedQty;
+          parent.parentAsins.push(child.parentAsin);
+          parent.spus.push(child.spu);
+          parent.sites.push(child.site);
+          parent.owners.push(child.owner);
           parent.ruleNames.push(child.ruleName);
           parent.methods.push(child.method);
+          parent.shipCoverageDays = Math.max(parent.shipCoverageDays, child.shipCoverageDays);
+          parent.orderCoverageDays = Math.max(parent.orderCoverageDays, child.orderCoverageDays);
+          parent.safetyDays = Math.max(parent.safetyDays, child.safetyDays);
         });
         return Object.keys(map).map(function(key) {
           var parent = map[key];
+          parent.parentAsins = uniqueList(parent.parentAsins);
+          parent.spus = uniqueList(parent.spus);
+          parent.sites = uniqueList(parent.sites);
+          parent.owners = uniqueList(parent.owners);
           parent.ruleNames = uniqueList(parent.ruleNames);
           parent.methods = uniqueList(parent.methods);
-          parent.childCount = parent.childItems.length;
+          parent.parentAsinText = parent.parentAsins.join(' / ') || '-';
+          parent.spuText = parent.spus.join(' / ') || '-';
+          parent.siteText = parent.sites.join(' / ') || '-';
+          parent.ownerText = parent.owners.join(' / ') || '-';
           parent.methodText = methodText(parent.methods);
           parent.ruleText = parent.ruleNames.join(' / ');
+          parent.shipCycleText = coverageCycleText(parent.shipCoverageDays, parent.safetyDays);
+          parent.orderCycleText = coverageCycleText(parent.orderCoverageDays, parent.safetyDays);
           return parent;
         }).filter(function(parent) {
           var f = currentFilters();
-          return !f.positiveOnly || parent.shipSuggestedQty > 0 || parent.orderSuggestedQty > 0;
+          return !f.positiveOnly || hasSuggestedQty(parent);
         }).sort(function(a, b) {
           return (b.shipSuggestedQty + b.orderSuggestedQty) - (a.shipSuggestedQty + a.orderSuggestedQty) ||
             a.parentCode.localeCompare(b.parentCode);
@@ -1475,44 +1869,134 @@
         return parentSuggestions;
       }
 
+      function currentRuleVersionText() {
+        var ids = uniqueList(loadRules().map(function(rule) {
+          return rule.id;
+        }).filter(Boolean));
+        return ids.join(' / ') || '-';
+      }
+
+      function renderCalcMeta() {
+        document.getElementById('calc-time').textContent = CALC_INFO.time;
+        document.getElementById('calc-source').textContent = currentSourceLabel();
+        document.getElementById('calc-rules').textContent = currentRuleVersionText();
+        document.getElementById('btn-missing').textContent = '未生成建议：' + missingSuggestions.length;
+      }
+
+      function renderMissingSuggestions() {
+        var tbody = document.getElementById('missing-tbody');
+        if (!tbody) return;
+        if (!missingSuggestions.length) {
+          tbody.innerHTML = '<tr><td class="empty-row" colspan="5">暂无未生成建议对象</td></tr>';
+          return;
+        }
+        tbody.innerHTML = missingSuggestions.map(function(item) {
+          return '<tr>' +
+            '<td>' + escapeHtml(item.parentCode) + '</td>' +
+            '<td>' + escapeHtml(item.site) + '</td>' +
+            '<td>' + escapeHtml(item.owner) + '</td>' +
+            '<td>' + escapeHtml(item.reason) + '</td>' +
+            '<td>' + escapeHtml(item.action) + '</td>' +
+          '</tr>';
+        }).join('');
+      }
+
       function renderMetrics(list) {
         document.getElementById('metric-ship').textContent = formatNum(list.reduce(function(sum, item) { return sum + item.shipSuggestedQty; }, 0));
         document.getElementById('metric-order').textContent = formatNum(list.reduce(function(sum, item) { return sum + item.orderSuggestedQty; }, 0));
-        document.getElementById('metric-parent-count').textContent = formatNum(list.length);
-        document.getElementById('metric-child-count').textContent = formatNum(list.reduce(function(sum, item) { return sum + item.childCount; }, 0));
+      }
+
+      function selectedVisibleItems() {
+        return parentSuggestions.filter(function(item) {
+          return !!selectedSuggestionIds[item.id];
+        });
+      }
+
+      function selectedItemsForType(type) {
+        return selectedVisibleItems().filter(function(item) {
+          return type === 'ship' ? item.shipSuggestedQty > 0 : item.orderSuggestedQty > 0;
+        });
+      }
+
+      function updateSelectionControls(list) {
+        var visibleIds = {};
+        list.forEach(function(item) {
+          visibleIds[item.id] = true;
+        });
+        Object.keys(selectedSuggestionIds).forEach(function(id) {
+          if (!visibleIds[id]) delete selectedSuggestionIds[id];
+        });
+
+        var checkedCount = list.filter(function(item) {
+          return !!selectedSuggestionIds[item.id];
+        }).length;
+        var checkAll = document.getElementById('check-all-suggestions');
+        if (checkAll) {
+          checkAll.checked = list.length > 0 && checkedCount === list.length;
+          checkAll.indeterminate = checkedCount > 0 && checkedCount < list.length;
+          checkAll.disabled = !list.length;
+        }
+
+        var shipItems = selectedItemsForType('ship');
+        var orderItems = selectedItemsForType('order');
+        var shipButton = document.getElementById('btn-batch-ship');
+        var orderButton = document.getElementById('btn-batch-order');
+        if (shipButton) shipButton.disabled = !shipItems.length;
+        if (orderButton) orderButton.disabled = !orderItems.length;
+      }
+
+      function renderSourceSwitch() {
+        document.querySelectorAll('.source-toggle').forEach(function(btn) {
+          btn.classList.toggle('active', btn.getAttribute('data-source') === activeCalculationSource);
+        });
       }
 
       function renderTable() {
         var list = currentParentList();
         renderMetrics(list);
+        renderCalcMeta();
+        renderMissingSuggestions();
+        renderSourceSwitch();
         var tbody = document.getElementById('suggestion-tbody');
         tbody.innerHTML = '';
         if (!list.length) {
-          tbody.innerHTML = '<tr><td class="empty-row" colspan="6">暂无备货建议</td></tr>';
+          tbody.innerHTML = '<tr><td class="empty-row" colspan="12">暂无备货建议</td></tr>';
         } else {
           list.forEach(function(item) {
+            var checked = selectedSuggestionIds[item.id] ? ' checked' : '';
             var tr = document.createElement('tr');
             tr.setAttribute('data-id', item.id);
             tr.innerHTML =
-              '<td><div class="sku-cell"><span class="sku-code">' + escapeHtml(item.parentCode) + '</span><span class="sku-sub">' + escapeHtml(item.ruleText || '-') + '</span></div></td>' +
-              '<td class="num">' + formatNum(item.childCount) + '</td>' +
-              '<td>' + escapeHtml(item.methodText) + '</td>' +
+              '<td class="select-cell"><input type="checkbox" class="row-check" data-id="' + escapeHtml(item.id) + '" aria-label="选择' + escapeHtml(item.parentCode) + '"' + checked + ' /></td>' +
+              '<td><div class="sku-cell"><span class="sku-code">' + escapeHtml(item.parentCode) + '</span></div></td>' +
+              '<td>' + escapeHtml(item.parentAsinText || '-') + '</td>' +
+              '<td>' + escapeHtml(item.spuText || '-') + '</td>' +
+              '<td>' + escapeHtml(item.siteText || '-') + '</td>' +
+              '<td>' + escapeHtml(item.ownerText || '-') + '</td>' +
+              '<td>' + escapeHtml(item.ruleText || '-') + '</td>' +
+              '<td>' + escapeHtml(item.shipCycleText || '-') + '</td>' +
               '<td class="num strong-num">' + formatNum(item.shipSuggestedQty) + '</td>' +
+              '<td>' + escapeHtml(item.orderCycleText || '-') + '</td>' +
               '<td class="num strong-num">' + formatNum(item.orderSuggestedQty) + '</td>' +
-              '<td><button type="button" class="btn-text" data-action="detail" data-id="' + escapeHtml(item.id) + '">查看详情</button></td>';
+              '<td><div class="table-action-group">' +
+                '<button type="button" class="btn-text" data-action="detail" data-id="' + escapeHtml(item.id) + '">详情</button>' +
+              '</div></td>';
             tbody.appendChild(tr);
           });
         }
-        document.getElementById('result-count').textContent = '共 ' + list.length + ' 条';
+        updateSelectionControls(list);
       }
 
       function renderSummaryDetail(item) {
         document.getElementById('summary-detail').innerHTML =
-          '<div class="formula-block"><strong>父体编号</strong><br>' + escapeHtml(item.parentCode) + '</div>' +
-          '<div class="formula-block"><strong>适用规则</strong><br>' + escapeHtml(item.ruleText || '-') + '</div>' +
-          '<div class="formula-block"><strong>父体建议量口径</strong><br>' +
-          '父体发货建议总量 = Σ 子体发货最终建议量 = ' + formatNum(item.shipSuggestedQty) + '<br>' +
-          '父体下单建议总量 = Σ 子体下单最终建议量 = ' + formatNum(item.orderSuggestedQty) + '</div>';
+          '<div class="drawer-meta-grid">' +
+            '<div class="drawer-meta-item"><strong>父ASIN / SPU</strong><span>' + escapeHtml(item.parentAsinText || '-') + ' / ' + escapeHtml(item.spuText || '-') + '</span></div>' +
+            '<div class="drawer-meta-item"><strong>站点</strong><span>' + escapeHtml(item.siteText || '-') + '</span></div>' +
+            '<div class="drawer-meta-item"><strong>匹配规则</strong><span>' + escapeHtml(item.ruleText || '-') + '</span></div>' +
+            '<div class="drawer-meta-item"><strong>发货口径</strong><span>Σ 子体发货最终建议量 = ' + formatNum(item.shipSuggestedQty) + '</span></div>' +
+            '<div class="drawer-meta-item"><strong>下单口径</strong><span>Σ 子体下单最终建议量 = ' + formatNum(item.orderSuggestedQty) + '</span></div>' +
+            '<div class="drawer-meta-item"><strong>物流方式</strong><span>' + escapeHtml(item.methodText || '-') + '</span></div>' +
+          '</div>';
       }
 
       function renderChildDetail(item) {
@@ -1528,43 +2012,7 @@
         }).join('');
         document.getElementById('child-detail').innerHTML =
           '<table class="detail-table"><thead><tr>' +
-          '<th>子体 / SKU</th><th>ASIN</th><th>运输方式</th><th class="num">安全天数</th><th class="num">发货建议</th><th class="num">下单建议</th>' +
-          '</tr></thead><tbody>' + rows + '</tbody></table>';
-      }
-
-      function renderMethodDetail(item) {
-        var map = {};
-        item.childItems.forEach(function(child) {
-          if (!map[child.method]) {
-            map[child.method] = {
-              method: child.method,
-              childCount: 0,
-              shipSuggestedQty: 0,
-              orderSuggestedQty: 0,
-              start: child.logisticsLeadDays,
-              end: child.shipCoverageDays - 1
-            };
-          }
-          var row = map[child.method];
-          row.childCount += 1;
-          row.shipSuggestedQty += child.shipSuggestedQty;
-          row.orderSuggestedQty += child.orderSuggestedQty;
-          row.start = Math.min(row.start, child.logisticsLeadDays);
-          row.end = Math.max(row.end, child.shipCoverageDays - 1);
-        });
-        var rows = Object.keys(map).sort().map(function(key) {
-          var row = map[key];
-          return '<tr>' +
-            '<td>' + escapeHtml(row.method) + '</td>' +
-            '<td>' + coverageText(row.start, row.end) + '</td>' +
-            '<td class="num">' + formatNum(row.childCount) + '</td>' +
-            '<td class="num strong-num">' + formatNum(row.shipSuggestedQty) + '</td>' +
-            '<td class="num strong-num">' + formatNum(row.orderSuggestedQty) + '</td>' +
-          '</tr>';
-        }).join('');
-        document.getElementById('method-detail').innerHTML =
-          '<table class="detail-table"><thead><tr>' +
-          '<th>运输方式</th><th>覆盖区间</th><th class="num">子体数</th><th class="num">发货建议</th><th class="num">下单建议</th>' +
+          '<th>子体 / SKU</th><th>ASIN</th><th>物流方式</th><th class="num">安全天数</th><th class="num">发货建议</th><th class="num">下单建议</th>' +
           '</tr></thead><tbody>' + rows + '</tbody></table>';
       }
 
@@ -1582,7 +2030,7 @@
           '<div class="formula-block"><strong>父体聚合口径</strong><br>' +
           '父体发货建议总量 = Σ 子体发货最终建议量 = ' + formatNum(item.shipSuggestedQty) + '<br>' +
           '父体下单建议总量 = Σ 子体下单最终建议量 = ' + formatNum(item.orderSuggestedQty) + '<br>' +
-          '子体建议量仍按预测销量、库存、采购时效、物流时效计算；多运输方式按到货时间分段，库存扣减项不重复扣减。</div>' +
+          '子体建议量仍按预测销量、库存、采购时效、物流时效计算；多物流方式按到货时间分段，库存扣减项不重复扣减。</div>' +
           '<table class="detail-table"><thead><tr>' +
           '<th>子体 / SKU</th><th class="num">预测销量<br>发货/下单</th><th class="num">库存扣减<br>发货/下单</th><th class="num">扣减项<br>发货/下单</th><th class="num">最终建议<br>发货/下单</th>' +
           '</tr></thead><tbody>' + rows + '</tbody></table>';
@@ -1594,15 +2042,16 @@
           row.classList.toggle('active', row.getAttribute('data-id') === item.id);
         });
         document.getElementById('drawer-title').textContent = '父体 ' + item.parentCode + ' 备货详情';
-        document.getElementById('drawer-subtitle').textContent = (item.ruleText || '-') + ' / 决策日 ' + document.getElementById('filter-date').value;
+        document.getElementById('drawer-subtitle').textContent = (item.ruleText || '-') + ' / 运营负责人 ' + (item.ownerText || '-') + ' / 计算时间 ' + CALC_INFO.time;
         document.getElementById('drawer-ship-qty').textContent = formatNum(item.shipSuggestedQty);
         document.getElementById('drawer-order-qty').textContent = formatNum(item.orderSuggestedQty);
-        document.getElementById('drawer-child-count').textContent = formatNum(item.childCount);
         document.getElementById('drawer-methods').textContent = item.methodText;
         renderSummaryDetail(item);
         renderChildDetail(item);
-        renderMethodDetail(item);
         renderCalcDetail(item);
+        document.querySelectorAll('.drawer-anchor').forEach(function(anchor, index) {
+          anchor.classList.toggle('active', index === 0);
+        });
         document.getElementById('drawer-mask').classList.add('show');
         document.getElementById('detail-drawer').classList.add('open');
         document.getElementById('detail-drawer').setAttribute('aria-hidden', 'false');
@@ -1615,6 +2064,17 @@
         document.getElementById('detail-drawer').setAttribute('aria-hidden', 'true');
       }
 
+      function openMissingModal() {
+        renderMissingSuggestions();
+        document.getElementById('missing-mask').classList.add('show');
+        document.getElementById('missing-mask').setAttribute('aria-hidden', 'false');
+      }
+
+      function closeMissingModal() {
+        document.getElementById('missing-mask').classList.remove('show');
+        document.getElementById('missing-mask').setAttribute('aria-hidden', 'true');
+      }
+
       function findSuggestion(id) {
         return parentSuggestions.filter(function(item) { return item.id === id; })[0];
       }
@@ -1624,9 +2084,8 @@
       }
 
       function resetFilters() {
-        document.getElementById('filter-date').value = todayString();
         document.getElementById('filter-keyword').value = '';
-        document.getElementById('filter-method').value = '';
+        document.getElementById('filter-owner').value = '';
         document.getElementById('filter-rule').value = '';
         document.getElementById('filter-positive').checked = false;
         render();
@@ -1634,6 +2093,19 @@
 
       function showAction(message) {
         alert(message);
+      }
+
+      function showBatchAction(type) {
+        var items = selectedItemsForType(type);
+        if (!items.length) {
+          showAction('请先勾选存在' + (type === 'ship' ? '发货' : '下单') + '建议量的父体');
+          return;
+        }
+        var total = items.reduce(function(sum, item) {
+          return sum + (type === 'ship' ? item.shipSuggestedQty : item.orderSuggestedQty);
+        }, 0);
+        var actionName = type === 'ship' ? '批量生成发货计划' : '批量生成采购计划';
+        showAction(actionName + '：' + items.length + '个父体，合计' + formatNum(total) + '件，数据源：' + currentSourceLabel());
       }
 
       function initSidebarMenu() {
@@ -1690,22 +2162,67 @@
         });
       }
 
-      document.getElementById('filter-date').value = todayString();
       populateRuleFilter();
       buildSuggestions();
+      populateOwnerFilter();
       render();
       initSidebarMenu();
 
       document.getElementById('btn-search').addEventListener('click', render);
       document.getElementById('btn-reset').addEventListener('click', resetFilters);
       document.getElementById('suggestion-tbody').addEventListener('click', function(e) {
+        if (e.target.closest('.row-check')) return;
         var row = e.target.closest('tr[data-id]');
         if (!row) return;
         var item = findSuggestion(row.getAttribute('data-id'));
-        if (item) openDrawer(item);
+        if (!item) return;
+        var action = e.target.getAttribute('data-action');
+        openDrawer(item);
+      });
+      document.getElementById('suggestion-tbody').addEventListener('change', function(e) {
+        if (!e.target.classList.contains('row-check')) return;
+        var id = e.target.getAttribute('data-id');
+        if (e.target.checked) {
+          selectedSuggestionIds[id] = true;
+        } else {
+          delete selectedSuggestionIds[id];
+        }
+        updateSelectionControls(parentSuggestions);
+      });
+      document.getElementById('check-all-suggestions').addEventListener('change', function(e) {
+        if (e.target.checked) {
+          parentSuggestions.forEach(function(item) {
+            selectedSuggestionIds[item.id] = true;
+          });
+        } else {
+          parentSuggestions.forEach(function(item) {
+            delete selectedSuggestionIds[item.id];
+          });
+        }
+        renderTable();
+      });
+      document.querySelectorAll('.source-toggle').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var source = btn.getAttribute('data-source');
+          if (!DATA_SOURCE_META[source] || source === activeCalculationSource) return;
+          activeCalculationSource = source;
+          render();
+        });
+      });
+      document.getElementById('btn-batch-ship').addEventListener('click', function() {
+        showBatchAction('ship');
+      });
+      document.getElementById('btn-batch-order').addEventListener('click', function() {
+        showBatchAction('order');
       });
       document.getElementById('drawer-mask').addEventListener('click', closeDrawer);
       document.getElementById('drawer-close').addEventListener('click', closeDrawer);
+      document.getElementById('btn-missing').addEventListener('click', openMissingModal);
+      document.getElementById('missing-mask').addEventListener('click', function(e) {
+        if (e.target === e.currentTarget) closeMissingModal();
+      });
+      document.getElementById('missing-close').addEventListener('click', closeMissingModal);
+      document.getElementById('missing-ok').addEventListener('click', closeMissingModal);
       document.querySelectorAll('.drawer-anchor').forEach(function(btn) {
         btn.addEventListener('click', function() {
           var body = document.getElementById('drawer-body');
@@ -1727,17 +2244,24 @@
         showAction('导出计算明细入口：' + (currentSuggestion ? currentSuggestion.parentCode : ''));
       });
       ['btn-export-top', 'btn-export-table'].forEach(function(id) {
-        document.getElementById(id).addEventListener('click', function() {
+        var btn = document.getElementById(id);
+        if (!btn) return;
+        btn.addEventListener('click', function() {
           showAction('导出备货建议入口');
         });
       });
-      ['btn-plan-top', 'btn-plan-table'].forEach(function(id) {
-        document.getElementById(id).addEventListener('click', function() {
+      ['btn-plan-top'].forEach(function(id) {
+        var btn = document.getElementById(id);
+        if (!btn) return;
+        btn.addEventListener('click', function() {
           showAction('生成计划入口');
         });
       });
       document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') closeDrawer();
+        if (e.key === 'Escape') {
+          closeDrawer();
+          closeMissingModal();
+        }
       });
     })();
   </script>

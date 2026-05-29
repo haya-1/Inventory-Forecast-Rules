@@ -1937,6 +1937,27 @@
         };
       }
 
+      function seedParentCodesForRule(ruleId) {
+        var map = {
+          BR20260521001: ['LFT00002261', 'LFT00002260', 'LFT00000755'],
+          BR20260521002: ['LFT00000784', 'LFT00000783', 'LFT00000778']
+        };
+        return map[ruleId] ? map[ruleId].slice() : null;
+      }
+
+      function alignSeedRule(rule) {
+        var seedCodes = seedParentCodesForRule(rule.id);
+        if (!seedCodes) return rule;
+        rule.form = rule.form || {};
+        rule.form.parentCodes = seedCodes;
+        if (rule.id === 'BR20260521001') {
+          rule.enabled = true;
+          rule.form.enabled = true;
+        }
+        rule.parentLabel = parentLabelFromCodes(rule.form.parentCodes);
+        return rule;
+      }
+
       function seedRules() {
         var time = '2026-05-21 15:40';
         return [
@@ -1944,7 +1965,7 @@
             'BR20260521001',
             '北美站标准备货规则',
             true,
-            ['LFT00002261', 'LFT00002260'],
+            ['LFT00002261', 'LFT00002260', 'LFT00000755'],
             {},
             time
           ),
@@ -1952,7 +1973,7 @@
             'BR20260521002',
             '欧洲站稳态备货规则',
             true,
-            ['LFT00000784', 'LFT00000783'],
+            ['LFT00000784', 'LFT00000783', 'LFT00000778'],
             {
               procurement: { purchaseLead: 35, purchaseFrequency: 14, pickupPrep: 7, qualityInspection: 2 },
               fbaSafetyDays: 30
@@ -1967,13 +1988,28 @@
           var raw = localStorage.getItem(RULE_STORAGE_KEY);
           var parsed = raw ? JSON.parse(raw) : null;
           if (Array.isArray(parsed) && parsed.length) {
-            return parsed.map(function(rule) {
+            var changed = false;
+            var rules = parsed.map(function(rule) {
               rule.form = normalizeForm(rule.form || {});
               rule.name = rule.name || rule.form.name || '';
+              var before = JSON.stringify({
+                enabled: rule.enabled,
+                formEnabled: rule.form.enabled,
+                parentCodes: rule.form.parentCodes
+              });
               rule.enabled = rule.enabled !== false;
+              rule = alignSeedRule(rule);
               rule.parentLabel = parentLabelFromCodes(rule.form.parentCodes);
+              var after = JSON.stringify({
+                enabled: rule.enabled,
+                formEnabled: rule.form.enabled,
+                parentCodes: rule.form.parentCodes
+              });
+              if (before !== after) changed = true;
               return rule;
             });
+            if (changed) saveRules(rules);
+            return rules;
           }
         } catch (err) {}
         var rules = seedRules();
