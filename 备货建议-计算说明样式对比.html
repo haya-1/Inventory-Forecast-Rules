@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>计算说明 · 样式对比（文字分步 vs 瀑布图）</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #eef1f6;
+    color: #303133;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page-head { padding: 24px 32px 4px; }
+  .page-head h1 { margin: 0 0 6px; font-size: 20px; }
+  .page-head p { margin: 0; color: #606266; font-size: 13px; line-height: 1.7; }
+
+  .compare { display: flex; gap: 24px; padding: 18px 32px 60px; align-items: flex-start; flex-wrap: wrap; }
+  .col { flex: 1 1 560px; min-width: 460px; }
+
+  .col-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; }
+  .col-tag { display: inline-flex; align-items: center; height: 24px; padding: 0 10px; border-radius: 4px; background: #409eff; color: #fff; font-size: 13px; font-weight: 700; }
+  .col-tag.b { background: #67c23a; }
+  .col-name { font-size: 15px; font-weight: 700; }
+  .col-trade { color: #909399; font-size: 12px; line-height: 1.6; margin-bottom: 12px; }
+  .col-trade b { color: #67c23a; }
+  .col-trade i { color: #e6a23c; font-style: normal; }
+
+  /* 抽屉区块外观 */
+  .panel { background: #fff; border-radius: 8px; box-shadow: 0 8px 28px rgba(31,45,70,.12); padding: 16px 18px; }
+
+  .sec-head { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; margin-bottom: 10px; }
+  .sec-head::before { content: ""; width: 3px; height: 14px; border-radius: 2px; background: #409eff; }
+  .sec-head .hint { font-weight: 400; font-size: 12px; color: #909399; }
+
+  /* 方法说明 */
+  .method-note { background: #fcfdff; border: 1px dashed #e4e7ed; border-radius: 6px; padding: 10px 12px; font-size: 12.5px; color: #606266; line-height: 1.9; margin-bottom: 14px; }
+  .method-note b { color: #303133; }
+
+  /* 子体行（通用） */
+  .sku-block { border: 1px solid #ebeef5; border-radius: 8px; margin-bottom: 10px; overflow: hidden; }
+  .sku-row { display: flex; align-items: center; gap: 12px; padding: 10px 14px; cursor: pointer; background: #fff; }
+  .sku-row:hover { background: #fafcff; }
+  .sku-id { display: flex; flex-direction: column; gap: 2px; min-width: 150px; }
+  .sku-code { font-weight: 700; color: #303133; font-size: 13px; }
+  .sku-attr { color: #909399; font-size: 11.5px; }
+  .sku-safe { font-size: 11px; color: #409eff; background: #ecf5ff; border-radius: 3px; padding: 1px 7px; white-space: nowrap; }
+  .sku-spacer { flex: 1; }
+  .sku-qty { font-size: 18px; font-weight: 800; color: #1f6feb; font-variant-numeric: tabular-nums; }
+  .sku-qty.zero { color: #909399; font-size: 15px; }
+  .sku-qty .u { font-size: 12px; font-weight: 600; color: #909399; margin-left: 3px; }
+  .sku-caret { color: #c0c4cc; font-size: 12px; width: 14px; text-align: center; }
+  .sku-detail { border-top: 1px solid #f0f2f5; padding: 12px 16px; background: #fbfcfe; }
+  .sku-block.collapsed .sku-detail { display: none; }
+
+  /* —— 变体A：文字分步 —— */
+  .steps { display: flex; flex-direction: column; gap: 8px; }
+  .step { display: flex; gap: 10px; align-items: flex-start; font-size: 12.5px; line-height: 1.6; }
+  .step-no { flex-shrink: 0; width: 18px; height: 18px; border-radius: 50%; background: #ecf5ff; color: #409eff; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; margin-top: 1px; }
+  .step-body { color: #303133; }
+  .step-body .muted { color: #909399; }
+  .step-body .op { color: #f56c6c; font-weight: 700; }
+  .step-body .eq { color: #1f6feb; font-weight: 700; }
+  .ded-chips { display: inline-flex; flex-wrap: wrap; gap: 6px; margin-left: 6px; vertical-align: middle; }
+  .ded-chip { font-size: 11px; color: #606266; background: #eef1f5; border-radius: 4px; padding: 1px 7px; }
+  .step-zero-tip { margin-top: 8px; font-size: 12px; color: #e6820f; background: #fdf6ec; border: 1px solid #faecd8; border-radius: 6px; padding: 7px 10px; }
+
+  /* —— 变体B：瀑布图 —— */
+  .wf { display: flex; flex-direction: column; gap: 7px; }
+  .wf-row { display: grid; grid-template-columns: 92px 1fr 92px; align-items: center; gap: 10px; font-size: 12.5px; }
+  .wf-label { color: #606266; white-space: nowrap; }
+  .wf-track { position: relative; height: 18px; background: #f3f5f8; border-radius: 4px; overflow: hidden; }
+  .wf-bar { position: absolute; top: 0; height: 100%; border-radius: 4px; }
+  .wf-bar.base { background: linear-gradient(90deg,#9cc2ea,#cfe0f5); }
+  .wf-bar.keep { background: linear-gradient(90deg,#5aa6ff,#1f6feb); }
+  .wf-cut-stock { background: repeating-linear-gradient(45deg,#e4e7ed,#e4e7ed 5px,#eef0f3 5px,#eef0f3 10px); }
+  .wf-cut-loss { background: repeating-linear-gradient(45deg,#fde2d6,#fde2d6 5px,#fdeee6 5px,#fdeee6 10px); }
+  .wf-val { text-align: right; font-variant-numeric: tabular-nums; color: #303133; }
+  .wf-val.neg { color: #f56c6c; }
+  .wf-val.res { color: #1f6feb; font-weight: 800; }
+  .wf-row.result .wf-label { color: #303133; font-weight: 700; }
+  .wf-legend { margin-top: 9px; display: flex; gap: 14px; font-size: 11px; color: #909399; flex-wrap: wrap; }
+  .lg { display: inline-flex; align-items: center; gap: 5px; }
+  .lg i { width: 12px; height: 10px; border-radius: 2px; display: inline-block; }
+  .lg .keep { background: #1f6feb; }
+  .lg .stock { background: repeating-linear-gradient(45deg,#e4e7ed,#e4e7ed 4px,#eef0f3 4px,#eef0f3 8px); border:1px solid #e4e7ed; }
+  .lg .loss { background: repeating-linear-gradient(45deg,#fde2d6,#fde2d6 4px,#fdeee6 4px,#fdeee6 8px); border:1px solid #fde2d6; }
+  .wf-zero-tip { margin-top: 8px; font-size: 12px; color: #e6820f; background: #fdf6ec; border: 1px solid #faecd8; border-radius: 6px; padding: 7px 10px; }
+
+  /* 父体合计 */
+  .agg { margin-top: 16px; border: 1px solid #d9ecff; border-radius: 8px; overflow: hidden; }
+  .agg-head { background: #ecf5ff; padding: 9px 14px; font-size: 13px; font-weight: 700; color: #1f4e8c; }
+  .agg-list { padding: 6px 14px; }
+  .agg-line { display: flex; justify-content: space-between; padding: 4px 0; font-size: 12.5px; border-bottom: 1px dashed #f0f2f5; }
+  .agg-line:last-child { border-bottom: 0; }
+  .agg-line .c { color: #606266; }
+  .agg-line .v { font-variant-numeric: tabular-nums; color: #303133; }
+  .agg-line .v.zero { color: #c0c4cc; }
+  .agg-total { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: #f7faff; border-top: 1px solid #e3ecfb; }
+  .agg-total .c { font-weight: 700; color: #303133; font-size: 13px; }
+  .agg-total .v { font-size: 20px; font-weight: 800; color: #1f6feb; font-variant-numeric: tabular-nums; }
+  .agg-total .v .u { font-size: 12px; color: #909399; font-weight: 600; margin-left: 3px; }
+</style>
+</head>
+<body>
+  <div class="page-head">
+    <h1>计算说明 · 样式对比</h1>
+    <p>同一父体 <b>LFT00002261 / SPU ST18106 / 发货口径</b>：4 个子体（含 1 个建议=0 演示），父体合计 3,067 双。两种风格都做到「子体逐步代入 + 父体看得见相加」，只是子体那一步的呈现不同。默认收起，点子体行展开。</p>
+  </div>
+
+  <div class="compare">
+
+    <!-- ============ 变体 A：文字分步 ============ -->
+    <div class="col">
+      <div class="col-head"><span class="col-tag">变体 A</span><span class="col-name">文字分步代入</span></div>
+      <div class="col-trade"><b>优点：</b>每一步口径写得清清楚楚，覆盖周期/扣减分项/取整都能交代，最“可追溯”。 &nbsp;<i>取舍：</i>偏文字，扫一眼的“量感”不如图。开发成本低。</div>
+
+      <div class="panel">
+        <div class="sec-head">发货计算说明 <span class="hint">每个子体怎么算 → 父体怎么合计</span></div>
+        <div class="method-note">
+          <b>通用口径：</b>覆盖周期 ＝ 物流时效 ＋ 安全天数 ＋ 发货频率（各子体安全天数按自身命中条件取最高，故覆盖天数可能不同）。<br>
+          建议量 ＝ 覆盖期预测销量 − 库存扣减（FBA库存＋在途）− 必断货扣除，向上取整且不小于 0。
+        </div>
+
+        <!-- 展开示例 -->
+        <div class="sku-block">
+          <div class="sku-row">
+            <div class="sku-id"><span class="sku-code">ST18106-BK38</span><span class="sku-attr">黑色 · 38码</span></div>
+            <span class="sku-safe">安全 45 天</span>
+            <span class="sku-spacer"></span>
+            <span class="sku-qty">1,218<span class="u">双</span></span>
+            <span class="sku-caret">▾</span>
+          </div>
+          <div class="sku-detail">
+            <div class="steps">
+              <div class="step"><span class="step-no">1</span><span class="step-body">覆盖周期 <b>89 天</b> ＝ 物流时效 37 ＋ 安全天数 45 ＋ 发货频率 7</span></div>
+              <div class="step"><span class="step-no">2</span><span class="step-body">预测销量 <b>1,942</b> <span class="muted">（覆盖期 D ~ D+88 每日预测累加）</span></span></div>
+              <div class="step"><span class="step-no">3</span><span class="step-body"><span class="op">−</span> 库存扣减 <b>160</b><span class="ded-chips"><span class="ded-chip">FBA库存 60</span><span class="ded-chip">FBA在途 100</span></span></span></div>
+              <div class="step"><span class="step-no">4</span><span class="step-body"><span class="op">−</span> 必断货扣除 <b>564</b> <span class="muted">（到货前 D~D+36 已无法挽回）</span></span></div>
+              <div class="step"><span class="step-no">5</span><span class="step-body"><span class="eq">＝</span> 原始 1,218 → 向上取整 · 非负 → 建议 <b class="eq">1,218 双</b></span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 收起态 -->
+        <div class="sku-block collapsed">
+          <div class="sku-row">
+            <div class="sku-id"><span class="sku-code">ST18106-WT39</span><span class="sku-attr">白色 · 39码</span></div>
+            <span class="sku-safe">安全 45 天</span>
+            <span class="sku-spacer"></span>
+            <span class="sku-qty">1,137<span class="u">双</span></span>
+            <span class="sku-caret">▸</span>
+          </div>
+          <div class="sku-detail"></div>
+        </div>
+
+        <div class="sku-block collapsed">
+          <div class="sku-row">
+            <div class="sku-id"><span class="sku-code">ST18106-RD38</span><span class="sku-attr">红色 · 38码</span></div>
+            <span class="sku-safe">安全 20 天</span>
+            <span class="sku-spacer"></span>
+            <span class="sku-qty">712<span class="u">双</span></span>
+            <span class="sku-caret">▸</span>
+          </div>
+          <div class="sku-detail"></div>
+        </div>
+
+        <!-- 建议=0 示例（展开看异常说明） -->
+        <div class="sku-block">
+          <div class="sku-row">
+            <div class="sku-id"><span class="sku-code">ST18106-BK39</span><span class="sku-attr">黑色 · 39码</span></div>
+            <span class="sku-safe">安全 28 天</span>
+            <span class="sku-spacer"></span>
+            <span class="sku-qty zero">0<span class="u">双</span></span>
+            <span class="sku-caret">▾</span>
+          </div>
+          <div class="sku-detail">
+            <div class="steps">
+              <div class="step"><span class="step-no">1</span><span class="step-body">覆盖周期 <b>72 天</b> ＝ 物流时效 37 ＋ 安全天数 28 ＋ 发货频率 7</span></div>
+              <div class="step"><span class="step-no">2</span><span class="step-body">预测销量 <b>980</b></span></div>
+              <div class="step"><span class="step-no">3</span><span class="step-body"><span class="op">−</span> 库存扣减 <b>1,100</b><span class="ded-chips"><span class="ded-chip">FBA库存 700</span><span class="ded-chip">FBA在途 400</span></span></span></div>
+              <div class="step"><span class="step-no">4</span><span class="step-body"><span class="op">−</span> 必断货扣除 <b>0</b></span></div>
+              <div class="step"><span class="step-no">5</span><span class="step-body"><span class="eq">＝</span> 原始 -120 → 非负 → 建议 <b>0 双</b></span></div>
+            </div>
+            <div class="step-zero-tip">当前库存及在途已覆盖目标周期，建议量为 0，请关注库存积压或远期到货。</div>
+          </div>
+        </div>
+
+        <!-- 父体合计 -->
+        <div class="agg">
+          <div class="agg-head">父体发货建议 ＝ Σ 各子体建议量</div>
+          <div class="agg-list">
+            <div class="agg-line"><span class="c">ST18106-BK38（黑·38）</span><span class="v">1,218</span></div>
+            <div class="agg-line"><span class="c">ST18106-WT39（白·39）</span><span class="v">1,137</span></div>
+            <div class="agg-line"><span class="c">ST18106-RD38（红·38）</span><span class="v">712</span></div>
+            <div class="agg-line"><span class="c">ST18106-BK39（黑·39）</span><span class="v zero">0</span></div>
+          </div>
+          <div class="agg-total"><span class="c">父体发货建议总量</span><span class="v">3,067<span class="u">双</span></span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ 变体 B：瀑布图 ============ -->
+    <div class="col">
+      <div class="col-head"><span class="col-tag b">变体 B</span><span class="col-name">瀑布图（量感可视）</span></div>
+      <div class="col-trade"><b>优点：</b>一眼看出“需求里多少被库存抵掉、多少断货损失、最后剩多少要发”，量感最强。 &nbsp;<i>取舍：</i>开发成本略高；覆盖周期等口径仍需文字辅助。</div>
+
+      <div class="panel">
+        <div class="sec-head">发货计算说明 <span class="hint">每个子体怎么算 → 父体怎么合计</span></div>
+        <div class="method-note">
+          <b>通用口径：</b>覆盖周期 ＝ 物流时效 ＋ 安全天数 ＋ 发货频率；建议量 ＝ 覆盖期预测销量 − 库存扣减 − 必断货扣除（向上取整、非负）。下方瀑布展示“预测销量如何一步步扣到建议量”。
+        </div>
+
+        <!-- 展开示例 -->
+        <div class="sku-block">
+          <div class="sku-row">
+            <div class="sku-id"><span class="sku-code">ST18106-BK38</span><span class="sku-attr">黑色 · 38码 · 覆盖89天</span></div>
+            <span class="sku-spacer"></span>
+            <span class="sku-qty">1,218<span class="u">双</span></span>
+            <span class="sku-caret">▾</span>
+          </div>
+          <div class="sku-detail">
+            <div class="wf">
+              <div class="wf-row"><span class="wf-label">预测销量</span><span class="wf-track"><span class="wf-bar base" style="left:0;width:100%"></span></span><span class="wf-val">1,942</span></div>
+              <div class="wf-row"><span class="wf-label">− 库存扣减</span><span class="wf-track"><span class="wf-bar wf-cut-stock" style="left:91.8%;width:8.2%"></span></span><span class="wf-val neg">-160</span></div>
+              <div class="wf-row"><span class="wf-label">− 必断货</span><span class="wf-track"><span class="wf-bar wf-cut-loss" style="left:62.7%;width:29.0%"></span></span><span class="wf-val neg">-564</span></div>
+              <div class="wf-row result"><span class="wf-label">＝ 建议量</span><span class="wf-track"><span class="wf-bar keep" style="left:0;width:62.7%"></span></span><span class="wf-val res">1,218</span></div>
+            </div>
+            <div class="wf-legend">
+              <span class="lg"><i class="keep"></i>本次应发</span>
+              <span class="lg"><i class="stock"></i>库存/在途已覆盖</span>
+              <span class="lg"><i class="loss"></i>必断货损失（补不回）</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="sku-block collapsed">
+          <div class="sku-row">
+            <div class="sku-id"><span class="sku-code">ST18106-WT39</span><span class="sku-attr">白色 · 39码 · 覆盖89天</span></div>
+            <span class="sku-spacer"></span>
+            <span class="sku-qty">1,137<span class="u">双</span></span>
+            <span class="sku-caret">▸</span>
+          </div>
+          <div class="sku-detail"></div>
+        </div>
+
+        <div class="sku-block collapsed">
+          <div class="sku-row">
+            <div class="sku-id"><span class="sku-code">ST18106-RD38</span><span class="sku-attr">红色 · 38码 · 覆盖64天</span></div>
+            <span class="sku-spacer"></span>
+            <span class="sku-qty">712<span class="u">双</span></span>
+            <span class="sku-caret">▸</span>
+          </div>
+          <div class="sku-detail"></div>
+        </div>
+
+        <!-- 建议=0 示例 -->
+        <div class="sku-block">
+          <div class="sku-row">
+            <div class="sku-id"><span class="sku-code">ST18106-BK39</span><span class="sku-attr">黑色 · 39码 · 覆盖72天</span></div>
+            <span class="sku-spacer"></span>
+            <span class="sku-qty zero">0<span class="u">双</span></span>
+            <span class="sku-caret">▾</span>
+          </div>
+          <div class="sku-detail">
+            <div class="wf">
+              <div class="wf-row"><span class="wf-label">预测销量</span><span class="wf-track"><span class="wf-bar base" style="left:0;width:89.1%"></span></span><span class="wf-val">980</span></div>
+              <div class="wf-row"><span class="wf-label">− 库存扣减</span><span class="wf-track"><span class="wf-bar wf-cut-stock" style="left:0;width:100%"></span></span><span class="wf-val neg">-1,100</span></div>
+              <div class="wf-row result"><span class="wf-label">＝ 建议量</span><span class="wf-track"></span><span class="wf-val res">0</span></div>
+            </div>
+            <div class="wf-zero-tip">库存及在途（1,100）已超过覆盖期需求（980），建议量为 0，请关注库存积压或远期到货。</div>
+          </div>
+        </div>
+
+        <!-- 父体合计 -->
+        <div class="agg">
+          <div class="agg-head">父体发货建议 ＝ Σ 各子体建议量</div>
+          <div class="agg-list">
+            <div class="agg-line"><span class="c">ST18106-BK38（黑·38）</span><span class="v">1,218</span></div>
+            <div class="agg-line"><span class="c">ST18106-WT39（白·39）</span><span class="v">1,137</span></div>
+            <div class="agg-line"><span class="c">ST18106-RD38（红·38）</span><span class="v">712</span></div>
+            <div class="agg-line"><span class="c">ST18106-BK39（黑·39）</span><span class="v zero">0</span></div>
+          </div>
+          <div class="agg-total"><span class="c">父体发货建议总量</span><span class="v">3,067<span class="u">双</span></span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>
