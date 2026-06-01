@@ -12,7 +12,8 @@
       "Bash(ls -la .claude/ 2>/dev/null && echo \"---\" && ls -la ~/.claude/ 2>/dev/null | head -30)",
       "WebFetch(domain:github.com)",
       "WebFetch(domain:www.gstack.cn)",
-      "Bash(gh search *)"
+      "Bash(gh search *)",
+      "Bash(claude --version)"
     ]
   }
 }

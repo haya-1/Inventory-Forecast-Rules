@@ -925,17 +925,29 @@
       border-color: #409eff;
     }
 
-    .method-name-input {
+    .method-select {
       width: 180px;
       min-width: 180px;
       flex: none;
     }
 
-    .safety-condition-days,
-    .method-lead {
+    .method-priority-input {
+      width: 96px;
+      min-width: 96px;
+    }
+
+    .safety-condition-days {
       width: 110px;
       min-width: 110px;
       flex: none;
+    }
+
+    .method-lead-display {
+      display: inline-flex;
+      align-items: center;
+      min-height: 32px;
+      color: #606266;
+      font-variant-numeric: tabular-nums;
     }
 
     .safety-condition-table {
@@ -1421,26 +1433,16 @@
               <table class="config-table">
                 <thead>
                 <tr>
-                  <th>运输方式</th>
-                  <th style="width: 180px;">CN仓至FBA时效</th>
+                  <th>物流方式</th>
+                  <th style="width: 140px;">计算优先级</th>
+                  <th style="width: 180px;">时间（天）</th>
                   <th style="width: 90px; text-align:center;">操作</th>
                 </tr>
               </thead>
-              <tbody class="logistics-method-tbody">
-                <tr data-method-key="fastShip">
-                  <td><input class="drawer-input method-name-input" type="text" value="快船" /></td>
-                  <td><input class="drawer-input numeric-input method-lead" type="number" min="0" value="35" /> <span class="input-suffix">天</span></td>
-                  <td style="text-align:center;"><button type="button" class="btn-text btn-danger logistics-method-delete">删除</button></td>
-                </tr>
-                <tr data-method-key="slowShip">
-                  <td><input class="drawer-input method-name-input" type="text" value="慢船" /></td>
-                  <td><input class="drawer-input numeric-input method-lead" type="number" min="0" value="55" /> <span class="input-suffix">天</span></td>
-                  <td style="text-align:center;"><button type="button" class="btn-text btn-danger logistics-method-delete">删除</button></td>
-                </tr>
-                </tbody>
+              <tbody class="logistics-method-tbody"></tbody>
               </table>
               <div class="safety-category-footer">
-                <button type="button" class="btn btn-primary logistics-method-add">+ 新增运输方式</button>
+                <button type="button" class="btn btn-primary logistics-method-add">+ 新增物流方式</button>
               </div>
             </div>
           </div>
@@ -1458,26 +1460,16 @@
               <table class="config-table">
                 <thead>
                 <tr>
-                  <th>运输方式</th>
-                  <th style="width: 180px;">CN仓至FBA时效</th>
+                  <th>物流方式</th>
+                  <th style="width: 140px;">计算优先级</th>
+                  <th style="width: 180px;">时间（天）</th>
                   <th style="width: 90px; text-align:center;">操作</th>
                 </tr>
               </thead>
-              <tbody class="logistics-method-tbody">
-                <tr data-method-key="fastShip">
-                  <td><input class="drawer-input method-name-input" type="text" value="快船" /></td>
-                  <td><input class="drawer-input numeric-input method-lead" type="number" min="0" value="40" /> <span class="input-suffix">天</span></td>
-                  <td style="text-align:center;"><button type="button" class="btn-text btn-danger logistics-method-delete">删除</button></td>
-                </tr>
-                <tr data-method-key="slowShip">
-                  <td><input class="drawer-input method-name-input" type="text" value="慢船" /></td>
-                  <td><input class="drawer-input numeric-input method-lead" type="number" min="0" value="60" /> <span class="input-suffix">天</span></td>
-                  <td style="text-align:center;"><button type="button" class="btn-text btn-danger logistics-method-delete">删除</button></td>
-                </tr>
-                </tbody>
+              <tbody class="logistics-method-tbody"></tbody>
               </table>
               <div class="safety-category-footer">
-                <button type="button" class="btn btn-primary logistics-method-add">+ 新增运输方式</button>
+                <button type="button" class="btn btn-primary logistics-method-add">+ 新增物流方式</button>
               </div>
             </div>
           </div>
@@ -1674,6 +1666,28 @@
         }
       ];
 
+      var LOGISTICS_METHOD_OPTIONS = {
+        northAmerica: [
+          { key: 'mason_regular', name: '美森正班', leadTimeDays: 37 },
+          { key: 'sea_standard', name: '普船', leadTimeDays: 57 },
+          { key: 'air', name: '空运', leadTimeDays: 22 },
+          { key: 'qisuda', name: '琦速达', leadTimeDays: 40 },
+          { key: 'mason_extra', name: '美森加班', leadTimeDays: 42 },
+          { key: 'fast_delivery', name: '快速达', leadTimeDays: 42 },
+          { key: 'limited_delivery', name: '限时达', leadTimeDays: 37 },
+          { key: 'hede', name: '合德', leadTimeDays: 42 },
+          { key: 'zxing', name: '以星', leadTimeDays: 45 }
+        ],
+        europe: [
+          { key: 'sea_standard', name: '普船', leadTimeDays: 45 },
+          { key: 'air', name: '空运', leadTimeDays: 15 },
+          { key: 'truck_delivery', name: '卡派', leadTimeDays: 40 },
+          { key: 'railway', name: '铁路', leadTimeDays: 35 },
+          { key: 'uk_sea', name: '英国海运', leadTimeDays: 45 },
+          { key: 'eu_sea', name: '欧洲海运', leadTimeDays: 45 }
+        ]
+      };
+
       var drawer = document.getElementById('rule-drawer');
       var drawerMask = document.getElementById('rule-drawer-mask');
       var parentModal = document.getElementById('sf-modal-parent-pick');
@@ -1844,8 +1858,8 @@
               enabled: true,
               shipFrequencyDays: 7,
               methods: [
-                { key: 'fastShip', name: '快船', leadTimeDays: 35 },
-                { key: 'slowShip', name: '慢船', leadTimeDays: 55 }
+                { key: 'mason_regular', name: '美森正班', priority: 1, leadTimeDays: 37 },
+                { key: 'sea_standard', name: '普船', priority: 2, leadTimeDays: 57 }
               ]
             },
             {
@@ -1854,8 +1868,8 @@
               enabled: true,
               shipFrequencyDays: 7,
               methods: [
-                { key: 'fastShip', name: '快船', leadTimeDays: 40 },
-                { key: 'slowShip', name: '慢船', leadTimeDays: 60 }
+                { key: 'sea_standard', name: '普船', priority: 1, leadTimeDays: 45 },
+                { key: 'air', name: '空运', priority: 2, leadTimeDays: 15 }
               ]
             }
           ],
@@ -1888,6 +1902,54 @@
         '</span>';
       }
 
+      function getLogisticsMethodOptions(siteKey) {
+        return LOGISTICS_METHOD_OPTIONS[siteKey] || [];
+      }
+
+      function findLogisticsMethodOption(siteKey, value) {
+        var options = getLogisticsMethodOptions(siteKey);
+        return options.filter(function(option) {
+          return option.key === value || option.name === value;
+        })[0] || null;
+      }
+
+      function normalizeLogisticsMethod(siteKey, method, index) {
+        var options = getLogisticsMethodOptions(siteKey);
+        var fallback = options[index] || options[0] || { key: 'method_' + index, name: method && method.name || '', leadTimeDays: method && method.leadTimeDays || 0 };
+        var option = findLogisticsMethodOption(siteKey, method && (method.key || method.name));
+        if (!option && method && method.name) option = findLogisticsMethodOption(siteKey, method.name);
+        if (!option && method && method.key === 'fastShip') option = siteKey === 'europe' ? (findLogisticsMethodOption(siteKey, '空运') || options[1]) : options[0];
+        if (!option && method && method.key === 'slowShip') option = findLogisticsMethodOption(siteKey, '普船') || options[1];
+        option = option || fallback;
+        var priority = toInt(method && method.priority, index + 1);
+        return {
+          key: option.key,
+          name: option.name,
+          priority: priority > 0 ? priority : index + 1,
+          leadTimeDays: option.leadTimeDays
+        };
+      }
+
+      function nextLogisticsMethod(siteKey, methods) {
+        var options = getLogisticsMethodOptions(siteKey);
+        var used = {};
+        var maxPriority = 0;
+        (methods || []).forEach(function(method) {
+          used[method.key] = true;
+          used[method.name] = true;
+          maxPriority = Math.max(maxPriority, toInt(method.priority, 0));
+        });
+        var next = options.filter(function(option) {
+          return !used[option.key] && !used[option.name];
+        })[0] || options[0] || { key: makeLogisticsMethodKey(), name: '', leadTimeDays: 0 };
+        return {
+          key: next.key,
+          name: next.name,
+          priority: maxPriority + 1,
+          leadTimeDays: next.leadTimeDays
+        };
+      }
+
       function normalizeForm(form) {
         var d = getDefaultFormState();
         form = form || {};
@@ -1906,12 +1968,7 @@
             enabled: true,
             shipFrequencyDays: foundSite.shipFrequencyDays != null ? foundSite.shipFrequencyDays : site.shipFrequencyDays,
             methods: sourceMethods.map(function(method, index) {
-              var defaultMethod = site.methods.filter(function(x) { return x.key === method.key; })[0] || {};
-              return {
-                key: method.key || ('method_' + index),
-                name: method.name || defaultMethod.name || '',
-                leadTimeDays: method.leadTimeDays != null ? method.leadTimeDays : (defaultMethod.leadTimeDays != null ? defaultMethod.leadTimeDays : 0)
-              };
+              return normalizeLogisticsMethod(site.key, method, index);
             })
           };
         });
@@ -2229,21 +2286,36 @@
       function renderLogisticsMethodRows(card, methods) {
         var tbody = card.querySelector('.logistics-method-tbody');
         if (!tbody) return;
-        tbody.innerHTML = (methods || []).map(function(method) {
-          return '<tr data-method-key="' + escapeHtml(method.key || makeLogisticsMethodKey()) + '">' +
-            '<td><input class="drawer-input method-name-input" type="text" value="' + escapeHtml(method.name || '') + '" placeholder="请输入运输方式" /></td>' +
-            '<td><input class="drawer-input numeric-input method-lead" type="number" min="0" value="' + escapeHtml(method.leadTimeDays != null ? method.leadTimeDays : 0) + '" /> <span class="input-suffix">天</span></td>' +
+        var siteKey = card.getAttribute('data-site-key');
+        var options = getLogisticsMethodOptions(siteKey);
+        tbody.innerHTML = (methods || []).map(function(method, index) {
+          var normalized = normalizeLogisticsMethod(siteKey, method, index);
+          var optionRows = options.map(function(option) {
+            var selected = option.key === normalized.key;
+            return '<option value="' + escapeHtml(option.key) + '"' + (selected ? ' selected' : '') + '>' + escapeHtml(option.name) + '</option>';
+          }).join('');
+          return '<tr data-method-key="' + escapeHtml(normalized.key || makeLogisticsMethodKey()) + '">' +
+            '<td><select class="drawer-select method-select">' + optionRows + '</select></td>' +
+            '<td><input class="drawer-input numeric-input method-priority-input" type="number" min="1" step="1" value="' + escapeHtml(normalized.priority) + '" /></td>' +
+            '<td><span class="method-lead-display" data-lead-days="' + escapeHtml(normalized.leadTimeDays) + '">' + escapeHtml(normalized.leadTimeDays) + '</span> <span class="input-suffix">天</span></td>' +
             '<td style="text-align:center;"><button type="button" class="btn-text btn-danger logistics-method-delete">删除</button></td>' +
           '</tr>';
         }).join('');
       }
 
       function collectLogisticsMethods(card) {
+        var siteKey = card.getAttribute('data-site-key');
         return Array.from(card.querySelectorAll('.logistics-method-tbody tr')).map(function(row) {
+          var selectedKey = row.querySelector('.method-select').value;
+          var option = findLogisticsMethodOption(siteKey, selectedKey) || { key: selectedKey, name: selectedKey, leadTimeDays: 0 };
+          var priorityInput = row.querySelector('.method-priority-input');
+          var priorityRaw = priorityInput ? priorityInput.value : '';
           return {
-            key: row.getAttribute('data-method-key') || makeLogisticsMethodKey(),
-            name: (row.querySelector('.method-name-input').value || '').trim(),
-            leadTimeDays: toInt(row.querySelector('.method-lead').value, 0)
+            key: option.key,
+            name: option.name,
+            priority: toInt(priorityRaw, 0),
+            _priorityRaw: priorityRaw,
+            leadTimeDays: option.leadTimeDays
           };
         });
       }
@@ -2379,6 +2451,45 @@
         return null;
       }
 
+      function findInvalidLogisticsPriority(form) {
+        var sites = form.logisticsSites || [];
+        for (var i = 0; i < sites.length; i += 1) {
+          var site = sites[i];
+          var methods = site.methods || [];
+          var seen = {};
+          for (var j = 0; j < methods.length; j += 1) {
+            var method = methods[j];
+            var raw = method._priorityRaw != null ? String(method._priorityRaw).trim() : String(method.priority || '').trim();
+            var numberValue = Number(raw);
+            if (!raw || !Number.isInteger(numberValue) || numberValue <= 0) {
+              return {
+                type: 'invalid',
+                siteName: site.name || site.key || '当前站点',
+                methodName: method.name || '当前物流方式'
+              };
+            }
+            if (seen[numberValue]) {
+              return {
+                type: 'duplicate',
+                siteName: site.name || site.key || '当前站点',
+                priority: numberValue
+              };
+            }
+            seen[numberValue] = true;
+          }
+        }
+        return null;
+      }
+
+      function cleanLogisticsPriorityFields(form) {
+        (form.logisticsSites || []).forEach(function(site) {
+          (site.methods || []).forEach(function(method) {
+            method.priority = Number(method.priority);
+            delete method._priorityRaw;
+          });
+        });
+      }
+
       function submitRule() {
         var form = collectFormState();
         var name = (form.name || '').trim();
@@ -2393,6 +2504,17 @@
           alert('安全库存天数中「' + duplicateSafety.categoryName + '」存在重复条件「' + duplicateSafety.conditionName + '」，请调整后再提交');
           return;
         }
+        var invalidPriority = findInvalidLogisticsPriority(form);
+        if (invalidPriority) {
+          setActiveDrawerTab('drawer-tab-logistics');
+          if (invalidPriority.type === 'duplicate') {
+            alert(invalidPriority.siteName + '存在重复的物流方式计算优先级「' + invalidPriority.priority + '」，请调整后再提交');
+          } else {
+            alert(invalidPriority.siteName + '的「' + invalidPriority.methodName + '」计算优先级无效，请输入大于0的整数');
+          }
+          return;
+        }
+        cleanLogisticsPriorityFields(form);
 
         var rules = loadRules();
         var now = formatNow();
@@ -2623,11 +2745,7 @@
         if (addBtn) {
           var addCard = addBtn.closest('.site-card');
           var methods = collectLogisticsMethods(addCard);
-          methods.push({
-            key: makeLogisticsMethodKey(),
-            name: '',
-            leadTimeDays: 0
-          });
+          methods.push(nextLogisticsMethod(addCard.getAttribute('data-site-key'), methods));
           renderLogisticsMethodRows(addCard, methods);
           return;
         }
@@ -2636,6 +2754,20 @@
         if (delBtn) {
           var row = delBtn.closest('tr');
           if (row) row.remove();
+        }
+      });
+
+      document.getElementById('drawer-tab-logistics').addEventListener('change', function(e) {
+        if (!e.target.matches('.method-select')) return;
+        var row = e.target.closest('tr');
+        var card = e.target.closest('.site-card');
+        var option = findLogisticsMethodOption(card.getAttribute('data-site-key'), e.target.value);
+        if (!option || !row) return;
+        row.setAttribute('data-method-key', option.key);
+        var lead = row.querySelector('.method-lead-display');
+        if (lead) {
+          lead.setAttribute('data-lead-days', option.leadTimeDays);
+          lead.textContent = option.leadTimeDays;
         }
       });
 
