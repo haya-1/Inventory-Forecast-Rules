@@ -1030,21 +1030,68 @@
     }
     .hero-card.single .hero-sub { margin-top: 0; text-align: right; }
 
-    .method-table .method-main > td { vertical-align: middle; }
+    /* 建议构成表格 */
+    .contrib-table th, .contrib-table td { padding: 8px 10px; }
+    .pct-cell { display: flex; align-items: center; gap: 8px; }
+    .pct-bar {
+      display: block;
+      flex: 1;
+      max-width: 130px;
+      height: 10px;
+      background: #f0f2f5;
+      border-radius: 5px;
+      overflow: hidden;
+    }
+    .pct-bar i { display: block; height: 100%; border-radius: 5px; background: linear-gradient(90deg, #5aa6ff, #1f6feb); }
+    .pct-bar i.c2 { background: linear-gradient(90deg, #7cc4ff, #4596f5); }
+    .pct-bar i.c3 { background: linear-gradient(90deg, #a9d5ff, #6aa9f0); }
+    .pct-bar i.c4 { background: linear-gradient(90deg, #cfe4fb, #9cc2ea); }
+    .pct-text { font-size: 12px; color: #606266; font-variant-numeric: tabular-nums; min-width: 34px; text-align: right; }
+
+    /* 发货明细：物流方式（主）→ SKU（从）层级 */
+    .method-table .method-main > td {
+      vertical-align: middle;
+      background: #f3f7fe;
+      border-bottom: 1px solid #e3ecfb;
+    }
     .method-name {
+      position: relative;
+      padding-left: 14px;
       font-weight: 700;
-      color: #303133;
+      color: #1f4e8c;
       font-size: 13px;
     }
+    .method-name::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 4px;
+      height: 14px;
+      border-radius: 2px;
+      background: #409eff;
+    }
     .method-table .method-detail-row > td {
-      background: #fafbfc;
-      padding: 0 10px 8px;
+      background: #fbfcfe;
+      padding: 0;
+    }
+    .method-detail-panel {
+      margin: 0 0 8px 22px;
+      border-left: 2px solid #d2e4fb;
+      padding: 8px 0 4px 14px;
+    }
+    .method-detail-cap {
+      font-size: 12px;
+      color: #909399;
+      margin-bottom: 6px;
     }
     .method-sku-table {
-      margin: 4px 0 2px;
+      margin: 0;
       border: 1px solid #eef1f5;
       border-radius: 6px;
       overflow: hidden;
+      background: #fff;
     }
     .method-sku-table thead th { background: #f0f3f8; }
     .method-sku-table th, .method-sku-table td { border-bottom: 1px solid #f3f5f8; }
@@ -2810,9 +2857,12 @@
               '<td class="child-expand-cell"><button type="button" class="child-expand' + (index === 0 ? ' open' : '') + '" data-action="toggle-method" data-target="' + index + '">' + (index === 0 ? '收起 ▴' : '展开 ▾') + '</button></td>' +
             '</tr>' +
             '<tr class="method-detail-row" data-method-row="' + index + '"' + (index === 0 ? '' : ' hidden') + '><td colspan="4">' +
-              '<table class="detail-table method-sku-table"><thead><tr>' +
-              '<th>子体 / SKU</th><th>命中规则</th><th class="num">安全天数</th><th class="num">' + typeLabel + '数量</th>' +
-              '</tr></thead><tbody>' + lines + '</tbody></table>' +
+              '<div class="method-detail-panel">' +
+                '<div class="method-detail-cap">发往「' + escapeHtml(group.methodName) + '」的 SKU · 共 ' + group.lines.length + ' 个 · 合计 ' + formatNum(group.totalQty) + ' 双</div>' +
+                '<table class="detail-table method-sku-table"><thead><tr>' +
+                '<th>SKU</th><th>命中规则</th><th class="num">安全天数</th><th class="num">' + typeLabel + '数量</th>' +
+                '</tr></thead><tbody>' + lines + '</tbody></table>' +
+              '</div>' +
             '</td></tr>';
         }).join('');
         document.getElementById('child-detail').innerHTML =
@@ -2880,18 +2930,19 @@
         }).sort(function(a, b) { return b.qty - a.qty; });
         var max = rows.reduce(function(m, r) { return Math.max(m, r.qty); }, 0) || 1;
         var palette = ['', 'c2', 'c3', 'c4'];
-        var html = rows.map(function(row, index) {
+        var body = rows.map(function(row, index) {
           var pct = total > 0 ? Math.round(row.qty / total * 100) : 0;
           var width = Math.max(2, Math.round(row.qty / max * 100));
           var cls = palette[Math.min(index, palette.length - 1)];
-          return '<div class="contrib-row">' +
-            '<span class="contrib-sku" title="' + escapeHtml(row.sku) + '">' + escapeHtml(row.sku) + '</span>' +
-            '<span class="contrib-track"><span class="contrib-fill ' + cls + '" style="width:' + width + '%"></span></span>' +
-            '<span class="contrib-val">' + formatNum(row.qty) + '<span class="contrib-pct">' + pct + '%</span></span>' +
-          '</div>';
+          return '<tr>' +
+            '<td><span class="sku-code">' + escapeHtml(row.sku) + '</span></td>' +
+            '<td class="num strong-num">' + formatNum(row.qty) + '</td>' +
+            '<td><div class="pct-cell"><span class="pct-bar"><i class="' + cls + '" style="width:' + width + '%"></i></span><span class="pct-text">' + pct + '%</span></div></td>' +
+          '</tr>';
         }).join('');
-        document.getElementById('contrib-detail').innerHTML =
-          '<div class="contrib">' + (html || '<div class="contrib-empty">暂无' + typeLabel + '建议量</div>') + '</div>';
+        document.getElementById('contrib-detail').innerHTML = rows.length
+          ? '<table class="detail-table contrib-table"><thead><tr><th>SKU</th><th class="num">建议总量</th><th>占比</th></tr></thead><tbody>' + body + '</tbody></table>'
+          : '<div class="contrib-empty">暂无' + typeLabel + '建议量</div>';
       }
 
       function setCalcCollapsed(collapsed) {
