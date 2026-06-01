@@ -557,6 +557,25 @@
       font-weight: 600;
     }
 
+    .qty-num {
+      font-size: 16px;
+      font-weight: 700;
+      color: #1f6feb;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .qty-num.qty-zero {
+      color: #909399;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: help;
+    }
+
+    .qty-zero-mark {
+      font-size: 11px;
+      color: #c0c4cc;
+    }
+
     .sku-cell {
       display: flex;
       flex-direction: column;
@@ -1307,7 +1326,7 @@
               <div class="table-actions">
                 <button type="button" class="btn btn-primary" id="btn-batch-ship" disabled>批量生成发货</button>
                 <button type="button" class="btn btn-primary" id="btn-batch-order" disabled>批量生成采购</button>
-                <button type="button" class="btn" id="btn-export-table" style="display: none;">导出</button>
+                <button type="button" class="btn" id="btn-export-table">导出</button>
               </div>
             </div>
 
@@ -1316,18 +1335,13 @@
                 <thead>
                   <tr>
                     <th class="select-cell" style="width: 46px;"><input type="checkbox" id="check-all-suggestions" aria-label="全选备货建议" /></th>
-                    <th style="width: 120px;">父体编号</th>
-                    <th style="width: 112px;">父ASIN</th>
-                    <th style="width: 90px;">SPU</th>
-                    <th style="width: 72px;">站点</th>
-                    <th style="width: 90px;">运营负责人</th>
-                    <th style="width: 140px;">匹配规则</th>
-                    <th style="width: 92px;">计算来源</th>
-                    <th style="width: 96px;">物流方式</th>
-                    <th style="width: 150px;" id="cycle-head">发货备货周期<span class="th-note">覆盖天数 / 日期区间</span></th>
-                    <th style="width: 78px;" class="num">安全天数</th>
-                    <th style="width: 96px;" class="num" id="qty-head">发货建议量</th>
-                    <th style="width: 72px;">操作</th>
+                    <th style="width: 200px;">父体<span class="th-note">父ASIN · SPU · 站点</span></th>
+                    <th style="width: 168px;" id="cycle-head">发货备货周期<span class="th-note">覆盖天数 / 日期区间</span></th>
+                    <th style="width: 110px;" class="num" id="qty-head">发货建议量</th>
+                    <th style="width: 96px;">运营负责人</th>
+                    <th style="width: 150px;">匹配规则</th>
+                    <th style="width: 96px;" id="source-head">计算来源</th>
+                    <th style="width: 64px;">操作</th>
                   </tr>
                 </thead>
                 <tbody id="suggestion-tbody"></tbody>
@@ -1359,10 +1373,6 @@
           <span>下单建议总量</span>
           <strong id="drawer-order-qty">0</strong>
         </div>
-        <div class="decision-item" id="drawer-methods-card">
-          <span>物流方式</span>
-          <strong id="drawer-methods">-</strong>
-        </div>
       </div>
       <div class="drawer-anchor-row">
         <div class="drawer-anchors">
@@ -1392,7 +1402,7 @@
       <div class="drawer-actions">
         <button type="button" class="btn btn-primary" id="drawer-create-ship">生成发货计划</button>
         <button type="button" class="btn btn-primary" id="drawer-create-order">生成采购计划</button>
-        <button type="button" class="btn" id="drawer-export" style="display: none;">导出明细</button>
+        <button type="button" class="btn" id="drawer-export">导出明细</button>
       </div>
     </div>
   </aside>
@@ -2414,6 +2424,24 @@
         document.getElementById('qty-head').textContent = activeQtyLabel();
       }
 
+      function qtyCellHtml(item) {
+        var qty = activeSuggestionQty(item);
+        if (qty > 0) {
+          return '<span class="qty-num">' + formatNum(qty) + '</span>';
+        }
+        return '<span class="qty-num qty-zero" title="当前库存及在途已覆盖目标周期，本次' +
+          activeTypeLabel() + '建议量为 0">0 <span class="qty-zero-mark">ⓘ</span></span>';
+      }
+
+      function applySourceColumnVisibility() {
+        var single = !!document.getElementById('filter-source').value;
+        var head = document.getElementById('source-head');
+        if (head) head.style.display = single ? 'none' : '';
+        document.querySelectorAll('#suggestion-tbody .source-col').forEach(function(cell) {
+          cell.style.display = single ? 'none' : '';
+        });
+      }
+
       function renderTable() {
         var list = currentParentList();
         renderMetrics(list);
@@ -2423,31 +2451,31 @@
         var tbody = document.getElementById('suggestion-tbody');
         tbody.innerHTML = '';
         if (!list.length) {
-          tbody.innerHTML = '<tr><td class="empty-row" colspan="13">暂无备货建议</td></tr>';
+          tbody.innerHTML = '<tr><td class="empty-row" colspan="8">暂无备货建议</td></tr>';
         } else {
           list.forEach(function(item) {
             var checked = selectedSuggestionIds[item.id] ? ' checked' : '';
             var tr = document.createElement('tr');
             tr.setAttribute('data-id', item.id);
+            var idSubParts = [item.parentAsinText, item.spuText, item.siteText].filter(function(part) {
+              return part && part !== '-';
+            });
+            var idSub = idSubParts.length ? idSubParts.join(' · ') : '-';
             tr.innerHTML =
               '<td class="select-cell"><input type="checkbox" class="row-check" data-id="' + escapeHtml(item.id) + '" aria-label="选择' + escapeHtml(item.parentCode) + ' ' + escapeHtml(item.sourceLabel || '') + '"' + checked + ' /></td>' +
-              '<td><div class="sku-cell"><span class="sku-code">' + escapeHtml(item.parentCode) + '</span></div></td>' +
-              '<td>' + escapeHtml(item.parentAsinText || '-') + '</td>' +
-              '<td>' + escapeHtml(item.spuText || '-') + '</td>' +
-              '<td>' + escapeHtml(item.siteText || '-') + '</td>' +
+              '<td><div class="sku-cell"><span class="sku-code">' + escapeHtml(item.parentCode) + '</span><span class="sku-sub" title="' + escapeHtml(idSub) + '">' + escapeHtml(idSub) + '</span></div></td>' +
+              '<td>' + activeCycleHtml(item) + '</td>' +
+              '<td class="num">' + qtyCellHtml(item) + '</td>' +
               '<td>' + escapeHtml(item.ownerText || '-') + '</td>' +
               '<td>' + escapeHtml(item.ruleText || '-') + '</td>' +
-              '<td><span class="tag ' + sourceMeta(item.sourceKey).tagClass + '">' + escapeHtml(item.sourceLabel || '-') + '</span></td>' +
-              '<td>' + escapeHtml(item.methodText || '-') + '</td>' +
-              '<td>' + activeCycleHtml(item) + '</td>' +
-              '<td class="num">' + formatNum(item.safetyDays) + '</td>' +
-              '<td class="num strong-num">' + formatNum(activeSuggestionQty(item)) + '</td>' +
+              '<td class="source-col"><span class="tag ' + sourceMeta(item.sourceKey).tagClass + '">' + escapeHtml(item.sourceLabel || '-') + '</span></td>' +
               '<td><div class="table-action-group">' +
                 '<button type="button" class="btn-text" data-action="detail" data-id="' + escapeHtml(item.id) + '">详情</button>' +
               '</div></td>';
             tbody.appendChild(tr);
           });
         }
+        applySourceColumnVisibility();
         updateSelectionControls(list);
       }
 
@@ -2499,7 +2527,13 @@
             '<td class="num strong-num">' + formatNum(activeChildSuggestedQty(child)) + '</td>' +
           '</tr>';
         }).join('');
+        var coverageDays = activeCoverageDays(item);
+        var coverageRange = coverageDays ? cycleDateRangeText(coverageDays) : '-';
         document.getElementById('calc-detail').innerHTML =
+          '<div class="formula-block"><strong>覆盖周期与安全天数</strong><br>' +
+          typeLabel + '覆盖天数 = ' + formatNum(coverageDays) + ' 天（区间 ' + coverageRange + '，求和口径 D ~ D+N-1）<br>' +
+          '最终安全天数 = ' + formatNum(item.safetyDays) + ' 天（父体取各子体命中条件中的最高值）<br>' +
+          typeLabel + '预测销量 = Σ forecastSales(D ~ D+' + Math.max(coverageDays - 1, 0) + ')</div>' +
           '<div class="formula-block"><strong>父体聚合口径</strong><br>' +
           '父体' + typeLabel + '建议总量 = Σ 子体' + typeLabel + '最终建议量 = ' + formatNum(activeSuggestionQty(item)) + '<br>' +
           typeLabel + '建议量 = ' + typeLabel + '预测销量 - 库存扣减 - 必断货扣除量<br>' +
@@ -2529,7 +2563,6 @@
         });
         document.getElementById('drawer-title').textContent = '父体 ' + item.parentCode + ' ' + activeTypeLabel() + '详情';
         document.getElementById('drawer-subtitle').textContent = (item.ruleText || '-') + ' / ' + (item.sourceLabel || '-') + ' / 运营负责人 ' + (item.ownerText || '-') + ' / 计算时间 ' + CALC_INFO.time;
-        document.getElementById('drawer-methods').textContent = item.methodText;
         syncDrawerTypeControls(item);
         renderSummaryDetail(item);
         renderChildDetail(item);
