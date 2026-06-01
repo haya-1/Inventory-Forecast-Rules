@@ -2928,20 +2928,16 @@
         var rows = item.childItems.map(function(child) {
           return { sku: child.childSku, qty: activeChildSuggestedQty(child) };
         }).sort(function(a, b) { return b.qty - a.qty; });
-        var max = rows.reduce(function(m, r) { return Math.max(m, r.qty); }, 0) || 1;
-        var palette = ['', 'c2', 'c3', 'c4'];
-        var body = rows.map(function(row, index) {
+        var body = rows.map(function(row) {
           var pct = total > 0 ? Math.round(row.qty / total * 100) : 0;
-          var width = Math.max(2, Math.round(row.qty / max * 100));
-          var cls = palette[Math.min(index, palette.length - 1)];
           return '<tr>' +
             '<td><span class="sku-code">' + escapeHtml(row.sku) + '</span></td>' +
             '<td class="num strong-num">' + formatNum(row.qty) + '</td>' +
-            '<td><div class="pct-cell"><span class="pct-bar"><i class="' + cls + '" style="width:' + width + '%"></i></span><span class="pct-text">' + pct + '%</span></div></td>' +
+            '<td class="num">' + pct + '%</td>' +
           '</tr>';
         }).join('');
         document.getElementById('contrib-detail').innerHTML = rows.length
-          ? '<table class="detail-table contrib-table"><thead><tr><th>SKU</th><th class="num">建议总量</th><th>占比</th></tr></thead><tbody>' + body + '</tbody></table>'
+          ? '<table class="detail-table contrib-table"><thead><tr><th>SKU</th><th class="num">建议总量</th><th class="num">占比</th></tr></thead><tbody>' + body + '</tbody></table>'
           : '<div class="contrib-empty">暂无' + typeLabel + '建议量</div>';
       }
 
