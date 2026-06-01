@@ -460,39 +460,6 @@
       box-shadow: 0 1px 3px rgba(64, 158, 255, .18);
     }
 
-    .batch-strip {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-top: 12px;
-      padding: 10px 12px;
-      border: 1px solid #ebeef5;
-      border-radius: 4px;
-      background: #fafafa;
-    }
-
-    .batch-main {
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 8px 18px;
-      color: #606266;
-      font-size: 12px;
-      line-height: 1.5;
-    }
-
-    .batch-item strong {
-      color: #909399;
-      font-weight: 400;
-    }
-
-    .batch-warning {
-      flex-shrink: 0;
-      color: #e6a23c;
-      border-color: #f5dab1;
-      background: #fdf6ec;
-    }
 
     .table-wrap {
       overflow-x: auto;
@@ -1349,80 +1316,6 @@
       padding: 28px !important;
     }
 
-    .modal-mask {
-      display: none;
-      position: fixed;
-      inset: 0;
-      z-index: 1300;
-      background: rgba(0, 0, 0, 0.35);
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-    }
-
-    .modal-mask.show {
-      display: flex;
-    }
-
-    .missing-modal {
-      width: 760px;
-      max-width: 96vw;
-      max-height: 82vh;
-      background: #fff;
-      border-radius: 4px;
-      box-shadow: 0 10px 32px rgba(0, 0, 0, 0.18);
-      display: flex;
-      flex-direction: column;
-    }
-
-    .modal-head {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 16px 18px;
-      border-bottom: 1px solid #ebeef5;
-    }
-
-    .modal-title {
-      color: #303133;
-      font-size: 16px;
-      font-weight: 600;
-      line-height: 1.4;
-    }
-
-    .modal-note {
-      margin-top: 4px;
-      color: #909399;
-      font-size: 12px;
-      line-height: 1.5;
-    }
-
-    .modal-close {
-      width: 28px;
-      height: 28px;
-      border: 0;
-      background: transparent;
-      color: #909399;
-      cursor: pointer;
-      font-size: 20px;
-      line-height: 1;
-    }
-
-    .modal-body {
-      min-height: 0;
-      overflow: auto;
-      padding: 16px 18px;
-    }
-
-    .modal-footer {
-      display: flex;
-      justify-content: flex-end;
-      padding: 12px 18px;
-      border-top: 1px solid #ebeef5;
-      background: #fff;
-    }
-
     .primary-item[data-submenu="proto"],
     #proto-submenu {
       display: none !important;
@@ -1458,15 +1351,6 @@
       .head-actions,
       .table-actions {
         margin-top: 10px;
-      }
-
-      .batch-strip {
-        align-items: stretch;
-        flex-direction: column;
-      }
-
-      .batch-warning {
-        width: 100%;
       }
 
       .metric-grid,
@@ -1563,15 +1447,6 @@
                 <button type="button" class="btn" id="btn-reset">重置</button>
               </div>
             </div>
-            <div class="batch-strip">
-              <div class="batch-main">
-                <span class="batch-item"><strong>计算时间：</strong><span id="calc-time">-</span></span>
-                <span class="batch-item"><strong>数据来源：</strong><span id="calc-source">-</span></span>
-                <span class="batch-item" style="display: none;"><strong>规则版本：</strong><span id="calc-rules">-</span></span>
-              </div>
-              <button type="button" class="btn batch-warning" id="btn-missing">未生成建议：0</button>
-            </div>
-
             <div class="metric-grid" id="metric-grid"></div>
             <div class="metric-note" id="metric-note" style="display: none;"></div>
           </div>
@@ -1669,42 +1544,12 @@
     </div>
   </aside>
 
-  <div class="modal-mask" id="missing-mask" aria-hidden="true">
-    <div class="missing-modal" role="dialog" aria-modal="true" aria-labelledby="missing-title">
-      <div class="modal-head">
-        <div>
-          <div class="modal-title" id="missing-title">未生成建议</div>
-          <div class="modal-note">以下对象因数据或配置不完整，未进入备货建议主列表。</div>
-        </div>
-        <button type="button" class="modal-close" id="missing-close" aria-label="关闭">×</button>
-      </div>
-      <div class="modal-body">
-        <table class="detail-table">
-          <thead>
-            <tr>
-              <th>父体编号</th>
-              <th>站点</th>
-              <th>运营负责人</th>
-              <th>未生成原因</th>
-              <th>处理方向</th>
-            </tr>
-          </thead>
-          <tbody id="missing-tbody"></tbody>
-        </table>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn" id="missing-ok">关闭</button>
-      </div>
-    </div>
-  </div>
-
   <script>
     (function initParentLevelStockingSuggestionPage() {
       var PARENT_STORAGE_KEY = 'sf_replenish_parent_list_v1';
       var RULE_STORAGE_KEY = 'stocking_rule_config_rules_v2';
       var childSuggestions = [];
       var parentSuggestions = [];
-      var missingSuggestions = [];
       var currentSuggestion = null;
       var activeSuggestionType = 'ship';
       var selectedSuggestionIds = {};
@@ -1780,10 +1625,6 @@
         var startDate = todayDate();
         var endDate = addDays(startDate, Math.max(coverageDays - 1, 0));
         return formatDate(startDate) + ' ~ ' + formatDate(endDate);
-      }
-
-      function currentSourceLabel() {
-        return CALC_INFO.source;
       }
 
       function hasSuggestedQty(item) {
@@ -1935,14 +1776,6 @@
           { code: 'LFT00000783', asin: 'B0F8GGJ7LK', platform: 'Amazon', site: '英国', store: 'STEP QUEEN INC-UK', spu: 'STK2527157', owner: '余滢', days: '0/0' },
           { code: 'LFT00000778', asin: 'B0F8GTKXQK', platform: 'Amazon', site: '德国', store: 'STEP QUEEN INC-DE', spu: 'STK2527157', owner: '余滢', days: '0/0' },
           { code: 'LFT00000755', asin: 'B0GLNK47Y9', platform: 'Amazon', site: '美国', store: 'STQ Inc-US', spu: 'WT82527258', owner: '黄利萍', days: '0/5' }
-        ];
-      }
-
-      function defaultMissingSuggestions() {
-        return [
-          { parentCode: 'LFT00003018', site: '美国', owner: '陈柏宏', reason: '缺少预测日销量', action: '补齐预测销量后重新计算' },
-          { parentCode: 'LFT00003027', site: '英国', owner: '余滢', reason: '未命中启用的备货规则', action: '绑定备货规则或启用规则' },
-          { parentCode: 'LFT00003039', site: '美国', owner: '黄国阳', reason: '缺少物流时效配置', action: '维护站点物流时效后重新计算' }
         ];
       }
 
@@ -2444,7 +2277,6 @@
         var parents = loadParents();
         var rules = loadRules();
         childSuggestions = [];
-        missingSuggestions = defaultMissingSuggestions();
         parents.forEach(function(parent, parentIndex) {
           for (var i = 0; i < childCountForParent(parentIndex); i += 1) {
             var item = makeChildSuggestion(parent, parentIndex, i, rules);
@@ -2613,38 +2445,6 @@
         return parentSuggestions;
       }
 
-      function currentRuleVersionText() {
-        var ids = uniqueList(loadRules().map(function(rule) {
-          return rule.id;
-        }).filter(Boolean));
-        return ids.join(' / ') || '-';
-      }
-
-      function renderCalcMeta() {
-        document.getElementById('calc-time').textContent = CALC_INFO.time;
-        document.getElementById('calc-source').textContent = currentSourceLabel();
-        document.getElementById('calc-rules').textContent = currentRuleVersionText();
-        document.getElementById('btn-missing').textContent = '未生成建议：' + missingSuggestions.length;
-      }
-
-      function renderMissingSuggestions() {
-        var tbody = document.getElementById('missing-tbody');
-        if (!tbody) return;
-        if (!missingSuggestions.length) {
-          tbody.innerHTML = '<tr><td class="empty-row" colspan="5">暂无未生成建议对象</td></tr>';
-          return;
-        }
-        tbody.innerHTML = missingSuggestions.map(function(item) {
-          return '<tr>' +
-            '<td>' + escapeHtml(item.parentCode) + '</td>' +
-            '<td>' + escapeHtml(item.site) + '</td>' +
-            '<td>' + escapeHtml(item.owner) + '</td>' +
-            '<td>' + escapeHtml(item.reason) + '</td>' +
-            '<td>' + escapeHtml(item.action) + '</td>' +
-          '</tr>';
-        }).join('');
-      }
-
       function metricCardHtml(label, value, hint) {
         return '<button type="button" class="metric-card" data-metric="all">' +
           '<span class="metric-label">' + escapeHtml(label) + '</span>' +
@@ -2762,8 +2562,6 @@
       function renderTable() {
         var list = currentParentList();
         renderMetrics(list);
-        renderCalcMeta();
-        renderMissingSuggestions();
         renderSuggestionTabs();
         var tbody = document.getElementById('suggestion-tbody');
         tbody.innerHTML = '';
@@ -2975,17 +2773,6 @@
         document.getElementById('detail-drawer').setAttribute('aria-hidden', 'true');
       }
 
-      function openMissingModal() {
-        renderMissingSuggestions();
-        document.getElementById('missing-mask').classList.add('show');
-        document.getElementById('missing-mask').setAttribute('aria-hidden', 'false');
-      }
-
-      function closeMissingModal() {
-        document.getElementById('missing-mask').classList.remove('show');
-        document.getElementById('missing-mask').setAttribute('aria-hidden', 'true');
-      }
-
       function findSuggestion(id) {
         return parentSuggestions.filter(function(item) { return item.id === id; })[0];
       }
@@ -3157,12 +2944,6 @@
       });
       document.getElementById('drawer-mask').addEventListener('click', closeDrawer);
       document.getElementById('drawer-close').addEventListener('click', closeDrawer);
-      document.getElementById('btn-missing').addEventListener('click', openMissingModal);
-      document.getElementById('missing-mask').addEventListener('click', function(e) {
-        if (e.target === e.currentTarget) closeMissingModal();
-      });
-      document.getElementById('missing-close').addEventListener('click', closeMissingModal);
-      document.getElementById('missing-ok').addEventListener('click', closeMissingModal);
       document.querySelectorAll('.drawer-anchor').forEach(function(btn) {
         btn.addEventListener('click', function() {
           var body = document.getElementById('drawer-body');
@@ -3203,7 +2984,6 @@
       document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
           closeDrawer();
-          closeMissingModal();
         }
       });
     })();
