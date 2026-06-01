@@ -808,6 +808,42 @@
       transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
+    /* ===== 方向C：左右分栏 ===== */
+    .detail-drawer.drawer-split-mode { width: 1120px; }
+
+    .drawer-split {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      overflow: hidden;
+    }
+
+    .drawer-left {
+      width: 360px;
+      flex-shrink: 0;
+      border-right: 1px solid #ebeef5;
+      padding: 18px 20px;
+      overflow: auto;
+      background: #fafcff;
+    }
+
+    .drawer-right {
+      flex: 1;
+      min-width: 0;
+      overflow: auto;
+      padding: 10px 22px 18px;
+    }
+
+    .drawer-left .drawer-hero { display: block; }
+    .drawer-left .hero-card.single {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .drawer-left .hero-card.single .hero-sub { text-align: left; }
+    .drawer-left .drawer-section { margin-top: 18px; }
+    .drawer-left .contrib-row { grid-template-columns: 92px 1fr 78px; }
+
     .detail-drawer.open {
       transform: translateX(0);
     }
@@ -1574,44 +1610,45 @@
   </div>
 
   <div class="drawer-mask" id="drawer-mask"></div>
-  <aside class="detail-drawer" id="detail-drawer" aria-hidden="true">
-    <div class="drawer-fixed">
-      <div class="drawer-title-row">
-        <div>
-          <div class="drawer-title" id="drawer-title">父体备货详情</div>
-          <div class="drawer-subtitle" id="drawer-subtitle">-</div>
+  <aside class="detail-drawer drawer-split-mode" id="detail-drawer" aria-hidden="true">
+    <div class="drawer-split">
+      <div class="drawer-left" id="drawer-left">
+        <div class="drawer-title-row">
+          <div>
+            <div class="drawer-title" id="drawer-title">父体备货详情</div>
+            <div class="drawer-subtitle" id="drawer-subtitle">-</div>
+          </div>
+          <button type="button" class="drawer-close" id="drawer-close" aria-label="关闭">×</button>
         </div>
-        <button type="button" class="drawer-close" id="drawer-close" aria-label="关闭">×</button>
+        <div class="drawer-hero" id="drawer-hero"></div>
+        <section class="drawer-section" id="drawer-contrib-section">
+          <div class="drawer-subhead" role="heading" aria-level="3">
+            <span class="drawer-subhead-bar" aria-hidden="true"></span>
+            <span class="drawer-subhead-text">发货建议构成</span>
+            <span class="drawer-subhead-hint">按子体贡献</span>
+          </div>
+          <div id="contrib-detail"></div>
+        </section>
       </div>
-      <div class="drawer-hero" id="drawer-hero"></div>
-    </div>
-    <div class="drawer-body" id="drawer-body">
-      <section class="drawer-section" id="drawer-contrib-section">
-        <div class="drawer-subhead" role="heading" aria-level="3">
-          <span class="drawer-subhead-bar" aria-hidden="true"></span>
-          <span class="drawer-subhead-text">发货建议构成</span>
-          <span class="drawer-subhead-hint">按子体贡献</span>
-        </div>
-        <div id="contrib-detail"></div>
-      </section>
+      <div class="drawer-right" id="drawer-right">
+        <section class="drawer-section" id="drawer-child-section">
+          <div class="drawer-subhead" role="heading" aria-level="3">
+            <span class="drawer-subhead-bar" aria-hidden="true"></span>
+            <span class="drawer-subhead-text">子体明细</span>
+            <span class="drawer-subhead-hint">展开看每个物流方向发哪些 SKU</span>
+          </div>
+          <div id="child-detail"></div>
+        </section>
 
-      <section class="drawer-section" id="drawer-child-section">
-        <div class="drawer-subhead" role="heading" aria-level="3">
-          <span class="drawer-subhead-bar" aria-hidden="true"></span>
-          <span class="drawer-subhead-text">子体明细</span>
-          <span class="drawer-subhead-hint">展开看每个子体怎么算</span>
-        </div>
-        <div id="child-detail"></div>
-      </section>
-
-      <section class="drawer-section collapsible" id="drawer-calc-section">
-        <button type="button" class="calc-collapse" id="calc-collapse" aria-expanded="false">
-          <span class="calc-caret" id="calc-caret">▸</span>
-          <span class="drawer-subhead-text">计算说明</span>
-          <span class="drawer-subhead-hint">覆盖天数 / 安全天数 / 聚合口径</span>
-        </button>
-        <div id="calc-detail" hidden></div>
-      </section>
+        <section class="drawer-section collapsible" id="drawer-calc-section">
+          <button type="button" class="calc-collapse" id="calc-collapse" aria-expanded="false">
+            <span class="calc-caret" id="calc-caret">▸</span>
+            <span class="drawer-subhead-text">计算说明</span>
+            <span class="drawer-subhead-hint">覆盖天数 / 安全天数 / 聚合口径</span>
+          </button>
+          <div id="calc-detail" hidden></div>
+        </section>
+      </div>
     </div>
     <div class="drawer-footer">
       <div class="drawer-actions">
@@ -2915,11 +2952,14 @@
         renderContribution(item);
         renderChildDetail(item);
         renderCalcDetail(item);
-        setCalcCollapsed(true);
+        setCalcCollapsed(false);
         document.getElementById('drawer-mask').classList.add('show');
         document.getElementById('detail-drawer').classList.add('open');
         document.getElementById('detail-drawer').setAttribute('aria-hidden', 'false');
-        document.getElementById('drawer-body').scrollTop = 0;
+        ['drawer-left', 'drawer-right'].forEach(function(id) {
+          var el = document.getElementById(id);
+          if (el) el.scrollTop = 0;
+        });
       }
 
       function closeDrawer() {
