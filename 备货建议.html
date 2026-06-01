@@ -1074,6 +1074,75 @@
       font-size: 12px;
     }
 
+    /* 建议构成：展开全部 / 收起 */
+    .contrib-toggle {
+      margin-top: 8px;
+      border: 0;
+      background: transparent;
+      color: #409eff;
+      font-size: 12px;
+      cursor: pointer;
+      padding: 2px 0;
+    }
+    .contrib-toggle:hover { text-decoration: underline; }
+
+    /* 明细面板内：视图图标切换 */
+    .mini-view-switch {
+      display: inline-flex;
+      margin-bottom: 8px;
+      border: 1px solid #dcdfe6;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .mv-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px;
+      height: 26px;
+      border: 0;
+      background: #fff;
+      color: #909399;
+      cursor: pointer;
+      padding: 0;
+    }
+    .mv-btn svg { fill: currentColor; }
+    .mv-btn + .mv-btn { border-left: 1px solid #dcdfe6; }
+    .mv-btn.active { background: #409eff; color: #fff; }
+
+    /* 尺码 × 颜色 矩阵 */
+    .matrix-table { table-layout: auto; }
+    .matrix-table th, .matrix-table td {
+      border: 1px solid #eef1f5;
+      padding: 7px 10px;
+      text-align: center;
+    }
+    .matrix-table thead th {
+      background: #f0f3f8;
+      color: #606266;
+      font-weight: 600;
+    }
+    .matrix-table .mx-corner { background: #eef1f5; color: #909399; text-align: left; }
+    .matrix-table .mx-rowhead {
+      background: #f7f9fc;
+      color: #303133;
+      font-weight: 600;
+      text-align: left;
+      white-space: nowrap;
+    }
+    .matrix-table .mx-cell { font-variant-numeric: tabular-nums; }
+    .matrix-table .mx-zero { color: #c0c4cc; }
+    .matrix-table .mx-total { background: #fafbfc; }
+    .matrix-table .mx-foot th,
+    .matrix-table .mx-foot td { background: #f3f7fe; }
+    .matrix-table .mx-grand {
+      background: #e8f1fd;
+      color: #1f6feb;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+    }
+    .matrix-hint { margin-top: 8px; font-size: 12px; color: #909399; }
+
     .drawer-anchor-row {
       display: none;
       align-items: center;
@@ -1553,6 +1622,7 @@
       var currentSuggestion = null;
       var activeSuggestionType = 'ship';
       var selectedSuggestionIds = {};
+      var contribExpanded = false;
       var DATA_SOURCE_META = {
         annual: { label: '年规目标', tagClass: 'tag-info' },
         forecast: { label: '预测日销量', tagClass: 'tag-success' }
@@ -2063,8 +2133,32 @@
         };
       }
 
+      var SKU_GRIDS = [
+        { colors: ['黑色', '白色'], sizes: ['38', '39', '40'] },
+        { colors: ['黑色', '卡其', '藏青'], sizes: ['39', '40'] },
+        { colors: ['黑色', '白色', '红色'], sizes: ['37', '38', '39', '40'] },
+        { colors: ['黑色', '卡其'], sizes: ['40', '41'] },
+        { colors: ['黑色', '白色', '卡其'], sizes: ['38', '39', '40'] },
+        { colors: ['黑色', '藏青'], sizes: ['39', '40', '41'] }
+      ];
+      var COLOR_CODE = { '黑色': 'BK', '白色': 'WT', '卡其': 'KK', '藏青': 'NV', '红色': 'RD' };
+
+      function parentSkuGrid(index) {
+        return SKU_GRIDS[index % SKU_GRIDS.length];
+      }
+
+      function childGridPos(parentIndex, childIndex) {
+        var grid = parentSkuGrid(parentIndex);
+        var sizeCount = grid.sizes.length;
+        return {
+          color: grid.colors[Math.floor(childIndex / sizeCount)],
+          size: grid.sizes[childIndex % sizeCount]
+        };
+      }
+
       function childCountForParent(index) {
-        return [4, 3, 5, 2, 4, 3][index % 6];
+        var grid = parentSkuGrid(index);
+        return grid.colors.length * grid.sizes.length;
       }
 
       function pad2(value) {
@@ -2076,9 +2170,9 @@
         return base.slice(0, 8) + pad2(childIndex + 1);
       }
 
-      function childSkuCode(parent, childIndex) {
+      function childSkuCode(parent, pos) {
         var prefix = (parent.spu || parent.code || 'SKU').replace(/\s+/g, '').toUpperCase();
-        return prefix + '-SKU' + pad2(childIndex + 1);
+        return prefix + '-' + (COLOR_CODE[pos.color] || 'XX') + pos.size;
       }
 
       function getTagMeta(index) {
@@ -2169,7 +2263,8 @@
         var methodOptions = sortMethodsByPriority(availableMethods(rule, siteName));
         var logistics = methodOptions.length ? methodOptions[(parentIndex + childIndex) % methodOptions.length] : null;
         if (!rule || !logistics) return null;
-        var childSku = childSkuCode(parent, childIndex);
+        var pos = childGridPos(parentIndex, childIndex);
+        var childSku = childSkuCode(parent, pos);
         var sequence = parentIndex * 5 + childIndex;
         var tags = getTagMeta(sequence);
         var safetyDays = Math.max(rule.fbaSafetyDays, tags.safety);
@@ -2233,6 +2328,8 @@
         return {
           id: parent.code + '-' + childSku + '-' + logistics.methodName,
           childSku: childSku,
+          size: pos.size,
+          color: pos.color,
           asin: childAsin(parent, childIndex),
           parentAsin: parent.asin || '-',
           parentCode: parent.code,
@@ -2609,7 +2706,7 @@
       }
 
       function renderChildDetail(item) {
-        renderMethodDetail(item);
+        document.getElementById('child-detail').innerHTML = methodDetailHtml(item);
       }
 
       function groupChildrenByMethod(item) {
@@ -2617,6 +2714,7 @@
         var order = [];
         item.childItems.forEach(function(child) {
           activeChildMethodRows(child).forEach(function(methodRow) {
+            if (methodRow.qty <= 0) return;
             var name = methodRow.methodName || '-';
             if (!groups[name]) {
               groups[name] = { methodName: name, totalQty: 0, lines: [] };
@@ -2626,28 +2724,42 @@
             groups[name].lines.push({
               sku: child.childSku,
               asin: child.asin,
-              tagText: child.tagText,
-              safetyDays: child.safetyDays,
+              color: child.color,
+              size: child.size,
               qty: methodRow.qty
             });
           });
         });
         return order.map(function(name) { return groups[name]; })
+          .filter(function(group) { return group.lines.length > 0; })
           .sort(function(a, b) { return b.totalQty - a.totalQty; });
       }
 
-      function renderMethodDetail(item) {
+      function skuSubText(line) {
+        var parts = [];
+        if (line.color) parts.push(line.color);
+        if (line.size) parts.push(line.size + '码');
+        return parts.join(' · ') || (line.asin || '-');
+      }
+
+      var ICON_GRID = '<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="5" height="5" rx="1"/><rect x="8" y="1" width="5" height="5" rx="1"/><rect x="1" y="8" width="5" height="5" rx="1"/><rect x="8" y="8" width="5" height="5" rx="1"/></svg>';
+      var ICON_LIST = '<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="2.5" width="12" height="2" rx="1"/><rect x="1" y="6" width="12" height="2" rx="1"/><rect x="1" y="9.5" width="12" height="2" rx="1"/></svg>';
+
+      function methodDetailHtml(item) {
         var typeLabel = activeTypeLabel();
         var groups = groupChildrenByMethod(item);
         var rows = groups.map(function(group, index) {
           var lines = group.lines.sort(function(a, b) { return b.qty - a.qty; }).map(function(line) {
             return '<tr>' +
-              '<td><div class="sku-cell"><span class="sku-code">' + escapeHtml(line.sku) + '</span><span class="sku-sub">' + escapeHtml(line.asin || '-') + '</span></div></td>' +
-              '<td><span class="rule-plain" title="' + escapeHtml(line.tagText || '-') + '">' + escapeHtml(line.tagText || '-') + '</span></td>' +
-              '<td class="num">' + formatNum(line.safetyDays) + '</td>' +
+              '<td><div class="sku-cell"><span class="sku-code">' + escapeHtml(line.sku) + '</span><span class="sku-sub">' + escapeHtml(skuSubText(line)) + '</span></div></td>' +
               '<td class="num strong-num">' + formatNum(line.qty) + ' 双</td>' +
             '</tr>';
           }).join('');
+          var listView =
+            '<table class="detail-table method-sku-table"><thead><tr>' +
+            '<th>SKU</th><th class="num">' + typeLabel + '数量</th>' +
+            '</tr></thead><tbody>' + lines + '</tbody></table>';
+          var matrixView = matrixHtmlFromLines(group.lines, typeLabel);
           return '<tr class="method-main" data-method-toggle="' + index + '">' +
               '<td><span class="method-name">' + escapeHtml(group.methodName) + '</span></td>' +
               '<td class="num">' + group.lines.length + ' 个</td>' +
@@ -2656,17 +2768,63 @@
             '</tr>' +
             '<tr class="method-detail-row" data-method-row="' + index + '"' + (index === 0 ? '' : ' hidden') + '><td colspan="4">' +
               '<div class="method-detail-panel">' +
-                '<div class="method-detail-cap">发往「' + escapeHtml(group.methodName) + '」的 SKU · 共 ' + group.lines.length + ' 个 · 合计 ' + formatNum(group.totalQty) + ' 双</div>' +
-                '<table class="detail-table method-sku-table"><thead><tr>' +
-                '<th>SKU</th><th>命中规则</th><th class="num">安全天数</th><th class="num">' + typeLabel + '数量</th>' +
-                '</tr></thead><tbody>' + lines + '</tbody></table>' +
+                '<div class="mini-view-switch">' +
+                  '<button type="button" class="mv-btn active" data-mview="matrix" title="尺码 × 颜色" aria-label="尺码颜色二维视图">' + ICON_GRID + '</button>' +
+                  '<button type="button" class="mv-btn" data-mview="list" title="SKU 列表" aria-label="SKU 列表视图">' + ICON_LIST + '</button>' +
+                '</div>' +
+                '<div class="mview mview-matrix">' + matrixView + '</div>' +
+                '<div class="mview mview-list" hidden>' + listView + '</div>' +
               '</div>' +
             '</td></tr>';
         }).join('');
-        document.getElementById('child-detail').innerHTML =
-          '<table class="detail-table method-table"><thead><tr>' +
+        return '<table class="detail-table method-table"><thead><tr>' +
           '<th>物流方式</th><th class="num">SKU 数</th><th class="num">' + typeLabel + '合计</th><th style="width: 88px;"></th>' +
           '</tr></thead><tbody>' + rows + '</tbody></table>';
+      }
+
+      function matrixHtmlFromLines(lines, typeLabel) {
+        var sizesSet = {}, colorTotals = {}, cell = {}, maxCell = 0;
+        lines.forEach(function(ln) {
+          var qty = ln.qty || 0;
+          var size = ln.size || '-';
+          var color = ln.color || '-';
+          sizesSet[size] = true;
+          colorTotals[color] = (colorTotals[color] || 0) + qty;
+          var key = size + '||' + color;
+          cell[key] = (cell[key] || 0) + qty;
+          if (cell[key] > maxCell) maxCell = cell[key];
+        });
+        var sizes = Object.keys(sizesSet).sort(function(a, b) {
+          return (parseInt(a, 10) || 0) - (parseInt(b, 10) || 0) || (a < b ? -1 : 1);
+        });
+        var colors = Object.keys(colorTotals).sort(function(a, b) { return colorTotals[b] - colorTotals[a]; });
+        if (!sizes.length || !colors.length) {
+          return '<div class="contrib-empty">暂无' + typeLabel + '建议量</div>';
+        }
+        var thead = '<tr><th class="mx-corner">尺码 ＼ 颜色</th>' +
+          colors.map(function(c) { return '<th class="num">' + escapeHtml(c) + '</th>'; }).join('') +
+          '<th class="num mx-total">行合计</th></tr>';
+        var grand = 0;
+        var bodyRows = sizes.map(function(size) {
+          var rowTotal = 0;
+          var tds = colors.map(function(color) {
+            var v = cell[size + '||' + color] || 0;
+            rowTotal += v;
+            var style = v > 0 && maxCell > 0 ? ' style="background:rgba(31,111,235,' + (0.06 + 0.34 * (v / maxCell)).toFixed(3) + ')"' : '';
+            return '<td class="num mx-cell"' + style + '>' + (v > 0 ? formatNum(v) : '<span class="mx-zero">-</span>') + '</td>';
+          }).join('');
+          grand += rowTotal;
+          return '<tr><th class="mx-rowhead">' + escapeHtml(size) + '码</th>' + tds +
+            '<td class="num mx-total strong-num">' + formatNum(rowTotal) + '</td></tr>';
+        }).join('');
+        var footTds = colors.map(function(color) {
+          return '<td class="num mx-total strong-num">' + formatNum(colorTotals[color] || 0) + '</td>';
+        }).join('');
+        var foot = '<tr class="mx-foot"><th class="mx-rowhead">列合计</th>' + footTds +
+          '<td class="num mx-grand">' + formatNum(grand) + '</td></tr>';
+        return '<div class="matrix-wrap"><table class="detail-table matrix-table"><thead>' + thead +
+          '</thead><tbody>' + bodyRows + foot + '</tbody></table>' +
+          '<div class="matrix-hint" >数值＝' + typeLabel + '建议量（双）；底色越深表示该尺码 / 颜色越需要' + typeLabel + '。</div></div>';
       }
 
       function renderCalcDetail(item) {
@@ -2677,6 +2835,8 @@
         var skuRows = item.childItems.map(function(child) {
           return '<tr>' +
             '<td><span class="sku-code">' + escapeHtml(child.childSku) + '</span></td>' +
+            '<td><span class="rule-plain" title="' + escapeHtml(child.tagText || '-') + '">' + escapeHtml(child.tagText || '-') + '</span></td>' +
+            '<td class="num">' + formatNum(child.safetyDays) + '</td>' +
             '<td class="num">' + formatNum(activeChildForecastSum(child)) + '</td>' +
             '<td class="num">' + formatNum(activeChildInventoryDeduction(child)) + '</td>' +
             '<td class="num">' + formatNum(activeChildDeduction(child)) + '</td>' +
@@ -2692,7 +2852,7 @@
           '父体' + typeLabel + '建议总量 = Σ 子体' + typeLabel + '最终建议量 = ' + formatNum(activeSuggestionQty(item)) + '<br>' +
           typeLabel + '建议量 = ' + typeLabel + '预测销量 - 库存扣减 - 必断货扣除量</div>' +
           '<table class="detail-table"><thead><tr>' +
-          '<th>子体 / SKU</th><th class="num">' + typeLabel + '预测销量</th><th class="num">' + inventoryDeductionHeaderHtml() + '</th><th class="num">必断货扣除量</th><th class="num">' + qtyLabel + '</th>' +
+          '<th>子体 / SKU</th><th>命中规则</th><th class="num">安全天数</th><th class="num">' + typeLabel + '预测销量</th><th class="num">' + inventoryDeductionHeaderHtml() + '</th><th class="num">必断货扣除量</th><th class="num">' + qtyLabel + '</th>' +
           '</tr></thead><tbody>' + skuRows + '</tbody></table>';
       }
 
@@ -2726,17 +2886,25 @@
         var rows = item.childItems.map(function(child) {
           return { sku: child.childSku, qty: activeChildSuggestedQty(child) };
         }).sort(function(a, b) { return b.qty - a.qty; });
-        var body = rows.map(function(row) {
+        if (!rows.length) {
+          document.getElementById('contrib-detail').innerHTML = '<div class="contrib-empty">暂无' + typeLabel + '建议量</div>';
+          return;
+        }
+        var TOP = 5;
+        var body = rows.map(function(row, idx) {
           var pct = total > 0 ? Math.round(row.qty / total * 100) : 0;
-          return '<tr>' +
+          var extra = idx >= TOP ? ' class="contrib-extra"' + (contribExpanded ? '' : ' hidden') : '';
+          return '<tr' + extra + '>' +
             '<td><span class="sku-code">' + escapeHtml(row.sku) + '</span></td>' +
             '<td class="num strong-num">' + formatNum(row.qty) + '</td>' +
             '<td class="num">' + pct + '%</td>' +
           '</tr>';
         }).join('');
-        document.getElementById('contrib-detail').innerHTML = rows.length
-          ? '<table class="detail-table contrib-table"><thead><tr><th>SKU</th><th class="num">建议总量</th><th class="num">占比</th></tr></thead><tbody>' + body + '</tbody></table>'
-          : '<div class="contrib-empty">暂无' + typeLabel + '建议量</div>';
+        var toggle = rows.length > TOP
+          ? '<button type="button" class="contrib-toggle" data-action="toggle-contrib">' + (contribExpanded ? '收起' : '展开全部 ' + rows.length + ' 个') + '</button>'
+          : '';
+        document.getElementById('contrib-detail').innerHTML =
+          '<table class="detail-table contrib-table"><thead><tr><th>SKU</th><th class="num">建议总量</th><th class="num">占比</th></tr></thead><tbody>' + body + '</tbody></table>' + toggle;
       }
 
       function setCalcCollapsed(collapsed) {
@@ -2755,6 +2923,7 @@
         document.getElementById('drawer-subtitle').textContent =
           (item.sourceLabel || '-') + ' · 负责人 ' + (item.ownerText || '-') + ' · 计算时间 ' + CALC_INFO.time +
           ' · 父ASIN ' + (item.parentAsinText || '-') + ' / SPU ' + (item.spuText || '-');
+        contribExpanded = false;
         syncDrawerTypeControls(item);
         renderDrawerHero(item);
         renderContribution(item);
@@ -2923,6 +3092,21 @@
         showBatchAction('order');
       });
       document.getElementById('child-detail').addEventListener('click', function(e) {
+        var mviewBtn = e.target.closest('[data-mview]');
+        if (mviewBtn) {
+          var panel = mviewBtn.closest('.method-detail-panel');
+          if (panel) {
+            var view = mviewBtn.getAttribute('data-mview');
+            panel.querySelectorAll('.mv-btn').forEach(function(b) {
+              b.classList.toggle('active', b === mviewBtn);
+            });
+            var mx = panel.querySelector('.mview-matrix');
+            var lt = panel.querySelector('.mview-list');
+            if (mx) mx.hidden = (view !== 'matrix');
+            if (lt) lt.hidden = (view !== 'list');
+          }
+          return;
+        }
         var methodBtn = e.target.closest('[data-action="toggle-method"]');
         if (methodBtn) {
           var mTarget = methodBtn.getAttribute('data-target');
@@ -2954,6 +3138,12 @@
             item.classList.toggle('active', item === btn);
           });
         });
+      });
+      document.getElementById('contrib-detail').addEventListener('click', function(e) {
+        var btn = e.target.closest('[data-action="toggle-contrib"]');
+        if (!btn || !currentSuggestion) return;
+        contribExpanded = !contribExpanded;
+        renderContribution(currentSuggestion);
       });
       document.getElementById('calc-collapse').addEventListener('click', function() {
         setCalcCollapsed(!document.getElementById('calc-detail').hidden);
