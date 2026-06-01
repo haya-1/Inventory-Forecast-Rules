@@ -918,6 +918,148 @@
       white-space: nowrap;
     }
 
+    /* ===== 方向A：叙事式抽屉 ===== */
+    .drawer-title-mute {
+      color: #909399;
+      font-weight: 400;
+      font-size: 13px;
+    }
+
+    .drawer-hero {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .hero-card {
+      border: 1px solid #ebeef5;
+      border-radius: 8px;
+      padding: 12px 16px;
+      background: linear-gradient(180deg, #fafcff, #fff);
+    }
+
+    .hero-card.active {
+      border-color: #b3d8ff;
+      box-shadow: 0 0 0 2px rgba(64, 158, 255, .12);
+    }
+
+    .hero-label { font-size: 12px; color: #909399; }
+
+    .hero-value {
+      font-size: 28px;
+      font-weight: 800;
+      color: #1f6feb;
+      line-height: 1.2;
+      margin-top: 2px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .hero-card.order .hero-value { color: #e6820f; }
+    .hero-unit { font-size: 13px; font-weight: 600; color: #909399; margin-left: 4px; }
+    .hero-sub { margin-top: 6px; font-size: 12px; color: #909399; }
+
+    .drawer-subhead-hint {
+      margin-left: 8px;
+      font-size: 12px;
+      font-weight: 400;
+      color: #909399;
+    }
+
+    .contrib { display: flex; flex-direction: column; gap: 9px; }
+    .contrib-row {
+      display: grid;
+      grid-template-columns: 150px 1fr 132px;
+      align-items: center;
+      gap: 10px;
+    }
+    .contrib-sku {
+      font-size: 12.5px;
+      color: #303133;
+      font-weight: 600;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .contrib-track { display: block; height: 16px; background: #f0f2f5; border-radius: 8px; overflow: hidden; }
+    .contrib-fill { display: block; height: 100%; border-radius: 8px; background: linear-gradient(90deg, #5aa6ff, #1f6feb); }
+    .contrib-fill.c2 { background: linear-gradient(90deg, #7cc4ff, #4596f5); }
+    .contrib-fill.c3 { background: linear-gradient(90deg, #a9d5ff, #6aa9f0); }
+    .contrib-fill.c4 { background: linear-gradient(90deg, #cfe4fb, #9cc2ea); }
+    .contrib-val { text-align: right; font-size: 12.5px; color: #303133; font-variant-numeric: tabular-nums; }
+    .contrib-pct { color: #909399; margin-left: 6px; }
+    .contrib-empty { color: #909399; font-size: 13px; padding: 8px 0; }
+
+    .calc-collapse {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      border: 1px solid #ebeef5;
+      border-radius: 6px;
+      background: #fafbfc;
+      padding: 10px 12px;
+      cursor: pointer;
+      text-align: left;
+    }
+    .calc-collapse:hover { background: #f5f7fa; }
+    .calc-caret { color: #909399; font-size: 12px; }
+
+    .child-ded-chips {
+      margin-top: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      font-size: 11.5px;
+      color: #606266;
+    }
+    .ded-chip {
+      font-size: 11.5px;
+      color: #606266;
+      background: #f4f6f9;
+      border-radius: 4px;
+      padding: 2px 8px;
+    }
+
+    .hero-card.single {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .hero-card.single .hero-sub { margin-top: 0; text-align: right; }
+
+    .method-table .method-main > td { vertical-align: middle; }
+    .method-name {
+      font-weight: 700;
+      color: #303133;
+      font-size: 13px;
+    }
+    .method-table .method-detail-row > td {
+      background: #fafbfc;
+      padding: 0 10px 8px;
+    }
+    .method-sku-table {
+      margin: 4px 0 2px;
+      border: 1px solid #eef1f5;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .method-sku-table thead th { background: #f0f3f8; }
+    .method-sku-table th, .method-sku-table td { border-bottom: 1px solid #f3f5f8; }
+    .method-sku-table tbody tr:last-child td { border-bottom: 0; }
+    .rule-plain {
+      display: inline-block;
+      max-width: 220px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      vertical-align: bottom;
+      color: #606266;
+      font-size: 12px;
+    }
+
     .drawer-anchor-row {
       display: none;
       align-items: center;
@@ -1441,39 +1583,34 @@
         </div>
         <button type="button" class="drawer-close" id="drawer-close" aria-label="关闭">×</button>
       </div>
-      <div id="summary-detail"></div>
-      <div class="decision-summary single-type" id="drawer-decision-summary">
-        <div class="decision-item" id="drawer-ship-card">
-          <span>发货建议总量</span>
-          <strong id="drawer-ship-qty">0</strong>
-        </div>
-        <div class="decision-item" id="drawer-order-card">
-          <span>下单建议总量</span>
-          <strong id="drawer-order-qty">0</strong>
-        </div>
-      </div>
-      <div class="drawer-anchor-row">
-        <div class="drawer-anchors">
-          <button type="button" class="drawer-anchor active" data-anchor="drawer-child-section">子体明细</button>
-          <button type="button" class="drawer-anchor" data-anchor="drawer-calc-section">计算说明</button>
-        </div>
-      </div>
+      <div class="drawer-hero" id="drawer-hero"></div>
     </div>
     <div class="drawer-body" id="drawer-body">
+      <section class="drawer-section" id="drawer-contrib-section">
+        <div class="drawer-subhead" role="heading" aria-level="3">
+          <span class="drawer-subhead-bar" aria-hidden="true"></span>
+          <span class="drawer-subhead-text">发货建议构成</span>
+          <span class="drawer-subhead-hint">按子体贡献</span>
+        </div>
+        <div id="contrib-detail"></div>
+      </section>
+
       <section class="drawer-section" id="drawer-child-section">
         <div class="drawer-subhead" role="heading" aria-level="3">
           <span class="drawer-subhead-bar" aria-hidden="true"></span>
           <span class="drawer-subhead-text">子体明细</span>
+          <span class="drawer-subhead-hint">展开看每个子体怎么算</span>
         </div>
         <div id="child-detail"></div>
       </section>
 
-      <section class="drawer-section" id="drawer-calc-section">
-        <div class="drawer-subhead" role="heading" aria-level="3">
-          <span class="drawer-subhead-bar" aria-hidden="true"></span>
+      <section class="drawer-section collapsible" id="drawer-calc-section">
+        <button type="button" class="calc-collapse" id="calc-collapse" aria-expanded="false">
+          <span class="calc-caret" id="calc-caret">▸</span>
           <span class="drawer-subhead-text">计算说明</span>
-        </div>
-        <div id="calc-detail"></div>
+          <span class="drawer-subhead-hint">覆盖天数 / 安全天数 / 聚合口径</span>
+        </button>
+        <div id="calc-detail" hidden></div>
       </section>
     </div>
     <div class="drawer-footer">
@@ -1653,6 +1790,20 @@
 
       function activeChildDeduction(child) {
         return activeSuggestionType === 'order' ? child.orderDeduction : child.shipDeduction;
+      }
+
+      function inventoryDeductionChips(child) {
+        var parts = [
+          { label: 'FBA库存', value: child.fbaInventory },
+          { label: 'FBA在途', value: child.fbaInbound }
+        ];
+        if (activeSuggestionType === 'order') {
+          parts.push({ label: 'CN仓可用', value: child.cnAvailable });
+          parts.push({ label: '已下单未入库', value: child.purchaseInbound });
+        }
+        return parts.map(function(part) {
+          return '<span class="ded-chip">' + part.label + ' ' + formatNum(part.value || 0) + '</span>';
+        }).join('');
       }
 
       function activeChildMethodSplits(child) {
@@ -2231,6 +2382,10 @@
           orderInventoryDeduction: annualResult.orderInventoryDeduction,
           shipDeduction: annualResult.shipDeduction,
           orderDeduction: annualResult.orderDeduction,
+          fbaInventory: fbaInventory,
+          fbaInbound: fbaInbound,
+          cnAvailable: cnAvailable,
+          purchaseInbound: purchaseInbound,
           sourceResults: {
             annual: annualResult,
             forecast: forecastResult
@@ -2609,51 +2764,77 @@
       }
 
       function renderChildDetail(item) {
+        renderMethodDetail(item);
+      }
+
+      function groupChildrenByMethod(item) {
+        var groups = {};
+        var order = [];
+        item.childItems.forEach(function(child) {
+          activeChildMethodRows(child).forEach(function(methodRow) {
+            var name = methodRow.methodName || '-';
+            if (!groups[name]) {
+              groups[name] = { methodName: name, totalQty: 0, lines: [] };
+              order.push(name);
+            }
+            groups[name].totalQty += methodRow.qty;
+            groups[name].lines.push({
+              sku: child.childSku,
+              asin: child.asin,
+              tagText: child.tagText,
+              safetyDays: child.safetyDays,
+              qty: methodRow.qty
+            });
+          });
+        });
+        return order.map(function(name) { return groups[name]; })
+          .sort(function(a, b) { return b.totalQty - a.totalQty; });
+      }
+
+      function renderMethodDetail(item) {
         var typeLabel = activeTypeLabel();
-        var qtyLabel = activeQtyLabel();
-        var dedTip = inventoryDeductionTip().replace('库存扣减包括：', '');
-        var rows = item.childItems.map(function(child, index) {
-          var methods = methodNamesForChild(child);
-          var methodText = methods.length ? methods.join(' / ') : (child.method || '-');
-          var forecast = activeChildForecastSum(child);
-          var invDed = activeChildInventoryDeduction(child);
-          var stockoutDed = activeChildDeduction(child);
-          var qty = activeChildSuggestedQty(child);
-          var splitText = activeMethodSplitText(child);
-          var calcLine =
-            '<span class="calc-term">' + typeLabel + '预测销量 ' + formatNum(forecast) + '</span>' +
-            '<span class="calc-op">−</span>' +
-            '<span class="calc-term">库存扣减 ' + formatNum(invDed) + '</span>' +
-            '<span class="calc-op">−</span>' +
-            '<span class="calc-term">必断货扣除量 ' + formatNum(stockoutDed) + '</span>' +
-            '<span class="calc-op">=</span>' +
-            '<span class="calc-term calc-result">' + qtyLabel + ' ' + formatNum(qty) + '</span>';
-          var detailPanel =
-            '<div class="child-calc-panel">' +
-              '<div class="child-calc-line">' + calcLine + '</div>' +
-              '<div class="child-calc-note">库存扣减口径：' + escapeHtml(dedTip) + '</div>' +
-              (splitText ? '<div class="child-calc-note">物流拆分：' + escapeHtml(splitText) + '</div>' : '') +
-            '</div>';
-          return '<tr class="child-main" data-child-toggle="' + index + '">' +
-              '<td><div class="sku-cell"><span class="sku-code">' + escapeHtml(child.childSku) + '</span><span class="sku-sub">' + escapeHtml(child.asin || '-') + '</span></div></td>' +
-              '<td>' + ruleCellHtml(child.tagText) + '</td>' +
-              '<td>' + escapeHtml(methodText) + '</td>' +
-              '<td class="num">' + formatNum(child.safetyDays) + '</td>' +
-              '<td class="num strong-num">' + formatNum(qty) + '</td>' +
-              '<td class="child-expand-cell"><button type="button" class="child-expand" data-action="toggle-child" data-target="' + index + '">明细 ▾</button></td>' +
+        var groups = groupChildrenByMethod(item);
+        var rows = groups.map(function(group, index) {
+          var lines = group.lines.sort(function(a, b) { return b.qty - a.qty; }).map(function(line) {
+            return '<tr>' +
+              '<td><div class="sku-cell"><span class="sku-code">' + escapeHtml(line.sku) + '</span><span class="sku-sub">' + escapeHtml(line.asin || '-') + '</span></div></td>' +
+              '<td><span class="rule-plain" title="' + escapeHtml(line.tagText || '-') + '">' + escapeHtml(line.tagText || '-') + '</span></td>' +
+              '<td class="num">' + formatNum(line.safetyDays) + '</td>' +
+              '<td class="num strong-num">' + formatNum(line.qty) + ' 双</td>' +
+            '</tr>';
+          }).join('');
+          return '<tr class="method-main" data-method-toggle="' + index + '">' +
+              '<td><span class="method-name">' + escapeHtml(group.methodName) + '</span></td>' +
+              '<td class="num">' + group.lines.length + ' 个</td>' +
+              '<td class="num strong-num">' + formatNum(group.totalQty) + ' 双</td>' +
+              '<td class="child-expand-cell"><button type="button" class="child-expand' + (index === 0 ? ' open' : '') + '" data-action="toggle-method" data-target="' + index + '">' + (index === 0 ? '收起 ▴' : '展开 ▾') + '</button></td>' +
             '</tr>' +
-            '<tr class="child-calc-row" data-child-row="' + index + '" hidden><td colspan="6">' + detailPanel + '</td></tr>';
+            '<tr class="method-detail-row" data-method-row="' + index + '"' + (index === 0 ? '' : ' hidden') + '><td colspan="4">' +
+              '<table class="detail-table method-sku-table"><thead><tr>' +
+              '<th>子体 / SKU</th><th>命中规则</th><th class="num">安全天数</th><th class="num">' + typeLabel + '数量</th>' +
+              '</tr></thead><tbody>' + lines + '</tbody></table>' +
+            '</td></tr>';
         }).join('');
         document.getElementById('child-detail').innerHTML =
-          '<table class="detail-table child-merged-table"><thead><tr>' +
-          '<th>子体 / SKU</th><th>命中规则</th><th>物流方式</th><th class="num">安全天数</th><th class="num">' + qtyLabel + '</th><th style="width: 76px;"></th>' +
+          '<table class="detail-table method-table"><thead><tr>' +
+          '<th>物流方式</th><th class="num">SKU 数</th><th class="num">' + typeLabel + '合计</th><th style="width: 88px;"></th>' +
           '</tr></thead><tbody>' + rows + '</tbody></table>';
       }
 
       function renderCalcDetail(item) {
         var typeLabel = activeTypeLabel();
+        var qtyLabel = activeQtyLabel();
         var coverageDays = activeCoverageDays(item);
         var coverageRange = coverageDays ? cycleDateRangeText(coverageDays) : '-';
+        var skuRows = item.childItems.map(function(child) {
+          return '<tr>' +
+            '<td><span class="sku-code">' + escapeHtml(child.childSku) + '</span></td>' +
+            '<td class="num">' + formatNum(activeChildForecastSum(child)) + '</td>' +
+            '<td class="num">' + formatNum(activeChildInventoryDeduction(child)) + '</td>' +
+            '<td class="num">' + formatNum(activeChildDeduction(child)) + '</td>' +
+            '<td class="num strong-num">' + formatNum(activeChildSuggestedQty(child)) + '</td>' +
+          '</tr>';
+        }).join('');
         document.getElementById('calc-detail').innerHTML =
           '<div class="formula-block"><strong>覆盖周期与安全天数</strong><br>' +
           typeLabel + '覆盖天数 = ' + formatNum(coverageDays) + ' 天（区间 ' + coverageRange + '，求和口径 D ~ D+N-1）<br>' +
@@ -2661,21 +2842,62 @@
           typeLabel + '预测销量 = Σ forecastSales(D ~ D+' + Math.max(coverageDays - 1, 0) + ')</div>' +
           '<div class="formula-block"><strong>父体聚合口径</strong><br>' +
           '父体' + typeLabel + '建议总量 = Σ 子体' + typeLabel + '最终建议量 = ' + formatNum(activeSuggestionQty(item)) + '<br>' +
-          typeLabel + '建议量 = ' + typeLabel + '预测销量 - 库存扣减 - 必断货扣除量<br>' +
-          '各子体的预测销量、库存扣减、必断货扣除量明细，可在上方「子体明细」中展开查看。</div>';
+          typeLabel + '建议量 = ' + typeLabel + '预测销量 - 库存扣减 - 必断货扣除量</div>' +
+          '<table class="detail-table"><thead><tr>' +
+          '<th>子体 / SKU</th><th class="num">' + typeLabel + '预测销量</th><th class="num">' + inventoryDeductionHeaderHtml() + '</th><th class="num">必断货扣除量</th><th class="num">' + qtyLabel + '</th>' +
+          '</tr></thead><tbody>' + skuRows + '</tbody></table>';
       }
 
       function syncDrawerTypeControls(item) {
         var isOrder = activeSuggestionType === 'order';
-        document.getElementById('drawer-ship-card').style.display = isOrder ? 'none' : '';
-        document.getElementById('drawer-order-card').style.display = isOrder ? '' : 'none';
         document.getElementById('drawer-create-ship').style.display = isOrder ? 'none' : '';
         document.getElementById('drawer-create-order').style.display = isOrder ? '' : 'none';
-        document.getElementById('drawer-decision-summary').classList.add('single-type');
-        document.querySelector('#drawer-child-section .drawer-subhead-text').textContent = activeTypeLabel() + '子体明细';
+        document.querySelector('#drawer-contrib-section .drawer-subhead-text').textContent = activeTypeLabel() + '建议构成';
+        document.querySelector('#drawer-child-section .drawer-subhead-text').textContent = activeTypeLabel() + '明细';
         document.querySelector('#drawer-calc-section .drawer-subhead-text').textContent = activeTypeLabel() + '计算说明';
-        document.getElementById('drawer-ship-qty').textContent = formatNum(item.shipSuggestedQty);
-        document.getElementById('drawer-order-qty').textContent = formatNum(item.orderSuggestedQty);
+      }
+
+      function renderDrawerHero(item) {
+        var isShip = activeSuggestionType !== 'order';
+        var coverageDays = activeCoverageDays(item);
+        var subParts = ['覆盖 ' + formatNum(coverageDays) + ' 天', '安全 ' + formatNum(item.safetyDays) + ' 天'];
+        if (isShip) subParts.push(item.methodText || '-');
+        document.getElementById('drawer-hero').innerHTML =
+          '<div class="hero-card single ' + (isShip ? 'ship' : 'order') + '">' +
+            '<div class="hero-main">' +
+              '<div class="hero-label">' + activeTypeLabel() + '建议总量</div>' +
+              '<div class="hero-value">' + formatNum(activeSuggestionQty(item)) + '<span class="hero-unit">双</span></div>' +
+            '</div>' +
+            '<div class="hero-sub">' + escapeHtml(subParts.join(' · ')) + '</div>' +
+          '</div>';
+      }
+
+      function renderContribution(item) {
+        var typeLabel = activeTypeLabel();
+        var total = activeSuggestionQty(item) || 0;
+        var rows = item.childItems.map(function(child) {
+          return { sku: child.childSku, qty: activeChildSuggestedQty(child) };
+        }).sort(function(a, b) { return b.qty - a.qty; });
+        var max = rows.reduce(function(m, r) { return Math.max(m, r.qty); }, 0) || 1;
+        var palette = ['', 'c2', 'c3', 'c4'];
+        var html = rows.map(function(row, index) {
+          var pct = total > 0 ? Math.round(row.qty / total * 100) : 0;
+          var width = Math.max(2, Math.round(row.qty / max * 100));
+          var cls = palette[Math.min(index, palette.length - 1)];
+          return '<div class="contrib-row">' +
+            '<span class="contrib-sku" title="' + escapeHtml(row.sku) + '">' + escapeHtml(row.sku) + '</span>' +
+            '<span class="contrib-track"><span class="contrib-fill ' + cls + '" style="width:' + width + '%"></span></span>' +
+            '<span class="contrib-val">' + formatNum(row.qty) + '<span class="contrib-pct">' + pct + '%</span></span>' +
+          '</div>';
+        }).join('');
+        document.getElementById('contrib-detail').innerHTML =
+          '<div class="contrib">' + (html || '<div class="contrib-empty">暂无' + typeLabel + '建议量</div>') + '</div>';
+      }
+
+      function setCalcCollapsed(collapsed) {
+        document.getElementById('calc-detail').hidden = collapsed;
+        document.getElementById('calc-caret').textContent = collapsed ? '▸' : '▾';
+        document.getElementById('calc-collapse').setAttribute('aria-expanded', collapsed ? 'false' : 'true');
       }
 
       function openDrawer(item) {
@@ -2683,15 +2905,17 @@
         document.querySelectorAll('#suggestion-tbody tr').forEach(function(row) {
           row.classList.toggle('active', row.getAttribute('data-id') === item.id);
         });
-        document.getElementById('drawer-title').textContent = '父体 ' + item.parentCode + ' ' + activeTypeLabel() + '详情';
-        document.getElementById('drawer-subtitle').textContent = (item.sourceLabel || '-') + ' / 运营负责人 ' + (item.ownerText || '-') + ' / 计算时间 ' + CALC_INFO.time;
+        document.getElementById('drawer-title').innerHTML = '父体 ' + escapeHtml(item.parentCode) +
+          ' <span class="drawer-title-mute">· ' + escapeHtml(item.siteText || '-') + ' · ' + escapeHtml(item.ruleText || '-') + '</span>';
+        document.getElementById('drawer-subtitle').textContent =
+          (item.sourceLabel || '-') + ' · 负责人 ' + (item.ownerText || '-') + ' · 计算时间 ' + CALC_INFO.time +
+          ' · 父ASIN ' + (item.parentAsinText || '-') + ' / SPU ' + (item.spuText || '-');
         syncDrawerTypeControls(item);
-        renderSummaryDetail(item);
+        renderDrawerHero(item);
+        renderContribution(item);
         renderChildDetail(item);
         renderCalcDetail(item);
-        document.querySelectorAll('.drawer-anchor').forEach(function(anchor, index) {
-          anchor.classList.toggle('active', index === 0);
-        });
+        setCalcCollapsed(true);
         document.getElementById('drawer-mask').classList.add('show');
         document.getElementById('detail-drawer').classList.add('open');
         document.getElementById('detail-drawer').setAttribute('aria-hidden', 'false');
@@ -2865,15 +3089,15 @@
         showBatchAction('order');
       });
       document.getElementById('child-detail').addEventListener('click', function(e) {
-        var childBtn = e.target.closest('[data-action="toggle-child"]');
-        if (childBtn) {
-          var target = childBtn.getAttribute('data-target');
-          var calcRow = document.querySelector('#child-detail .child-calc-row[data-child-row="' + target + '"]');
-          if (calcRow) {
-            var open = calcRow.hidden;
-            calcRow.hidden = !open;
-            childBtn.classList.toggle('open', open);
-            childBtn.innerHTML = open ? '收起 ▴' : '明细 ▾';
+        var methodBtn = e.target.closest('[data-action="toggle-method"]');
+        if (methodBtn) {
+          var mTarget = methodBtn.getAttribute('data-target');
+          var detailRow = document.querySelector('#child-detail .method-detail-row[data-method-row="' + mTarget + '"]');
+          if (detailRow) {
+            var mOpen = detailRow.hidden;
+            detailRow.hidden = !mOpen;
+            methodBtn.classList.toggle('open', mOpen);
+            methodBtn.innerHTML = mOpen ? '收起 ▴' : '展开 ▾';
           }
           return;
         }
@@ -2902,6 +3126,9 @@
             item.classList.toggle('active', item === btn);
           });
         });
+      });
+      document.getElementById('calc-collapse').addEventListener('click', function() {
+        setCalcCollapsed(!document.getElementById('calc-detail').hidden);
       });
       document.getElementById('drawer-create-ship').addEventListener('click', function() {
         showAction('生成发货计划入口：' + (currentSuggestion ? currentSuggestion.parentCode : ''));
