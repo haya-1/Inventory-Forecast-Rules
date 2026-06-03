@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>基础参数配置</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+      background: #f5f7fa;
+      color: #303133;
+      font-size: 14px;
+    }
+    .sidebar { width: 88px; position: fixed; top: 0; left: 0; bottom: 0; display: flex; flex-direction: row; overflow: visible; z-index: 1200; background: transparent; box-shadow: 2px 0 10px rgba(0,0,0,.08); }
+    .sidebar-primary { width: 88px; background: linear-gradient(180deg,#2f47a6 0%,#1f2a78 100%); color: #fff; display: flex; flex-direction: column; align-items: center; padding: 10px 0; }
+    .sidebar-brand { width: 100%; padding: 6px 0 14px; text-align: center; }
+    .sidebar-brand h2 { color: #fff; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 17px; font-weight: 600; }
+    .brand-icon { width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; background: rgba(255,255,255,.2); border-radius: 6px; font-size: 13px; flex-shrink: 0; }
+    .sidebar-nav { width: 100%; padding: 4px 0; }
+    .primary-item { height: 58px; margin: 6px 10px; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; color: rgba(255,255,255,.8); text-decoration: none; font-size: 12px; cursor: pointer; }
+    .primary-item:hover, .primary-item.active { color: #fff; background: rgba(255,255,255,.14); }
+    .item-icon { font-size: 16px; width: auto; }
+    .item-label { line-height: 1; }
+    .sidebar-submenu-panel { position: fixed; left: 88px; top: 0; bottom: 0; width: 184px; background: #fff; border-right: 1px solid #e5e7eb; padding: 18px 14px; transform: translateX(-100%); opacity: 0; pointer-events: none; transition: transform .24s ease, opacity .2s ease; z-index: 1202; box-shadow: 4px 0 18px rgba(0,0,0,.07); }
+    .sidebar-submenu-panel.open { transform: translateX(0); opacity: 1; pointer-events: auto; }
+    .submenu-title { font-size: 24px; color: #111827; margin-bottom: 14px; }
+    .submenu-item { display: block; padding: 10px 10px; border-radius: 8px; color: #374151; text-decoration: none; font-size: 14px; margin-bottom: 6px; }
+    .submenu-item:hover { background: #f3f4f6; }
+    .submenu-item.active { color: #2563eb; background: #eef2ff; font-weight: 600; }
+    .sidebar-backdrop { position: fixed; inset: 0; background: rgba(17,24,39,.32); opacity: 0; pointer-events: none; transition: opacity .2s ease; z-index: 1190; }
+    .app-layout.submenu-open .sidebar-backdrop { opacity: 1; pointer-events: auto; }
+    .primary-item[data-submenu="proto"], #proto-submenu { display: none !important; }
+
+    .main-content { margin-left: 88px; min-height: 100vh; padding: 18px 24px 32px; }
+    .page-card { max-width: 1880px; margin: 0 auto; background: #fff; border-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,.04); padding: 18px 24px 28px; }
+    .page-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
+    .page-title { font-size: 18px; font-weight: 600; line-height: 28px; }
+    .page-subtitle { margin-top: 3px; color: #909399; font-size: 13px; }
+    .actions { display: flex; align-items: center; gap: 10px; }
+    .btn { height: 30px; padding: 0 12px; border: 1px solid #dcdfe6; border-radius: 4px; background: #fff; color: #606266; cursor: pointer; font-size: 13px; }
+    .btn:hover { color: #409eff; border-color: #c6e2ff; background: #ecf5ff; }
+    .btn-primary { color: #fff; background: #409eff; border-color: #409eff; }
+    .btn-primary:hover { color: #fff; background: #66b1ff; border-color: #66b1ff; }
+    .btn-danger { border: none; background: transparent; color: #f56c6c; padding: 0; height: 24px; }
+    .btn-danger:hover { background: transparent; color: #ff4d4f; }
+    .btn-sm { height: 28px; padding: 0 10px; font-size: 12px; }
+
+    .top-form { display: flex; align-items: center; flex-wrap: wrap; gap: 18px; margin-bottom: 18px; }
+    .inline-field { display: inline-flex; align-items: center; gap: 8px; color: #606266; white-space: nowrap; }
+    .input { height: 32px; border: 1px solid #dcdfe6; border-radius: 4px; padding: 0 10px; color: #303133; font-size: 14px; outline: none; background: #fff; }
+    .input:focus { border-color: #409eff; }
+    .input-num { width: 104px; }
+    .input-name { width: 126px; }
+    .unit { color: #606266; }
+    .section { margin-top: 18px; }
+    .section-title { font-size: 15px; font-weight: 600; color: #303133; margin-bottom: 14px; }
+    .site-fields { display: flex; align-items: center; flex-wrap: wrap; gap: 18px; margin-bottom: 18px; }
+    .param-table { width: 100%; border-collapse: collapse; table-layout: fixed; margin-bottom: 12px; }
+    .param-table th, .param-table td { height: 56px; border-bottom: 1px solid #ebeef5; padding: 8px 16px; text-align: left; color: #303133; font-size: 14px; vertical-align: middle; }
+    .param-table th { height: 48px; background: #fafafa; font-weight: 500; color: #303133; }
+    .param-table td:nth-child(2), .param-table th:nth-child(2) { text-align: center; }
+    .param-table td:last-child, .param-table th:last-child { text-align: center; }
+    .table-actions { text-align: center; }
+    .toast { position: fixed; top: 18px; left: 50%; transform: translateX(-50%); padding: 9px 16px; border-radius: 4px; background: #303133; color: #fff; font-size: 13px; opacity: 0; pointer-events: none; transition: opacity .2s ease; z-index: 2000; }
+    .toast.show { opacity: 1; }
+  </style>
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar-primary">
+        <div class="sidebar-brand"><h2><span class="brand-icon">📦</span><span>OMS</span></h2></div>
+        <nav class="sidebar-nav">
+          <a class="primary-item" href="./index.html"><span class="item-icon">🏠</span><span class="item-label">首页</span></a>
+          <a class="primary-item" href="#"><span class="item-icon">⚙️</span><span class="item-label">数据决策</span></a>
+          <a class="primary-item" href="#"><span class="item-icon">⚙️</span><span class="item-label">运营工具</span></a>
+          <a class="primary-item" href="#"><span class="item-icon">⚙️</span><span class="item-label">目标</span></a>
+          <a class="primary-item" href="#" data-submenu="replenish"><span class="item-icon">⚙️</span><span class="item-label">补货</span></a>
+          <a class="primary-item active" href="#" data-submenu="system" data-primary-current="true"><span class="item-icon">⚙️</span><span class="item-label">系统配置</span></a>
+          <a class="primary-item" href="#" data-submenu="proto"><span class="item-icon">⚙️</span><span class="item-label">初始原型</span></a>
+        </nav>
+      </div>
+      <div class="sidebar-submenu-panel" id="replenish-submenu">
+        <a class="submenu-item" href="./补货列表.html">补货列表</a>
+        <a class="submenu-item" href="./备货建议.html">备货建议</a>
+      </div>
+      <div class="sidebar-submenu-panel" id="system-submenu">
+        <div class="submenu-title">系统配置</div>
+        <a class="submenu-item active" href="./基础参数配置.html">基础参数配置</a>
+        <a class="submenu-item" href="./销量预测规则.html">销量预测规则</a>
+        <a class="submenu-item" href="./备货规则配置.html">备货规则</a>
+      </div>
+      <div class="sidebar-submenu-panel" id="proto-submenu">
+        <div class="submenu-title">初始原型</div>
+        <a class="submenu-item" href="./预测规则配置页面_v1.html">备货规则</a>
+        <a class="submenu-item" href="./预警页面_v1.html">预警模型</a>
+        <a class="submenu-item" href="./预警消息页面_v1.html">预警消息</a>
+      </div>
+    </aside>
+    <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+    <main class="main-content">
+      <div class="page-card">
+        <div class="page-head">
+          <div>
+            <div class="page-title">基础参数配置</div>
+            <div class="page-subtitle">配置采购与发货相关的时间参数，用于库存预测和备货建议计算。</div>
+          </div>
+          <div class="actions">
+            <button type="button" class="btn" id="btn-reset">重置</button>
+            <button type="button" class="btn btn-primary" id="btn-save">保存</button>
+          </div>
+        </div>
+
+        <div class="top-form">
+          <label class="inline-field">工厂生产时间：<input class="input input-num" id="production-time" type="number" min="0" /><span class="unit">天</span></label>
+          <label class="inline-field">大货入仓时间：<input class="input input-num" id="warehouse-time" type="number" min="0" /><span class="unit">天</span></label>
+          <label class="inline-field">采购频率：<input class="input input-num" id="purchase-frequency" type="number" min="0" /><span class="unit">天</span></label>
+        </div>
+
+        <div id="shipping-sections"></div>
+      </div>
+    </main>
+  </div>
+  <div class="toast" id="toast">保存成功</div>
+
+  <script>
+    (function initBasicParamsPage() {
+      var BASIC_PARAMS_STORAGE_KEY = 'sf_basic_params_v1';
+      var SITE_META = [
+        { key: 'shippingNorthAmerica', title: '发货参数 - 北美', prep: 2, freq: 7, logistics: [{ name: '空运', days: 7 }, { name: '海运', days: 30 }, { name: '快递', days: 3 }] },
+        { key: 'shippingEurope', title: '发货参数 - 欧洲', prep: 3, freq: 7, logistics: [{ name: '空运', days: 10 }, { name: '海运', days: 35 }, { name: '快递', days: 5 }] },
+        { key: 'shippingOther', title: '发货参数 - 其他', prep: 3, freq: 7, logistics: [{ name: '空运', days: 12 }, { name: '海运', days: 40 }, { name: '快递', days: 7 }] }
+      ];
+      var state = null;
+
+      function toInt(value, fallback) {
+        var n = parseInt(value, 10);
+        return Number.isNaN(n) ? (fallback || 0) : n;
+      }
+
+      function clone(value) {
+        return JSON.parse(JSON.stringify(value));
+      }
+
+      function escapeHtml(value) {
+        return String(value == null ? '' : value)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function defaultParams() {
+        var result = {
+          schemaVersion: 2,
+          purchase: {
+            productionTime: 30,
+            purchaseLead: 30,
+            warehouseTime: 7,
+            purchaseFrequency: 15
+          }
+        };
+        SITE_META.forEach(function(site) {
+          result[site.key] = {
+            prepTime: site.prep,
+            shipFrequency: site.freq,
+            logistics: site.logistics.map(function(item, index) {
+              return {
+                id: index + 1,
+                key: 'method_' + site.key + '_' + (index + 1),
+                name: item.name,
+                days: item.days,
+                leadTimeDays: item.days
+              };
+            })
+          };
+        });
+        return result;
+      }
+
+      function normalizeMethod(siteKey, item, index, fallback) {
+        var name = item && item.name || fallback.name;
+        var days = item && (item.days != null ? item.days : item.leadTimeDays);
+        if (days == null) days = fallback.days;
+        return {
+          id: item && item.id != null ? item.id : index + 1,
+          key: item && item.key || ('method_' + siteKey + '_' + (index + 1)),
+          name: name,
+          days: toInt(days, 0),
+          leadTimeDays: toInt(days, 0)
+        };
+      }
+
+      function normalizeParams(input) {
+        var defaults = defaultParams();
+        input = input || {};
+        var legacyFromPreviousPrototype = input.schemaVersion !== 2 &&
+          (input.fbaSafetyDays != null || (input.purchase && (input.purchase.pickupPrep != null || input.purchase.qualityInspection != null)));
+        if (legacyFromPreviousPrototype) input = {};
+        var p = input.purchase || {};
+        var result = {
+          schemaVersion: 2,
+          purchase: {
+            productionTime: toInt(p.productionTime != null ? p.productionTime : p.purchaseLead, defaults.purchase.productionTime),
+            purchaseLead: toInt(p.purchaseLead != null ? p.purchaseLead : p.productionTime, defaults.purchase.purchaseLead),
+            warehouseTime: toInt(p.warehouseTime, defaults.purchase.warehouseTime),
+            purchaseFrequency: toInt(p.purchaseFrequency, defaults.purchase.purchaseFrequency)
+          }
+        };
+        result.purchase.purchaseLead = result.purchase.productionTime;
+        SITE_META.forEach(function(site) {
+          var src = input[site.key] || {};
+          var fallback = defaults[site.key];
+          var srcRows = Array.isArray(src.logistics) && src.logistics.length ? src.logistics : fallback.logistics;
+          result[site.key] = {
+            prepTime: toInt(src.prepTime, fallback.prepTime),
+            shipFrequency: toInt(src.shipFrequency, fallback.shipFrequency),
+            logistics: srcRows.map(function(item, index) {
+              return normalizeMethod(site.key, item, index, fallback.logistics[index] || fallback.logistics[0]);
+            })
+          };
+        });
+        return result;
+      }
+
+      function loadParams() {
+        try {
+          var raw = localStorage.getItem(BASIC_PARAMS_STORAGE_KEY);
+          return normalizeParams(raw ? JSON.parse(raw) : null);
+        } catch (err) {
+          return normalizeParams(null);
+        }
+      }
+
+      function saveParams() {
+        syncFromDom();
+        localStorage.setItem(BASIC_PARAMS_STORAGE_KEY, JSON.stringify(normalizeParams(state)));
+        showToast('保存成功');
+      }
+
+      function showToast(text) {
+        var toast = document.getElementById('toast');
+        toast.textContent = text;
+        toast.classList.add('show');
+        setTimeout(function() { toast.classList.remove('show'); }, 1500);
+      }
+
+      function setValue(id, value) {
+        var el = document.getElementById(id);
+        if (el) el.value = value;
+      }
+
+      function render() {
+        setValue('production-time', state.purchase.productionTime);
+        setValue('warehouse-time', state.purchase.warehouseTime);
+        setValue('purchase-frequency', state.purchase.purchaseFrequency);
+        document.getElementById('shipping-sections').innerHTML = SITE_META.map(renderSiteSection).join('');
+      }
+
+      function renderSiteSection(meta) {
+        var config = state[meta.key];
+        return '<section class="section" data-site-key="' + meta.key + '">' +
+          '<div class="section-title">' + escapeHtml(meta.title) + '</div>' +
+          '<div class="site-fields">' +
+            '<label class="inline-field">提货准备时间：<input class="input input-num site-prep" type="number" min="0" value="' + escapeHtml(config.prepTime) + '" /><span class="unit">天</span></label>' +
+            '<label class="inline-field">发货频率：<input class="input input-num site-frequency" type="number" min="0" value="' + escapeHtml(config.shipFrequency) + '" /><span class="unit">天</span></label>' +
+          '</div>' +
+          '<table class="param-table">' +
+            '<thead><tr><th>物流方式</th><th>时间（天）</th><th style="width: 140px;">操作</th></tr></thead>' +
+            '<tbody>' + config.logistics.map(function(row, index) {
+              return '<tr data-index="' + index + '">' +
+                '<td><input class="input input-name method-name" value="' + escapeHtml(row.name) + '" /></td>' +
+                '<td><input class="input input-num method-days" type="number" min="0" value="' + escapeHtml(row.days) + '" /></td>' +
+                '<td class="table-actions"><button type="button" class="btn-danger method-delete">删除</button></td>' +
+              '</tr>';
+            }).join('') + '</tbody>' +
+          '</table>' +
+          '<button type="button" class="btn btn-sm method-add" data-site-key="' + meta.key + '">+ 添加物流方式</button>' +
+        '</section>';
+      }
+
+      function syncFromDom() {
+        state.purchase.productionTime = toInt(document.getElementById('production-time').value, 0);
+        state.purchase.purchaseLead = state.purchase.productionTime;
+        state.purchase.warehouseTime = toInt(document.getElementById('warehouse-time').value, 0);
+        state.purchase.purchaseFrequency = toInt(document.getElementById('purchase-frequency').value, 0);
+        document.querySelectorAll('.section[data-site-key]').forEach(function(section) {
+          var key = section.getAttribute('data-site-key');
+          var config = state[key];
+          config.prepTime = toInt(section.querySelector('.site-prep').value, 0);
+          config.shipFrequency = toInt(section.querySelector('.site-frequency').value, 0);
+          config.logistics = Array.from(section.querySelectorAll('tbody tr')).map(function(row, index) {
+            var name = row.querySelector('.method-name').value.trim();
+            var days = toInt(row.querySelector('.method-days').value, 0);
+            var old = config.logistics[index] || {};
+            return {
+              id: old.id != null ? old.id : index + 1,
+              key: old.key || ('method_' + key + '_' + Date.now().toString(36) + '_' + index),
+              name: name,
+              days: days,
+              leadTimeDays: days
+            };
+          });
+        });
+      }
+
+      function initSidebarMenu() {
+        var appLayout = document.querySelector('.app-layout');
+        var backdrop = document.getElementById('sidebar-backdrop');
+        var replenishTrigger = document.querySelector('.primary-item[data-submenu="replenish"]');
+        var protoTrigger = document.querySelector('.primary-item[data-submenu="proto"]');
+        var systemTrigger = document.querySelector('.primary-item[data-submenu="system"]');
+        var replenishPanel = document.getElementById('replenish-submenu');
+        var protoPanel = document.getElementById('proto-submenu');
+        var systemPanel = document.getElementById('system-submenu');
+        if (!appLayout || !backdrop) return;
+
+        function closeAllSubmenus() {
+          appLayout.classList.remove('submenu-open');
+          [replenishPanel, protoPanel, systemPanel].forEach(function(panel) {
+            if (panel) panel.classList.remove('open');
+          });
+        }
+
+        function bindToggle(trigger, panel) {
+          if (!trigger || !panel) return;
+          trigger.addEventListener('click', function(e) {
+            e.preventDefault();
+            var willOpen = !panel.classList.contains('open');
+            closeAllSubmenus();
+            if (willOpen) {
+              panel.classList.add('open');
+              appLayout.classList.add('submenu-open');
+            }
+          });
+        }
+
+        bindToggle(replenishTrigger, replenishPanel);
+        bindToggle(protoTrigger, protoPanel);
+        bindToggle(systemTrigger, systemPanel);
+        backdrop.addEventListener('click', closeAllSubmenus);
+
+        document.querySelectorAll('.sidebar-submenu-panel a.submenu-item').forEach(function(a) {
+          a.addEventListener('click', closeAllSubmenus);
+        });
+
+        document.querySelectorAll('.primary-item[href="#"]:not([data-submenu])').forEach(function(item) {
+          item.addEventListener('click', function(e) { e.preventDefault(); });
+        });
+      }
+
+      document.getElementById('btn-save').addEventListener('click', saveParams);
+      document.getElementById('btn-reset').addEventListener('click', function() {
+        state = defaultParams();
+        render();
+        showToast('已重置为默认值');
+      });
+      document.getElementById('shipping-sections').addEventListener('click', function(e) {
+        var add = e.target.closest('.method-add');
+        if (add) {
+          syncFromDom();
+          var key = add.getAttribute('data-site-key');
+          var list = state[key].logistics;
+          var nextId = list.reduce(function(max, item) { return Math.max(max, toInt(item.id, 0)); }, 0) + 1;
+          list.push({ id: nextId, key: 'method_' + key + '_' + nextId, name: '新增物流方式', days: 0, leadTimeDays: 0 });
+          render();
+          return;
+        }
+        var del = e.target.closest('.method-delete');
+        if (del) {
+          syncFromDom();
+          var section = del.closest('.section[data-site-key]');
+          var index = toInt(del.closest('tr').getAttribute('data-index'), 0);
+          state[section.getAttribute('data-site-key')].logistics.splice(index, 1);
+          render();
+        }
+      });
+
+      initSidebarMenu();
+      state = loadParams();
+      render();
+    })();
+  </script>
+</body>
+</html>

@@ -272,6 +272,7 @@
     .w-120 { width: 120px; }
     .w-140 { width: 140px; }
     .w-160 { width: 160px; }
+    .w-180 { width: 180px; }
     .w-200 { width: 200px; }
 
     .btn {
@@ -426,6 +427,49 @@
       font-size: 12px;
     }
 
+    .page-top-tabs {
+      display: flex;
+      align-items: flex-end;
+      gap: 28px;
+      padding: 0 20px;
+      margin: 0 0 12px;
+      border-bottom: 1px solid #e4e7ed;
+      background: #fff;
+    }
+
+    .page-top-tab {
+      position: relative;
+      margin: 0;
+      padding: 14px 0 12px;
+      border: none;
+      background: transparent;
+      color: #303133;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      line-height: 1.4;
+    }
+
+    .page-top-tab:hover {
+      color: #409eff;
+    }
+
+    .page-top-tab.active {
+      color: #409eff;
+      font-weight: 600;
+    }
+
+    .page-top-tab.active::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -1px;
+      height: 2px;
+      background: #409eff;
+      border-radius: 2px 2px 0 0;
+    }
+
     .suggestion-tabs {
       display: inline-flex;
       align-items: center;
@@ -469,10 +513,35 @@
 
     .data-table {
       width: 100%;
-      min-width: 1360px;
+      min-width: 1620px;
       border-collapse: collapse;
       table-layout: fixed;
       color: #606266;
+    }
+
+    .data-table--list tbody tr,
+    .list-row-clickable {
+      cursor: pointer;
+    }
+
+    .parent-code-link {
+      border: none;
+      padding: 0;
+      background: transparent;
+      color: #1f6feb;
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .parent-code-link:hover {
+      color: #409eff;
+      text-decoration: underline;
+    }
+
+    .doc-gen-count {
+      color: #303133;
+      font-variant-numeric: tabular-nums;
     }
 
     .data-table th,
@@ -747,6 +816,44 @@
       border-color: #e9e9eb;
     }
 
+    .risk-tag {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 68px;
+      height: 24px;
+      padding: 0 8px;
+      border-radius: 4px;
+      border: 1px solid transparent;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .risk-critical {
+      color: #f56c6c;
+      background: #fef0f0;
+      border-color: #fde2e2;
+    }
+
+    .risk-high {
+      color: #e6a23c;
+      background: #fdf6ec;
+      border-color: #faecd8;
+    }
+
+    .risk-medium {
+      color: #409eff;
+      background: #ecf5ff;
+      border-color: #d9ecff;
+    }
+
+    .risk-low {
+      color: #67c23a;
+      background: #f0f9eb;
+      border-color: #e1f3d8;
+    }
+
     .drawer-mask {
       display: none;
       position: fixed;
@@ -1015,49 +1122,14 @@
     .pct-bar i.c4 { background: linear-gradient(90deg, #cfe4fb, #9cc2ea); }
     .pct-text { font-size: 12px; color: #606266; font-variant-numeric: tabular-nums; min-width: 34px; text-align: right; }
 
-    /* 发货明细：物流方式（主）→ SKU（从）层级 */
-    .method-table .method-main > td {
-      vertical-align: middle;
-      background: #f3f7fe;
-      border-bottom: 1px solid #e3ecfb;
+    .ship-docs-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
     }
-    .method-name {
-      position: relative;
-      padding-left: 14px;
-      font-weight: 700;
-      color: #1f4e8c;
-      font-size: 13px;
-    }
-    .method-name::before {
-      content: "";
-      position: absolute;
-      left: 0;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 4px;
-      height: 14px;
-      border-radius: 2px;
-      background: #409eff;
-    }
-    .method-table .method-detail-row > td {
-      background: #fbfcfe;
-      padding: 0;
-    }
-    .method-detail-panel {
-      margin: 0 0 8px 22px;
-      border-left: 2px solid #d2e4fb;
-      padding: 8px 0 4px 14px;
-    }
-    .method-detail-cap {
-      font-size: 12px;
-      color: #909399;
-      margin-bottom: 6px;
-    }
+
     .method-sku-table {
       margin: 0;
-      border: 1px solid #eef1f5;
-      border-radius: 6px;
-      overflow: hidden;
       background: #fff;
     }
     .method-sku-table thead th { background: #f0f3f8; }
@@ -1072,6 +1144,109 @@
       vertical-align: bottom;
       color: #606266;
       font-size: 12px;
+    }
+
+    /* 计算说明：三段表格法，嵌入当前手风琴面板 */
+    .calc-intro {
+      margin-bottom: 12px;
+      padding: 10px 12px;
+      border: 1px solid #e4e7ed;
+      border-radius: 6px;
+      background: #fafbfc;
+      font-size: 12px;
+      line-height: 1.7;
+      color: #606266;
+    }
+    .calc-seg {
+      margin-top: 12px;
+      border: 1px solid #ebeef5;
+      border-radius: 6px;
+      background: #fff;
+      padding: 12px;
+    }
+    .calc-seg:first-child { margin-top: 0; }
+    .seg-title {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #303133;
+    }
+    .seg-no {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #409eff;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .seg-hint { font-weight: 400; font-size: 11.5px; color: #909399; }
+    .sku-filter-bar { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; margin-bottom: 12px; }
+    .sku-filter-bar .filter-item { display: flex; align-items: center; gap: 6px; }
+    .sku-filter-bar .filter-label { color: #606266; font-size: 13px; white-space: nowrap; }
+    .seg-tbl-wrap { overflow-x: auto; }
+    .calc-seg-tbl { min-width: 100%; width: auto; margin-top: 0; table-layout: auto; }
+    .detail-table.calc-seg-tbl { width: max-content; min-width: 100%; table-layout: auto; }
+    .calc-seg-tbl th, .calc-seg-tbl td { white-space: nowrap; padding-left: 12px; padding-right: 12px; }
+    .calc-seg-tbl th:first-child,
+    .calc-seg-tbl td:first-child { min-width: 168px; }
+    .calc-sales-table { min-width: 1440px; }
+    .detail-table.calc-seg-tbl.calc-sales-table { min-width: 1440px; }
+    .calc-sales-table .sales-period-col { min-width: 104px; }
+    .calc-seg-tbl .op-col { color: #f56c6c; font-weight: 400; }
+    .calc-seg-tbl .seg-cover { color: #1f6feb; font-weight: 700; }
+    .calc-seg-tbl .res-col { background: #f7faff; }
+    .calc-seg-tbl thead th.res-col { color: #1f6feb; }
+    .calc-seg-tbl .seg-res { color: #1f6feb; font-weight: 800; }
+    .calc-seg-tbl .seg-res-zero { color: #909399; font-weight: 700; }
+    .calc-seg-tbl tfoot td {
+      border-top: 1px solid #e3ecfb;
+      border-bottom: 0;
+      background: #f7faff;
+      font-weight: 700;
+    }
+    .calc-seg-tbl tfoot .seg-grand { color: #1f6feb; font-size: 15px; font-weight: 800; }
+    .calc-more-btn {
+      margin-top: 8px;
+      border: 1px solid #dcdfe6;
+      background: #fff;
+      color: #409eff;
+      font-size: 12px;
+      padding: 4px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .calc-more-btn:hover { border-color: #409eff; background: #f5faff; }
+    .calc-seg-tbl td.cond-td { width: 160px; white-space: normal; vertical-align: middle; }
+    .cond-cell { display: flex; align-items: center; gap: 6px; }
+    .cond-text {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: #606266;
+    }
+    .cond-cell.expanded .cond-text { white-space: normal; word-break: break-word; }
+    .cond-toggle {
+      flex-shrink: 0;
+      border: 0;
+      background: transparent;
+      color: #409eff;
+      font-size: 11px;
+      line-height: 1.4;
+      cursor: pointer;
+      padding: 0;
+      white-space: nowrap;
     }
 
     .drawer-anchor-row {
@@ -1136,6 +1311,466 @@
 
     .drawer-section:last-child {
       margin-bottom: 0;
+    }
+
+    .drawer-accordion-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .collapse-panel {
+      border: 1px solid #ebeef5;
+      border-radius: 6px;
+      background: #fff;
+      overflow: hidden;
+    }
+
+    .collapse-head {
+      width: 100%;
+      min-height: 44px;
+      border: none;
+      background: #fafbfc;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto 18px;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 14px;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .collapse-head:hover {
+      background: #f5f7fa;
+    }
+
+    .collapse-title {
+      color: #303133;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .collapse-summary {
+      color: #909399;
+      font-size: 12px;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .collapse-arrow::before,
+    .logic-step-arrow::before,
+    .doc-card-arrow::before {
+      content: '▾';
+      color: #909399;
+      font-size: 12px;
+    }
+
+    .collapse-panel:not(.is-open) .collapse-arrow::before,
+    .logic-step:not(.is-open) .logic-step-arrow::before,
+    .doc-card:not(.is-open) .doc-card-arrow::before {
+      content: '▸';
+    }
+
+    .collapse-body {
+      display: none;
+      padding: 14px;
+      border-top: 1px solid #ebeef5;
+      background: #fff;
+    }
+
+    .collapse-panel.is-open .collapse-body {
+      display: block;
+    }
+
+    .logic-card {
+      border: 1px solid #ebeef5;
+      border-radius: 6px;
+      background: #fff;
+      overflow: hidden;
+    }
+
+    .logic-step + .logic-step {
+      border-top: 1px solid #ebeef5;
+    }
+
+    .logic-step-head {
+      width: 100%;
+      min-height: 42px;
+      border: none;
+      background: #fff;
+      display: grid;
+      grid-template-columns: 24px minmax(0, 1fr) auto 18px;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .logic-step-head:hover {
+      background: #fafcff;
+    }
+
+    .logic-step-badge {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #409eff;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .logic-step-title {
+      color: #303133;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .logic-step-summary {
+      color: #909399;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .logic-step-body {
+      display: none;
+      padding: 0 12px 12px 46px;
+      background: #fff;
+    }
+
+    .logic-step.is-open .logic-step-body {
+      display: block;
+    }
+
+    .table-scroll-wrap {
+      overflow-x: auto;
+      border: 1px solid #ebeef5;
+      border-radius: 4px;
+    }
+
+    .table-scroll-wrap .detail-table {
+      min-width: 720px;
+      border: 0;
+    }
+
+    .doc-card {
+      border: 1px solid #ebeef5;
+      border-radius: 6px;
+      background: #fff;
+      overflow: hidden;
+    }
+
+    .doc-card + .doc-card {
+      margin-top: 10px;
+    }
+
+    .doc-card-head {
+      width: 100%;
+      border: none;
+      background: #fafbfc;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 14px;
+      text-align: left;
+      cursor: pointer;
+      font: inherit;
+    }
+
+    .doc-card-head:hover {
+      background: #f5f7fa;
+    }
+
+    .doc-card-title {
+      flex: 1;
+      min-width: 0;
+      color: #303133;
+      font-size: 13px;
+      font-weight: 600;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .doc-card-arrow {
+      flex-shrink: 0;
+      color: #c0c4cc;
+      line-height: 1;
+    }
+
+    .doc-card-body {
+      display: none;
+      border-top: 1px solid #ebeef5;
+    }
+
+    .doc-card.is-open .doc-card-body {
+      display: block;
+    }
+
+    .doc-card .table-scroll-wrap {
+      border: none;
+      border-radius: 0;
+    }
+
+    .doc-card .detail-table {
+      min-width: 720px;
+    }
+
+    .forecast-chart-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .forecast-chart-card {
+      border: 1px solid #ebeef5;
+      border-radius: 6px;
+      background: #fff;
+      overflow: hidden;
+    }
+
+    .forecast-chart-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px 0;
+    }
+
+    .forecast-chart-title {
+      color: #303133;
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 20px;
+    }
+
+    .chart-spu-tag {
+      display: inline-flex;
+      align-items: center;
+      height: 20px;
+      margin-left: 8px;
+      padding: 0 7px;
+      border-radius: 4px;
+      background: #f5f7fa;
+      color: #909399;
+      font-size: 12px;
+      font-weight: 400;
+      vertical-align: top;
+    }
+
+    .forecast-chart-meta {
+      color: #909399;
+      font-size: 12px;
+      line-height: 20px;
+      white-space: nowrap;
+    }
+
+    .stock-trend-svg-wrap {
+      padding: 6px 10px 0;
+    }
+
+    .stock-trend-svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      min-height: 218px;
+    }
+
+    .stock-trend-grid {
+      stroke: #ebeef5;
+      stroke-width: 1;
+    }
+
+    .stock-trend-axis {
+      stroke: #dcdfe6;
+      stroke-width: 1;
+    }
+
+    .stock-trend-label {
+      fill: #909399;
+      font-size: 11px;
+    }
+
+    .stock-trend-line {
+      fill: none;
+      stroke: #409eff;
+      stroke-width: 2.4;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .stock-trend-area {
+      fill: rgba(64, 158, 255, 0.1);
+    }
+
+    .forecast-chart-title-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      border-bottom: 1px solid #ebeef5;
+    }
+
+    .inventory-dist-legend {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      gap: 10px;
+      color: #606266;
+      font-size: 12px;
+      line-height: 18px;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
+    }
+
+    .legend-color {
+      width: 14px;
+      height: 7px;
+      border-radius: 7px;
+      flex-shrink: 0;
+    }
+
+    .legend-color.legend-dashed {
+      height: 0;
+      border-top: 2px dashed;
+      background: transparent !important;
+      border-radius: 0;
+    }
+
+    .inventory-distribution-container {
+      display: grid;
+      grid-template-columns: 218px minmax(0, 1fr);
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .inventory-dist-left {
+      border-right: 1px solid #ebeef5;
+      background: #fafafa;
+      overflow: hidden;
+    }
+
+    .inventory-dist-right {
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .inventory-dist-scroll {
+      overflow-x: auto;
+      overflow-y: hidden;
+    }
+
+    .inventory-dist-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      font-size: 12px;
+    }
+
+    .inventory-dist-left .inventory-dist-table {
+      width: 218px;
+    }
+
+    .inventory-dist-right .inventory-dist-table {
+      min-width: 760px;
+    }
+
+    .inventory-dist-table th,
+    .inventory-dist-table td {
+      height: 38px;
+      border-bottom: 1px solid #ebeef5;
+      border-right: 1px solid #f0f2f5;
+      padding: 0 8px;
+      color: #606266;
+      text-align: center;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+
+    .inventory-dist-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .inventory-dist-header-month th {
+      height: 28px;
+      background: #f5f7fa;
+      color: #606266;
+      font-weight: 600;
+    }
+
+    .inventory-dist-header-week th {
+      height: 30px;
+      background: #fafafa;
+      color: #909399;
+      font-weight: 500;
+    }
+
+    .inventory-dist-left .inventory-dist-table th,
+    .inventory-dist-left .inventory-dist-table td {
+      text-align: left;
+    }
+
+    .inventory-type-row td:first-child {
+      color: #303133;
+      font-weight: 500;
+    }
+
+    .dist-cell {
+      position: relative;
+      padding: 0;
+    }
+
+    .dist-cell-inner {
+      position: relative;
+      height: 100%;
+      min-height: 38px;
+    }
+
+    .dist-block {
+      position: absolute;
+      top: 50%;
+      height: 10px;
+      border-radius: 10px;
+      transform: translateY(-50%);
+    }
+
+    .solid-green {
+      background: #52c41a;
+    }
+
+    .solid-blue {
+      background: #1890ff;
+    }
+
+    .solid-yellow {
+      background: #faad14;
+    }
+
+    .dashed-blue {
+      border-top: 2px dashed #1890ff;
+      height: 0;
+      border-radius: 0;
+      background: transparent;
+    }
+
+    .dashed-yellow {
+      border-top: 2px dashed #faad14;
+      height: 0;
+      border-radius: 0;
+      background: transparent;
     }
 
     .drawer-subhead {
@@ -1289,8 +1924,8 @@
       display: none;
       position: absolute;
       right: 0;
-      bottom: calc(100% + 8px);
-      z-index: 20;
+      top: calc(100% + 8px);
+      z-index: 3000;
       width: max-content;
       max-width: 260px;
       padding: 8px 10px;
@@ -1385,6 +2020,7 @@
       </div>
       <div class="sidebar-submenu-panel" id="system-submenu">
         <div class="submenu-title">系统配置</div>
+        <a class="submenu-item" href="./基础参数配置.html">基础参数配置</a>
         <a class="submenu-item" href="./销量预测规则.html">销量预测规则</a>
         <a class="submenu-item" href="./备货规则配置.html">备货规则</a>
       </div>
@@ -1411,79 +2047,90 @@
           </div>
         </div>
 
+        <nav class="page-top-tabs" role="tablist" aria-label="备货建议类型">
+          <button type="button" class="page-top-tab active" data-suggestion-type="ship" role="tab" aria-selected="true">发货建议</button>
+          <button type="button" class="page-top-tab" data-suggestion-type="order" role="tab" aria-selected="false">采购建议</button>
+        </nav>
+
         <section class="panel">
           <div class="panel-body">
             <div class="filter-bar">
               <div class="filter-item">
-                <span class="filter-label">父体 / 子体</span>
-                <input class="filter-control w-200" id="filter-keyword" type="text" placeholder="请输入父体或 SKU" />
+                <span class="filter-label">父体 / SPU</span>
+                <input class="filter-control w-160" id="filter-keyword" type="text" placeholder="父体编号或 SPU" />
+              </div>
+              <div class="filter-item">
+                <span class="filter-label">父ASIN</span>
+                <input class="filter-control w-140" id="filter-parent-asin" type="text" placeholder="父 ASIN" />
+              </div>
+              <div class="filter-item">
+                <span class="filter-label">平台</span>
+                <select class="filter-control w-120" id="filter-platform">
+                  <option value="">全部平台</option>
+                </select>
+              </div>
+              <div class="filter-item">
+                <span class="filter-label">站点</span>
+                <select class="filter-control w-120" id="filter-site">
+                  <option value="">全部站点</option>
+                </select>
+              </div>
+              <div class="filter-item">
+                <span class="filter-label">店铺</span>
+                <select class="filter-control w-180" id="filter-store">
+                  <option value="">全部店铺</option>
+                </select>
+              </div>
+              <div class="filter-item">
+                <span class="filter-label">组别</span>
+                <select class="filter-control w-120" id="filter-group">
+                  <option value="">全部组别</option>
+                  <option value="__EMPTY__">（空）</option>
+                  <option value="UA组">UA组</option>
+                  <option value="UB组">UB组</option>
+                  <option value="UC组">UC组</option>
+                </select>
               </div>
               <div class="filter-item">
                 <span class="filter-label">运营负责人</span>
-                <select class="filter-control w-160" id="filter-owner">
+                <select class="filter-control w-120" id="filter-owner">
                   <option value="">全部负责人</option>
                 </select>
               </div>
               <div class="filter-item">
-                <span class="filter-label">适用规则</span>
-                <select class="filter-control w-200" id="filter-rule">
-                  <option value="">全部规则</option>
-                </select>
+                <span class="filter-label">生成日期</span>
+                <input class="filter-control w-140" id="filter-gen-date" type="date" />
               </div>
-              <div class="filter-item">
-                <span class="filter-label">计算来源</span>
-                <select class="filter-control w-140" id="filter-source">
-                  <option value="annual" selected>年规目标</option>
-                  <option value="forecast">预测日销量</option>
-                  <option value="">全部来源</option>
-                </select>
-              </div>
-              <label class="checkbox-line">
-                <input type="checkbox" id="filter-positive" />
-                只看有建议量
-              </label>
               <div class="filter-actions">
                 <button type="button" class="btn btn-primary" id="btn-search">查询</button>
                 <button type="button" class="btn" id="btn-reset">重置</button>
               </div>
             </div>
-            <div class="metric-grid" id="metric-grid"></div>
+            <div class="metric-grid" id="metric-grid" style="display: none;"></div>
             <div class="metric-note" id="metric-note" style="display: none;"></div>
           </div>
         </section>
 
         <section class="panel">
           <div class="panel-body">
-            <div class="section-head">
-              <div>
-                <div class="section-title">备货建议列表</div>
-                <div class="suggestion-tabs" role="tablist" aria-label="备货建议类型">
-                  <button type="button" class="suggestion-tab active" data-suggestion-type="ship" role="tab" aria-selected="true">发货建议</button>
-                  <button type="button" class="suggestion-tab" data-suggestion-type="order" role="tab" aria-selected="false">下单建议</button>
-                </div>
-                <div class="section-note" style="display: none;">主列表按父体与计算来源展开，当前列表仅展示所选类型的备货周期与建议量。</div>
-              </div>
-              <div class="table-actions">
-                <button type="button" class="btn btn-primary" id="btn-batch-ship" disabled>批量生成发货</button>
-                <button type="button" class="btn btn-primary" id="btn-batch-order" disabled>批量生成采购</button>
-                <button type="button" class="btn" id="btn-export-table">导出</button>
-              </div>
-            </div>
-
-            <div class="table-wrap">
-              <table class="data-table">
+            <div class="table-wrap table-wrap--wide">
+              <table class="data-table data-table--list">
                 <thead>
                   <tr>
-                    <th class="select-cell" style="width: 46px;"><input type="checkbox" id="check-all-suggestions" aria-label="全选备货建议" /></th>
-                    <th style="width: 180px;">父体<span class="th-note">父ASIN · SPU</span></th>
-                    <th style="width: 72px;">站点</th>
-                    <th style="width: 160px;" id="cycle-head">发货备货周期<span class="th-note">覆盖天数 / 日期区间</span></th>
-                    <th style="width: 110px;" class="num" id="qty-head">发货建议量</th>
-                    <th style="width: 78px;" class="num">安全天数</th>
+                    <th style="width: 132px;">父体编号</th>
+                    <th style="width: 100px;">SPU</th>
+                    <th style="width: 132px;">父ASIN</th>
+                    <th style="width: 86px;">平台</th>
+                    <th style="width: 82px;">站点</th>
+                    <th style="width: 170px;">店铺</th>
+                    <th style="width: 74px;">组别</th>
                     <th style="width: 96px;">运营负责人</th>
-                    <th style="width: 140px;">匹配规则</th>
-                    <th style="width: 96px;" id="source-head">计算来源</th>
-                    <th style="width: 64px;">操作</th>
+                    <th style="width: 110px;" id="cycle-head">目标库存天数</th>
+                    <th style="width: 112px;" class="num" id="qty-head">发货建议量</th>
+                    <th style="width: 108px;" id="risk-head">风险评级</th>
+                    <th style="width: 92px;">生成单据</th>
+                    <th style="width: 104px;">销量数据源</th>
+                    <th style="width: 104px;">生成日期</th>
                   </tr>
                 </thead>
                 <tbody id="suggestion-tbody"></tbody>
@@ -1508,37 +2155,10 @@
       <div class="drawer-hero" id="drawer-hero"></div>
     </div>
     <div class="drawer-body" id="drawer-body">
-      <section class="drawer-section" id="drawer-contrib-section">
-        <div class="drawer-subhead" role="heading" aria-level="3">
-          <span class="drawer-subhead-bar" aria-hidden="true"></span>
-          <span class="drawer-subhead-text">发货建议构成</span>
-          <span class="drawer-subhead-hint">按子体贡献</span>
-        </div>
-        <div id="contrib-detail"></div>
-      </section>
-
-      <section class="drawer-section" id="drawer-child-section">
-        <div class="drawer-subhead" role="heading" aria-level="3">
-          <span class="drawer-subhead-bar" aria-hidden="true"></span>
-          <span class="drawer-subhead-text">子体明细</span>
-          <span class="drawer-subhead-hint">展开看每个子体怎么算</span>
-        </div>
-        <div id="child-detail"></div>
-      </section>
-
-      <section class="drawer-section collapsible" id="drawer-calc-section">
-        <button type="button" class="calc-collapse" id="calc-collapse" aria-expanded="false">
-          <span class="calc-caret" id="calc-caret">▸</span>
-          <span class="drawer-subhead-text">计算说明</span>
-          <span class="drawer-subhead-hint">覆盖天数 / 安全天数 / 聚合口径</span>
-        </button>
-        <div id="calc-detail" hidden></div>
-      </section>
+      <div id="drawer-accordions"></div>
     </div>
     <div class="drawer-footer">
       <div class="drawer-actions">
-        <button type="button" class="btn btn-primary" id="drawer-create-ship">生成发货计划</button>
-        <button type="button" class="btn btn-primary" id="drawer-create-order">生成采购计划</button>
         <button type="button" class="btn" id="drawer-export">导出明细</button>
       </div>
     </div>
@@ -1552,7 +2172,7 @@
       var parentSuggestions = [];
       var currentSuggestion = null;
       var activeSuggestionType = 'ship';
-      var selectedSuggestionIds = {};
+      var drawerCalcFilter = { color: '', size: '' };
       var DATA_SOURCE_META = {
         annual: { label: '年规目标', tagClass: 'tag-info' },
         forecast: { label: '预测日销量', tagClass: 'tag-success' }
@@ -1621,6 +2241,11 @@
         return date.getFullYear() + '-' + padDatePart(date.getMonth() + 1) + '-' + padDatePart(date.getDate());
       }
 
+      function arrivalDateText(days) {
+        if (days == null || Number.isNaN(Number(days))) return '-';
+        return formatDate(addDays(todayDate(), Math.max(0, toInt(days, 0))));
+      }
+
       function cycleDateRangeText(coverageDays) {
         var startDate = todayDate();
         var endDate = addDays(startDate, Math.max(coverageDays - 1, 0));
@@ -1647,21 +2272,58 @@
         var coverageDays = activeCoverageDays(item);
         if (!coverageDays) return '-';
         return '<div class="cycle-cell">' +
-          '<span class="cycle-main">覆盖 ' + formatNum(coverageDays) + ' 天</span>' +
+          '<span class="cycle-main">' + formatNum(coverageDays) + ' 天</span>' +
           '<span class="cycle-sub">' + cycleDateRangeText(coverageDays) + '</span>' +
         '</div>';
       }
 
       function activeCycleLabel() {
-        return (activeSuggestionType === 'order' ? '下单' : '发货') + '备货周期<span class="th-note">覆盖天数 / 日期区间</span>';
+        return '目标库存天数';
+      }
+
+      function listCycleText(item) {
+        var coverageDays = activeCoverageDays(item);
+        return coverageDays ? formatNum(coverageDays) + ' 天' : '-';
+      }
+
+      function formatGroupText(groups) {
+        var parts = (groups || []).filter(function(group) { return group; });
+        return parts.length ? parts.join(' / ') : '-';
+      }
+
+      function scrollableTableWrap(tableHtml) {
+        return '<div class="table-scroll-wrap">' + tableHtml + '</div>';
+      }
+
+      function collapsePanelHtml(id, title, summary, bodyHtml, open) {
+        return '<div class="collapse-panel' + (open ? ' is-open' : '') + '" data-panel="' + escapeHtml(id) + '">' +
+          '<button type="button" class="collapse-head">' +
+            '<span class="collapse-title">' + escapeHtml(title) + '</span>' +
+            (summary ? '<span class="collapse-summary">' + summary + '</span>' : '') +
+            '<span class="collapse-arrow" aria-hidden="true"></span>' +
+          '</button>' +
+          '<div class="collapse-body">' + bodyHtml + '</div>' +
+        '</div>';
+      }
+
+      function logicStepHtml(num, title, summary, bodyHtml, open) {
+        return '<div class="logic-step' + (open ? ' is-open' : '') + '">' +
+          '<button type="button" class="logic-step-head">' +
+            '<span class="logic-step-badge">' + num + '</span>' +
+            '<span class="logic-step-title">' + escapeHtml(title) + '</span>' +
+            '<span class="logic-step-summary">' + escapeHtml(summary) + '</span>' +
+            '<span class="logic-step-arrow" aria-hidden="true"></span>' +
+          '</button>' +
+          '<div class="logic-step-body">' + bodyHtml + '</div>' +
+        '</div>';
       }
 
       function activeQtyLabel() {
-        return activeSuggestionType === 'order' ? '下单建议量' : '发货建议量';
+        return activeSuggestionType === 'order' ? '采购建议量' : '发货建议量';
       }
 
       function activeTypeLabel() {
-        return activeSuggestionType === 'order' ? '下单' : '发货';
+        return activeSuggestionType === 'order' ? '采购' : '发货';
       }
 
       function activeChildSuggestedQty(child) {
@@ -1710,25 +2372,51 @@
         return child.method ? [child.method] : [];
       }
 
+      function activeArrivalDaysForLead(child, leadTimeDays) {
+        var lead = toInt(leadTimeDays, 0);
+        if (activeSuggestionType === 'order') {
+          return toInt(child.procurementDeliveryDays, 0) + lead;
+        }
+        return lead;
+      }
+
+      function activeMethodRowFromSplit(child, split, qty, isSplit) {
+        var arrivalDays = split.arrivalDays;
+        if (arrivalDays == null && split.leadTimeDays != null) {
+          arrivalDays = activeArrivalDaysForLead(child, split.leadTimeDays);
+        }
+        return {
+          methodName: split.methodName || child.method || '-',
+          qty: qty,
+          split: isSplit,
+          arrivalDays: arrivalDays,
+          arrivalDate: arrivalDateText(arrivalDays)
+        };
+      }
+
       function activeChildMethodRows(child) {
         var splits = activeChildMethodSplits(child);
         var totalQty = activeChildSuggestedQty(child);
         if (!splits.length) {
-          return [{ methodName: child.method || '-', qty: totalQty, split: false }];
+          var fallbackLead = child.methodLeadDays != null ? child.methodLeadDays : child.logisticsLeadDays;
+          var fallbackArrivalDays = activeArrivalDaysForLead(child, fallbackLead);
+          return [{
+            methodName: child.method || '-',
+            qty: totalQty,
+            split: false,
+            arrivalDays: fallbackArrivalDays,
+            arrivalDate: arrivalDateText(fallbackArrivalDays)
+          }];
         }
         if (splits.length === 1) {
-          return [{ methodName: splits[0].methodName || child.method || '-', qty: totalQty, split: false }];
+          return [activeMethodRowFromSplit(child, splits[0], totalQty, false)];
         }
         var allocated = 0;
         return splits.map(function(split, index) {
           var isLast = index === splits.length - 1;
           var qty = isLast ? Math.max(0, totalQty - allocated) : Math.max(0, Math.round(totalQty * (split.ratio || 0)));
           allocated += qty;
-          return {
-            methodName: split.methodName || child.method || '-',
-            qty: qty,
-            split: true
-          };
+          return activeMethodRowFromSplit(child, split, qty, true);
         });
       }
 
@@ -2033,6 +2721,8 @@
           segments.push({
             methodName: method.methodName,
             priority: method.priority,
+            leadTimeDays: method.leadTimeDays,
+            arrivalDays: methodStart,
             days: days,
             ranges: fragments
           });
@@ -2046,6 +2736,8 @@
           return {
             methodName: segment.methodName,
             priority: segment.priority,
+            leadTimeDays: segment.leadTimeDays,
+            arrivalDays: segment.arrivalDays,
             ratio: segment.days / totalDays,
             ranges: segment.ranges
           };
@@ -2063,8 +2755,32 @@
         };
       }
 
+      var SKU_GRIDS = [
+        { colors: ['黑色', '白色'], sizes: ['38', '39', '40'] },
+        { colors: ['黑色', '卡其', '藏青'], sizes: ['39', '40'] },
+        { colors: ['黑色', '白色', '红色'], sizes: ['37', '38', '39', '40'] },
+        { colors: ['黑色', '卡其'], sizes: ['40', '41'] },
+        { colors: ['黑色', '白色', '卡其'], sizes: ['38', '39', '40'] },
+        { colors: ['黑色', '藏青'], sizes: ['39', '40', '41'] }
+      ];
+      var COLOR_CODE = { '黑色': 'BK', '白色': 'WT', '卡其': 'KK', '藏青': 'NV', '红色': 'RD' };
+
+      function parentSkuGrid(index) {
+        return SKU_GRIDS[index % SKU_GRIDS.length];
+      }
+
+      function childGridPos(parentIndex, childIndex) {
+        var grid = parentSkuGrid(parentIndex);
+        var sizeCount = grid.sizes.length;
+        return {
+          color: grid.colors[Math.floor(childIndex / sizeCount)] || grid.colors[0],
+          size: grid.sizes[childIndex % sizeCount]
+        };
+      }
+
       function childCountForParent(index) {
-        return [4, 3, 5, 2, 4, 3][index % 6];
+        var grid = parentSkuGrid(index);
+        return grid.colors.length * grid.sizes.length;
       }
 
       function pad2(value) {
@@ -2076,9 +2792,16 @@
         return base.slice(0, 8) + pad2(childIndex + 1);
       }
 
-      function childSkuCode(parent, childIndex) {
+      function childSkuCode(parent, pos) {
         var prefix = (parent.spu || parent.code || 'SKU').replace(/\s+/g, '').toUpperCase();
-        return prefix + '-SKU' + pad2(childIndex + 1);
+        return prefix + '-' + (COLOR_CODE[pos.color] || 'XX') + pos.size;
+      }
+
+      function childBarcode(parentIndex, childIndex) {
+        var letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+        var seed = (parentIndex + 11) * 7919 + (childIndex + 17) * 3571;
+        var digits = String(100000 + (seed % 900000));
+        return 'X' + digits + letters[seed % letters.length] + letters[(seed * 7) % letters.length];
       }
 
       function getTagMeta(index) {
@@ -2102,6 +2825,32 @@
         return sum;
       }
 
+      function monthLabel(d) {
+        return d.getFullYear() + '年' + (d.getMonth() + 1) + '月';
+      }
+
+      function nextMonthsFromToday(count) {
+        var start = todayDate();
+        var list = [];
+        for (var i = 0; i < count; i += 1) {
+          var d = new Date(start.getFullYear(), start.getMonth() + i, 1);
+          list.push({ date: d, label: monthLabel(d) });
+        }
+        return list;
+      }
+
+      function monthlySalesForChild(baseSales, months) {
+        return months.map(function(m, mi) {
+          var sum = 0;
+          var daysInMonth = new Date(m.date.getFullYear(), m.date.getMonth() + 1, 0).getDate();
+          var startDay = mi === 0 ? todayDate().getDate() - 1 : 0;
+          for (var d = startDay; d < daysInMonth; d += 1) {
+            sum += forecastAt(baseSales, mi * 30 + d);
+          }
+          return sum;
+        });
+      }
+
       function makeProjection(base, fbaInventory, inboundDay, inboundQty, horizon) {
         var rows = [];
         var stock = fbaInventory;
@@ -2123,6 +2872,74 @@
         }).reduce(function(sum, row) {
           return sum + row.stockoutLoss;
         }, 0);
+      }
+
+      function shipRiskLeadRange(child) {
+        var leads = [];
+        var splits = child && child.methodSplits && Array.isArray(child.methodSplits.ship) ? child.methodSplits.ship : [];
+        splits.forEach(function(split) {
+          var lead = split.leadTimeDays != null ? split.leadTimeDays : split.arrivalDays;
+          if (lead != null) leads.push(Math.max(0, toInt(lead, 0)));
+        });
+        if (child && child.methodLeadDays != null) leads.push(Math.max(0, toInt(child.methodLeadDays, 0)));
+        if (child && child.logisticsLeadDays != null) leads.push(Math.max(0, toInt(child.logisticsLeadDays, 0)));
+        if (!leads.length) leads.push(0);
+        return {
+          fastest: leads.reduce(function(min, value) { return Math.min(min, value); }, leads[0]),
+          slowest: leads.reduce(function(max, value) { return Math.max(max, value); }, leads[0])
+        };
+      }
+
+      function childShipDemandScaleForRisk(child) {
+        var base = Math.max(1, child.baseSales || 1);
+        var coverage = Math.max(child.shipCoverageDays || 1, 1);
+        var rawSum = forecastSum(base, coverage);
+        var sourceSum = child.shipForecastSum || rawSum;
+        return rawSum > 0 ? sourceSum / rawSum : 1;
+      }
+
+      function childShipStockoutDay(child) {
+        var stock = (child.fbaInventory || 0) + (child.fbaInbound || 0);
+        if (stock <= 0) return 0;
+        var scale = childShipDemandScaleForRisk(child);
+        var base = Math.max(1, child.baseSales || 1);
+        var horizon = Math.max(child.shipCoverageDays || 0, child.orderCoverageDays || 0, 180);
+        for (var day = 0; day <= horizon; day += 1) {
+          stock -= Math.max(1, forecastAt(base, day) * scale);
+          if (stock <= 0) return day;
+        }
+        return horizon + 1;
+      }
+
+      function childShipRisk(child) {
+        var range = shipRiskLeadRange(child);
+        var stockoutDay = childShipStockoutDay(child);
+        var rescueDay = range.fastest + Math.max(0, toInt(child.shipFrequencyDays, 0));
+        if (stockoutDay < range.fastest) {
+          return { level: 4, name: '必定断货', className: 'risk-critical', stockoutDay: stockoutDay };
+        }
+        if (stockoutDay < rescueDay) {
+          return { level: 3, name: '尽快补救', className: 'risk-high', stockoutDay: stockoutDay };
+        }
+        if (stockoutDay < range.slowest) {
+          return { level: 2, name: '优先发货', className: 'risk-medium', stockoutDay: stockoutDay };
+        }
+        return { level: 1, name: '月内发货', className: 'risk-low', stockoutDay: stockoutDay };
+      }
+
+      function parentShipRisk(item) {
+        var children = (item.childItems || []).filter(function(child) {
+          return child.shipSuggestedQty > 0;
+        });
+        if (!children.length) return { level: 1, name: '月内发货', className: 'risk-low', stockoutDay: null };
+        return children.map(childShipRisk).sort(function(a, b) {
+          return b.level - a.level || toInt(a.stockoutDay, 9999) - toInt(b.stockoutDay, 9999);
+        })[0];
+      }
+
+      function riskTagHtml(risk) {
+        risk = risk || { name: '-', className: 'risk-low' };
+        return '<span class="risk-tag ' + escapeHtml(risk.className || 'risk-low') + '">' + escapeHtml(risk.name || '-') + '</span>';
       }
 
       function makeSourceResult(shipForecastSum, orderForecastSum, shipInventoryDeduction, orderInventoryDeduction, shipDeduction, orderDeduction, factor) {
@@ -2169,7 +2986,8 @@
         var methodOptions = sortMethodsByPriority(availableMethods(rule, siteName));
         var logistics = methodOptions.length ? methodOptions[(parentIndex + childIndex) % methodOptions.length] : null;
         if (!rule || !logistics) return null;
-        var childSku = childSkuCode(parent, childIndex);
+        var pos = childGridPos(parentIndex, childIndex);
+        var childSku = childSkuCode(parent, pos);
         var sequence = parentIndex * 5 + childIndex;
         var tags = getTagMeta(sequence);
         var safetyDays = Math.max(rule.fbaSafetyDays, tags.safety);
@@ -2200,6 +3018,21 @@
           purchaseInbound = 800;
           inboundDay = 0;
         }
+        var riskBand = parentIndex % 4;
+        var rescueDay = shortestLeadTimeDays + shipFrequencyDays;
+        var desiredStockoutDay;
+        if (riskBand === 0) {
+          desiredStockoutDay = Math.max(1, shortestLeadTimeDays - 5);
+        } else if (riskBand === 1) {
+          desiredStockoutDay = Math.max(shortestLeadTimeDays + 2, Math.min(rescueDay - 1, shortestLeadTimeDays + Math.max(2, Math.floor(shipFrequencyDays / 2))));
+        } else if (riskBand === 2) {
+          desiredStockoutDay = Math.max(rescueDay + 2, Math.min(longestLeadTimeDays - 1, rescueDay + Math.max(2, Math.floor((longestLeadTimeDays - rescueDay) / 2))));
+        } else {
+          desiredStockoutDay = longestLeadTimeDays + 10;
+        }
+        var stockForRiskBand = Math.round(forecastSum(baseSales, desiredStockoutDay + 1) * 1.08);
+        fbaInventory = Math.max(0, Math.round(stockForRiskBand * 0.58));
+        fbaInbound = Math.max(0, stockForRiskBand - fbaInventory);
         var projection = makeProjection(baseSales, fbaInventory, inboundDay, fbaInbound, Math.min(orderCoverageDays, 150));
         var shipForecastSum = forecastSum(baseSales, shipCoverageDays);
         var orderForecastSum = forecastSum(baseSales, orderCoverageDays);
@@ -2233,11 +3066,17 @@
         return {
           id: parent.code + '-' + childSku + '-' + logistics.methodName,
           childSku: childSku,
+          sellerSku: childSku,
+          barcode: childBarcode(parentIndex, childIndex),
+          size: pos.size,
+          color: pos.color,
           asin: childAsin(parent, childIndex),
           parentAsin: parent.asin || '-',
           parentCode: parent.code,
           parentName: parent.spu || parent.code,
           spu: parent.spu || '-',
+          platform: parent.platform || 'Amazon',
+          groupName: parent.group || ['UA组', 'UB组', 'UC组', ''][parentIndex % 4],
           owner: parent.owner || '-',
           store: parent.store || '-',
           site: displaySite,
@@ -2248,12 +3087,19 @@
           ruleName: rule.name,
           tags: tags,
           tagText: tags.sales + ' / ' + tags.lifecycle.replace('新品（', '新').replace('）', '') + ' / ' + tags.color,
+          baseSales: baseSales,
           safetyDays: safetyDays,
           shipSuggestedQty: annualResult.shipSuggestedQty,
           orderSuggestedQty: annualResult.orderSuggestedQty,
+          methodLeadDays: logistics.leadTimeDays,
           logisticsLeadDays: shortestLeadTimeDays,
           shipFrequencyDays: shipFrequencyDays,
+          procurementDeliveryDays: procurementDelivery,
           procurementCycleDays: procurementCycle,
+          purchaseLead: procurement.purchaseLead,
+          qualityInspection: procurement.qualityInspection,
+          pickupPrep: procurement.pickupPrep,
+          purchaseFrequency: procurement.purchaseFrequency,
           shipCoverageDays: shipCoverageDays,
           orderCoverageDays: orderCoverageDays,
           shipForecastSum: annualResult.shipForecastSum,
@@ -2315,52 +3161,81 @@
         return '覆盖 ' + coverageDays + ' 天（' + cycleDateRangeText(coverageDays) + '）';
       }
 
-      function populateRuleFilter() {
-        var select = document.getElementById('filter-rule');
-        var rules = loadRules();
-        var seen = {};
-        rules.forEach(function(rule) {
-          if (seen[rule.id]) return;
-          seen[rule.id] = true;
+      function fillSelectOptions(selectId, values, keepFirst) {
+        var select = document.getElementById(selectId);
+        if (!select) return;
+        var first = keepFirst && select.options.length ? select.options[0].outerHTML : '';
+        select.innerHTML = first;
+        values.forEach(function(value) {
           var option = document.createElement('option');
-          option.value = rule.id;
-          option.textContent = rule.name || rule.id;
+          option.value = value;
+          option.textContent = value;
           select.appendChild(option);
         });
       }
 
-      function populateOwnerFilter() {
-        var select = document.getElementById('filter-owner');
-        var owners = uniqueList(childSuggestions.map(function(item) {
-          return item.owner;
-        }).filter(function(owner) {
+      function populateListFilters() {
+        var parents = loadParents();
+        fillSelectOptions('filter-platform', uniqueList(parents.map(function(parent) { return parent.platform || 'Amazon'; })), true);
+        fillSelectOptions('filter-store', uniqueList(parents.map(function(parent) { return parent.store; })), true);
+        fillSelectOptions('filter-site', uniqueList(childSuggestions.map(function(child) { return child.site; })), true);
+        fillSelectOptions('filter-owner', uniqueList(childSuggestions.map(function(child) { return child.owner; }).filter(function(owner) {
           return owner && owner !== '-';
-        }));
-        owners.forEach(function(owner) {
-          var option = document.createElement('option');
-          option.value = owner;
-          option.textContent = owner;
-          select.appendChild(option);
-        });
+        })), true);
       }
 
       function currentFilters() {
         return {
+          genDate: (document.getElementById('filter-gen-date') || {}).value || '',
           keyword: (document.getElementById('filter-keyword').value || '').trim().toLowerCase(),
-          owner: document.getElementById('filter-owner').value,
-          ruleId: document.getElementById('filter-rule').value,
-          sourceKey: document.getElementById('filter-source').value,
-          positiveOnly: document.getElementById('filter-positive').checked
+          platform: (document.getElementById('filter-platform') || {}).value || '',
+          store: (document.getElementById('filter-store') || {}).value || '',
+          parentAsin: (document.getElementById('filter-parent-asin').value || '').trim().toLowerCase(),
+          group: (document.getElementById('filter-group') || {}).value || '',
+          site: (document.getElementById('filter-site') || {}).value || '',
+          owner: (document.getElementById('filter-owner') || {}).value || ''
         };
+      }
+
+      function matchGroupFilter(groupName, filterGroup) {
+        if (!filterGroup) return true;
+        if (filterGroup === '__EMPTY__') return !groupName;
+        return groupName === filterGroup;
       }
 
       function filterChildren() {
         var f = currentFilters();
         return childSuggestions.filter(function(item) {
           if (f.owner && item.owner !== f.owner) return false;
-          if (f.ruleId && item.ruleId !== f.ruleId) return false;
+          if (f.platform && item.platform !== f.platform) return false;
+          if (f.store && item.store !== f.store) return false;
+          if (!matchGroupFilter(item.groupName, f.group)) return false;
+          if (f.site && item.site !== f.site) return false;
+          if (f.parentAsin && (item.parentAsin || '').toLowerCase().indexOf(f.parentAsin) === -1) return false;
           if (f.keyword) {
-            var hay = [item.childSku, item.parentCode, item.asin, item.parentAsin, item.spu, item.parentName, item.owner].join(' ').toLowerCase();
+            var hay = [item.childSku, item.parentCode, item.parentAsin, item.spu, item.parentName].join(' ').toLowerCase();
+            if (hay.indexOf(f.keyword) === -1) return false;
+          }
+          return true;
+        });
+      }
+
+      function filterParentRows(list) {
+        var f = currentFilters();
+        return list.filter(function(item) {
+          if (f.genDate && item.generateDate !== f.genDate) return false;
+          if (f.platform && item.platformText.indexOf(f.platform) === -1) return false;
+          if (f.store && item.storeText.indexOf(f.store) === -1) return false;
+          if (f.group === '__EMPTY__') {
+            if ((item.groups || []).some(function(group) { return !!group; })) return false;
+          } else if (f.group && item.groupText.indexOf(f.group) === -1) {
+            return false;
+          }
+          if (f.site && item.siteText.indexOf(f.site) === -1) return false;
+          if (f.owner && item.ownerText.indexOf(f.owner) === -1) return false;
+          if (f.parentAsin && item.parentAsinText.toLowerCase().indexOf(f.parentAsin) === -1) return false;
+          if (f.keyword) {
+            var hay = [item.parentCode, item.spuText, item.parentAsinText].join(' ').toLowerCase();
             if (hay.indexOf(f.keyword) === -1) return false;
           }
           return true;
@@ -2369,60 +3244,71 @@
 
       function aggregateParentSuggestions(children) {
         var map = {};
-        var f = currentFilters();
-        var visibleSourceKeys = f.sourceKey && DATA_SOURCE_META[f.sourceKey] ? [f.sourceKey] : sourceKeys();
         children.forEach(function(baseChild) {
-          visibleSourceKeys.forEach(function(sourceKey) {
+          sourceKeys().forEach(function(sourceKey) {
             var child = childWithSource(baseChild, sourceKey);
             var rowKey = child.parentCode + '::' + sourceKey;
             if (!map[rowKey]) {
               map[rowKey] = {
-              id: rowKey,
-              parentCode: child.parentCode,
-              parentName: child.parentName,
-              sourceKey: sourceKey,
-              sourceLabel: child.sourceLabel,
-              parentAsins: [],
-              spus: [],
-              sites: [],
-              owners: [],
-              ruleNames: [],
-              methods: [],
-              childItems: [],
-              shipCoverageDays: 0,
-              orderCoverageDays: 0,
-              safetyDays: 0,
-              shipSuggestedQty: 0,
-              orderSuggestedQty: 0
-            };
-          }
-          var parent = map[rowKey];
-          parent.childItems.push(child);
-          parent.shipSuggestedQty += child.shipSuggestedQty;
-          parent.orderSuggestedQty += child.orderSuggestedQty;
-          parent.parentAsins.push(child.parentAsin);
-          parent.spus.push(child.spu);
-          parent.sites.push(child.site);
-          parent.owners.push(child.owner);
-          parent.ruleNames.push(child.ruleName);
-          methodNamesForChild(child).forEach(function(methodName) {
-            parent.methods.push(methodName);
-          });
-          parent.shipCoverageDays = Math.max(parent.shipCoverageDays, child.shipCoverageDays);
-          parent.orderCoverageDays = Math.max(parent.orderCoverageDays, child.orderCoverageDays);
-          parent.safetyDays = Math.max(parent.safetyDays, child.safetyDays);
+                id: rowKey,
+                parentCode: child.parentCode,
+                parentName: child.parentName,
+                sourceKey: sourceKey,
+                sourceLabel: child.sourceLabel,
+                generateDate: formatDate(todayDate()),
+                parentAsins: [],
+                spus: [],
+                platforms: [],
+                stores: [],
+                groups: [],
+                sites: [],
+                owners: [],
+                ruleNames: [],
+                methods: [],
+                childItems: [],
+                shipCoverageDays: 0,
+                orderCoverageDays: 0,
+                safetyDays: 0,
+                shipSuggestedQty: 0,
+                orderSuggestedQty: 0
+              };
+            }
+            var parent = map[rowKey];
+            parent.childItems.push(child);
+            parent.shipSuggestedQty += child.shipSuggestedQty;
+            parent.orderSuggestedQty += child.orderSuggestedQty;
+            parent.parentAsins.push(child.parentAsin);
+            parent.spus.push(child.spu);
+            parent.platforms.push(child.platform);
+            parent.stores.push(child.store);
+            parent.groups.push(child.groupName);
+            parent.sites.push(child.site);
+            parent.owners.push(child.owner);
+            parent.ruleNames.push(child.ruleName);
+            methodNamesForChild(child).forEach(function(methodName) {
+              parent.methods.push(methodName);
+            });
+            parent.shipCoverageDays = Math.max(parent.shipCoverageDays, child.shipCoverageDays);
+            parent.orderCoverageDays = Math.max(parent.orderCoverageDays, child.orderCoverageDays);
+            parent.safetyDays = Math.max(parent.safetyDays, child.safetyDays);
           });
         });
         return Object.keys(map).map(function(key) {
           var parent = map[key];
           parent.parentAsins = uniqueList(parent.parentAsins);
           parent.spus = uniqueList(parent.spus);
+          parent.platforms = uniqueList(parent.platforms);
+          parent.stores = uniqueList(parent.stores);
+          parent.groups = uniqueList(parent.groups);
           parent.sites = uniqueList(parent.sites);
           parent.owners = uniqueList(parent.owners);
           parent.ruleNames = uniqueList(parent.ruleNames);
           parent.methods = uniqueOrderedList(parent.methods);
           parent.parentAsinText = parent.parentAsins.join(' / ') || '-';
           parent.spuText = parent.spus.join(' / ') || '-';
+          parent.platformText = parent.platforms.join(' / ') || '-';
+          parent.storeText = parent.stores.join(' / ') || '-';
+          parent.groupText = formatGroupText(parent.groups);
           parent.siteText = parent.sites.join(' / ') || '-';
           parent.ownerText = parent.owners.join(' / ') || '-';
           parent.methodText = methodText(parent.methods);
@@ -2430,9 +3316,6 @@
           parent.shipCycleText = coverageCycleText(parent.shipCoverageDays, parent.safetyDays);
           parent.orderCycleText = coverageCycleText(parent.orderCoverageDays, parent.safetyDays);
           return parent;
-        }).filter(function(parent) {
-          var f = currentFilters();
-          return !f.positiveOnly || hasSuggestedQty(parent);
         }).sort(function(a, b) {
           return activeSuggestionQty(b) - activeSuggestionQty(a) ||
             a.parentCode.localeCompare(b.parentCode) ||
@@ -2441,7 +3324,7 @@
       }
 
       function currentParentList() {
-        parentSuggestions = aggregateParentSuggestions(filterChildren());
+        parentSuggestions = filterParentRows(aggregateParentSuggestions(filterChildren()));
         return parentSuggestions;
       }
 
@@ -2460,85 +3343,35 @@
       function renderMetrics(list) {
         var grid = document.getElementById('metric-grid');
         var note = document.getElementById('metric-note');
-        var multiSource = !document.getElementById('filter-source').value;
-        if (!multiSource) {
-          grid.classList.remove('split');
-          grid.innerHTML =
-            metricCardHtml('建议发货总量', sumBy(list, 'shipSuggestedQty'), '当前筛选合计') +
-            metricCardHtml('建议下单总量', sumBy(list, 'orderSuggestedQty'), '当前筛选合计');
-          note.style.display = 'none';
-          return;
-        }
-        grid.classList.add('split');
-        var metricTypes = [
-          { label: '建议发货总量', key: 'shipSuggestedQty' },
-          { label: '建议下单总量', key: 'orderSuggestedQty' }
-        ];
-        var html = '';
-        metricTypes.forEach(function(metric) {
-          sourceKeys().forEach(function(sourceKey) {
-            var items = list.filter(function(item) { return item.sourceKey === sourceKey; });
-            var sourceLabel = sourceMeta(sourceKey).label;
-            html += metricCardHtml(metric.label + ' · ' + sourceLabel, sumBy(items, metric.key), '仅 ' + sourceLabel + ' 合计');
-          });
-        });
-        grid.innerHTML = html;
-        note.textContent = '已按计算来源分列：年规目标与预测日销量为同一父体的两种计算口径，跨来源不汇总，避免重复计算。';
-        note.style.display = '';
-      }
-
-      function selectedVisibleItems() {
-        return parentSuggestions.filter(function(item) {
-          return !!selectedSuggestionIds[item.id];
-        });
-      }
-
-      function selectedItemsForType(type) {
-        return selectedVisibleItems().filter(function(item) {
-          return type === 'ship' ? item.shipSuggestedQty > 0 : item.orderSuggestedQty > 0;
-        });
-      }
-
-      function updateSelectionControls(list) {
-        var visibleIds = {};
-        list.forEach(function(item) {
-          visibleIds[item.id] = true;
-        });
-        Object.keys(selectedSuggestionIds).forEach(function(id) {
-          if (!visibleIds[id]) delete selectedSuggestionIds[id];
-        });
-
-        var checkedCount = list.filter(function(item) {
-          return !!selectedSuggestionIds[item.id];
-        }).length;
-        var checkAll = document.getElementById('check-all-suggestions');
-        if (checkAll) {
-          checkAll.checked = list.length > 0 && checkedCount === list.length;
-          checkAll.indeterminate = checkedCount > 0 && checkedCount < list.length;
-          checkAll.disabled = !list.length;
-        }
-
-        var shipButton = document.getElementById('btn-batch-ship');
-        var orderButton = document.getElementById('btn-batch-order');
-        var activeItems = selectedItemsForType(activeSuggestionType);
-        if (shipButton) {
-          shipButton.style.display = activeSuggestionType === 'ship' ? '' : 'none';
-          shipButton.disabled = activeSuggestionType !== 'ship' || !activeItems.length;
-        }
-        if (orderButton) {
-          orderButton.style.display = activeSuggestionType === 'order' ? '' : 'none';
-          orderButton.disabled = activeSuggestionType !== 'order' || !activeItems.length;
-        }
+        if (!grid || !note) return;
+        grid.innerHTML = '';
+        grid.style.display = 'none';
+        note.style.display = 'none';
       }
 
       function renderSuggestionTabs() {
-        document.querySelectorAll('.suggestion-tab').forEach(function(tab) {
+        document.querySelectorAll('.page-top-tab').forEach(function(tab) {
           var active = tab.getAttribute('data-suggestion-type') === activeSuggestionType;
           tab.classList.toggle('active', active);
           tab.setAttribute('aria-selected', active ? 'true' : 'false');
         });
         document.getElementById('cycle-head').innerHTML = activeCycleLabel();
         document.getElementById('qty-head').textContent = activeQtyLabel();
+        var riskHead = document.getElementById('risk-head');
+        if (riskHead) riskHead.style.display = activeSuggestionType === 'ship' ? '' : 'none';
+      }
+
+      function generatedDocCount(item) {
+        var qty = activeSuggestionQty(item);
+        if (qty <= 0) return 0;
+        if (activeSuggestionType === 'order') return 1;
+        return groupChildrenByMethod(item).length;
+      }
+
+      function generatedDocCellHtml(item) {
+        var count = generatedDocCount(item);
+        if (!count) return '-';
+        return '<span class="doc-gen-count">' + count + ' 张</span>';
       }
 
       function qtyCellHtml(item) {
@@ -2550,15 +3383,6 @@
           activeTypeLabel() + '建议量为 0">0 <span class="qty-zero-mark">ⓘ</span></span>';
       }
 
-      function applySourceColumnVisibility() {
-        var single = !!document.getElementById('filter-source').value;
-        var head = document.getElementById('source-head');
-        if (head) head.style.display = single ? 'none' : '';
-        document.querySelectorAll('#suggestion-tbody .source-col').forEach(function(cell) {
-          cell.style.display = single ? 'none' : '';
-        });
-      }
-
       function renderTable() {
         var list = currentParentList();
         renderMetrics(list);
@@ -2566,50 +3390,30 @@
         var tbody = document.getElementById('suggestion-tbody');
         tbody.innerHTML = '';
         if (!list.length) {
-          tbody.innerHTML = '<tr><td class="empty-row" colspan="10">暂无备货建议</td></tr>';
+          tbody.innerHTML = '<tr><td class="empty-row" colspan="' + (activeSuggestionType === 'ship' ? 14 : 13) + '">暂无备货建议</td></tr>';
         } else {
           list.forEach(function(item) {
-            var checked = selectedSuggestionIds[item.id] ? ' checked' : '';
             var tr = document.createElement('tr');
             tr.setAttribute('data-id', item.id);
-            var idSubParts = [item.parentAsinText, item.spuText].filter(function(part) {
-              return part && part !== '-';
-            });
-            var idSub = idSubParts.length ? idSubParts.join(' · ') : '-';
+            tr.className = 'list-row-clickable';
             tr.innerHTML =
-              '<td class="select-cell"><input type="checkbox" class="row-check" data-id="' + escapeHtml(item.id) + '" aria-label="选择' + escapeHtml(item.parentCode) + ' ' + escapeHtml(item.sourceLabel || '') + '"' + checked + ' /></td>' +
-              '<td><div class="sku-cell"><span class="sku-code">' + escapeHtml(item.parentCode) + '</span><span class="sku-sub" title="' + escapeHtml(idSub) + '">' + escapeHtml(idSub) + '</span></div></td>' +
+              '<td><button type="button" class="parent-code-link" data-id="' + escapeHtml(item.id) + '">' + escapeHtml(item.parentCode) + '</button></td>' +
+              '<td>' + escapeHtml(item.spuText || '-') + '</td>' +
+              '<td>' + escapeHtml(item.parentAsinText || '-') + '</td>' +
+              '<td>' + escapeHtml(item.platformText || '-') + '</td>' +
               '<td>' + escapeHtml(item.siteText || '-') + '</td>' +
-              '<td>' + activeCycleHtml(item) + '</td>' +
-              '<td class="num">' + qtyCellHtml(item) + '</td>' +
-              '<td class="num">' + formatNum(item.safetyDays) + '</td>' +
+              '<td title="' + escapeHtml(item.storeText || '') + '">' + escapeHtml(item.storeText || '-') + '</td>' +
+              '<td>' + escapeHtml(item.groupText || '-') + '</td>' +
               '<td>' + escapeHtml(item.ownerText || '-') + '</td>' +
-              '<td>' + escapeHtml(item.ruleText || '-') + '</td>' +
-              '<td class="source-col"><span class="tag ' + sourceMeta(item.sourceKey).tagClass + '">' + escapeHtml(item.sourceLabel || '-') + '</span></td>' +
-              '<td><div class="table-action-group">' +
-                '<button type="button" class="btn-text" data-action="detail" data-id="' + escapeHtml(item.id) + '">详情</button>' +
-              '</div></td>';
+              '<td>' + listCycleText(item) + '</td>' +
+              '<td class="num">' + qtyCellHtml(item) + '</td>' +
+              (activeSuggestionType === 'ship' ? '<td>' + riskTagHtml(parentShipRisk(item)) + '</td>' : '') +
+              '<td>' + generatedDocCellHtml(item) + '</td>' +
+              '<td><span class="tag ' + sourceMeta(item.sourceKey).tagClass + '">' + escapeHtml(item.sourceLabel || '-') + '</span></td>' +
+              '<td>' + escapeHtml(item.generateDate || '-') + '</td>';
             tbody.appendChild(tr);
           });
         }
-        applySourceColumnVisibility();
-        updateSelectionControls(list);
-      }
-
-      function renderSummaryDetail(item) {
-        var typeLabel = activeTypeLabel();
-        document.getElementById('summary-detail').innerHTML =
-          '<div class="drawer-meta-grid">' +
-            '<div class="drawer-meta-item"><strong>父ASIN / SPU</strong><span>' + escapeHtml(item.parentAsinText || '-') + ' / ' + escapeHtml(item.spuText || '-') + '</span></div>' +
-            '<div class="drawer-meta-item"><strong>站点</strong><span>' + escapeHtml(item.siteText || '-') + '</span></div>' +
-            '<div class="drawer-meta-item"><strong>匹配规则</strong><span>' + escapeHtml(item.ruleText || '-') + '</span></div>' +
-            '<div class="drawer-meta-item"><strong>' + typeLabel + '口径</strong><span>Σ 子体' + typeLabel + '最终建议量 = ' + formatNum(activeSuggestionQty(item)) + '</span></div>' +
-            '<div class="drawer-meta-item"><strong>物流方式</strong><span>' + escapeHtml(item.methodText || '-') + '</span></div>' +
-          '</div>';
-      }
-
-      function renderChildDetail(item) {
-        renderMethodDetail(item);
       }
 
       function groupChildrenByMethod(item) {
@@ -2617,101 +3421,60 @@
         var order = [];
         item.childItems.forEach(function(child) {
           activeChildMethodRows(child).forEach(function(methodRow) {
+            if (methodRow.qty <= 0) return;
             var name = methodRow.methodName || '-';
             if (!groups[name]) {
-              groups[name] = { methodName: name, totalQty: 0, lines: [] };
+              groups[name] = { methodName: name, arrivalDate: methodRow.arrivalDate || '-', totalQty: 0, lines: [] };
               order.push(name);
             }
             groups[name].totalQty += methodRow.qty;
             groups[name].lines.push({
               sku: child.childSku,
+              sellerSku: child.sellerSku || child.childSku,
+              barcode: child.barcode || '-',
               asin: child.asin,
+              color: child.color,
+              size: child.size,
               tagText: child.tagText,
               safetyDays: child.safetyDays,
+              risk: childShipRisk(child),
+              arrivalDate: methodRow.arrivalDate || '-',
+              cnAvailable: child.cnAvailable || 0,
               qty: methodRow.qty
             });
           });
         });
         return order.map(function(name) { return groups[name]; })
+          .filter(function(group) { return group.lines.length > 0; })
           .sort(function(a, b) { return b.totalQty - a.totalQty; });
       }
 
-      function renderMethodDetail(item) {
-        var typeLabel = activeTypeLabel();
+      function skuSubText(line) {
+        var parts = [];
+        if (line.color) parts.push(line.color);
+        if (line.size) parts.push(line.size + '码');
+        return parts.join(' · ') || (line.asin || '-');
+      }
+
+      function methodDetailHtml(item) {
         var groups = groupChildrenByMethod(item);
-        var rows = groups.map(function(group, index) {
-          var lines = group.lines.sort(function(a, b) { return b.qty - a.qty; }).map(function(line) {
-            return '<tr>' +
-              '<td><div class="sku-cell"><span class="sku-code">' + escapeHtml(line.sku) + '</span><span class="sku-sub">' + escapeHtml(line.asin || '-') + '</span></div></td>' +
-              '<td><span class="rule-plain" title="' + escapeHtml(line.tagText || '-') + '">' + escapeHtml(line.tagText || '-') + '</span></td>' +
-              '<td class="num">' + formatNum(line.safetyDays) + '</td>' +
-              '<td class="num strong-num">' + formatNum(line.qty) + ' 双</td>' +
-            '</tr>';
-          }).join('');
-          return '<tr class="method-main" data-method-toggle="' + index + '">' +
-              '<td><span class="method-name">' + escapeHtml(group.methodName) + '</span></td>' +
-              '<td class="num">' + group.lines.length + ' 个</td>' +
-              '<td class="num strong-num">' + formatNum(group.totalQty) + ' 双</td>' +
-              '<td class="child-expand-cell"><button type="button" class="child-expand' + (index === 0 ? ' open' : '') + '" data-action="toggle-method" data-target="' + index + '">' + (index === 0 ? '收起 ▴' : '展开 ▾') + '</button></td>' +
-            '</tr>' +
-            '<tr class="method-detail-row" data-method-row="' + index + '"' + (index === 0 ? '' : ' hidden') + '><td colspan="4">' +
-              '<div class="method-detail-panel">' +
-                '<div class="method-detail-cap">发往「' + escapeHtml(group.methodName) + '」的 SKU · 共 ' + group.lines.length + ' 个 · 合计 ' + formatNum(group.totalQty) + ' 双</div>' +
-                '<table class="detail-table method-sku-table"><thead><tr>' +
-                '<th>SKU</th><th>命中规则</th><th class="num">安全天数</th><th class="num">' + typeLabel + '数量</th>' +
-                '</tr></thead><tbody>' + lines + '</tbody></table>' +
-              '</div>' +
-            '</td></tr>';
-        }).join('');
-        document.getElementById('child-detail').innerHTML =
-          '<table class="detail-table method-table"><thead><tr>' +
-          '<th>物流方式</th><th class="num">SKU 数</th><th class="num">' + typeLabel + '合计</th><th style="width: 88px;"></th>' +
-          '</tr></thead><tbody>' + rows + '</tbody></table>';
-      }
-
-      function renderCalcDetail(item) {
-        var typeLabel = activeTypeLabel();
-        var qtyLabel = activeQtyLabel();
-        var coverageDays = activeCoverageDays(item);
-        var coverageRange = coverageDays ? cycleDateRangeText(coverageDays) : '-';
-        var skuRows = item.childItems.map(function(child) {
-          return '<tr>' +
-            '<td><span class="sku-code">' + escapeHtml(child.childSku) + '</span></td>' +
-            '<td class="num">' + formatNum(activeChildForecastSum(child)) + '</td>' +
-            '<td class="num">' + formatNum(activeChildInventoryDeduction(child)) + '</td>' +
-            '<td class="num">' + formatNum(activeChildDeduction(child)) + '</td>' +
-            '<td class="num strong-num">' + formatNum(activeChildSuggestedQty(child)) + '</td>' +
-          '</tr>';
-        }).join('');
-        document.getElementById('calc-detail').innerHTML =
-          '<div class="formula-block"><strong>覆盖周期与安全天数</strong><br>' +
-          typeLabel + '覆盖天数 = ' + formatNum(coverageDays) + ' 天（区间 ' + coverageRange + '，求和口径 D ~ D+N-1）<br>' +
-          '最终安全天数 = ' + formatNum(item.safetyDays) + ' 天（父体取各子体命中条件中的最高值）<br>' +
-          typeLabel + '预测销量 = Σ forecastSales(D ~ D+' + Math.max(coverageDays - 1, 0) + ')</div>' +
-          '<div class="formula-block"><strong>父体聚合口径</strong><br>' +
-          '父体' + typeLabel + '建议总量 = Σ 子体' + typeLabel + '最终建议量 = ' + formatNum(activeSuggestionQty(item)) + '<br>' +
-          typeLabel + '建议量 = ' + typeLabel + '预测销量 - 库存扣减 - 必断货扣除量</div>' +
-          '<table class="detail-table"><thead><tr>' +
-          '<th>子体 / SKU</th><th class="num">' + typeLabel + '预测销量</th><th class="num">' + inventoryDeductionHeaderHtml() + '</th><th class="num">必断货扣除量</th><th class="num">' + qtyLabel + '</th>' +
-          '</tr></thead><tbody>' + skuRows + '</tbody></table>';
-      }
-
-      function syncDrawerTypeControls(item) {
-        var isOrder = activeSuggestionType === 'order';
-        document.getElementById('drawer-create-ship').style.display = isOrder ? 'none' : '';
-        document.getElementById('drawer-create-order').style.display = isOrder ? '' : 'none';
-        document.querySelector('#drawer-contrib-section .drawer-subhead-text').textContent = activeTypeLabel() + '建议构成';
-        document.querySelector('#drawer-child-section .drawer-subhead-text').textContent = activeTypeLabel() + '明细';
-        document.querySelector('#drawer-calc-section .drawer-subhead-text').textContent = activeTypeLabel() + '计算说明';
+        if (!groups.length) return '<div class="contrib-empty">暂无发货单据</div>';
+        return '<div class="ship-docs-stack">' + groups.map(function(group) {
+          var lines = group.lines.sort(function(a, b) { return b.qty - a.qty; });
+          var tableHtml = '<table class="detail-table method-sku-table doc-sku-table"><thead><tr>' +
+            docTableHeadHtml('发货数量', true) + '</tr></thead><tbody>' + lines.map(function(line) {
+              return docLineRowHtml(line, true);
+            }).join('') + '</tbody></table>';
+          var title = group.methodName + ' · 共 ' + group.lines.length + ' 个 SKU · 合计 ' + formatNum(group.totalQty) + ' 双';
+          return docCardHtml(title, scrollableTableWrap(tableHtml), false);
+        }).join('') + '</div>';
       }
 
       function renderDrawerHero(item) {
-        var isShip = activeSuggestionType !== 'order';
         var coverageDays = activeCoverageDays(item);
-        var subParts = ['覆盖 ' + formatNum(coverageDays) + ' 天', '安全 ' + formatNum(item.safetyDays) + ' 天'];
-        if (isShip) subParts.push(item.methodText || '-');
+        var subParts = ['目标库存 ' + formatNum(coverageDays) + ' 天', '安全 ' + formatNum(item.safetyDays) + ' 天', '生成 ' + (item.generateDate || '-')];
         document.getElementById('drawer-hero').innerHTML =
-          '<div class="hero-card single ' + (isShip ? 'ship' : 'order') + '">' +
+          '<div class="hero-card single ' + (activeSuggestionType === 'order' ? 'order' : 'ship') + '">' +
             '<div class="hero-main">' +
               '<div class="hero-label">' + activeTypeLabel() + '建议总量</div>' +
               '<div class="hero-value">' + formatNum(activeSuggestionQty(item)) + '<span class="hero-unit">双</span></div>' +
@@ -2720,12 +3483,13 @@
           '</div>';
       }
 
-      function renderContribution(item) {
+      function renderContributionHtml(item) {
         var typeLabel = activeTypeLabel();
         var total = activeSuggestionQty(item) || 0;
         var rows = item.childItems.map(function(child) {
           return { sku: child.childSku, qty: activeChildSuggestedQty(child) };
-        }).sort(function(a, b) { return b.qty - a.qty; });
+        }).filter(function(row) { return row.qty > 0; })
+          .sort(function(a, b) { return b.qty - a.qty; });
         var body = rows.map(function(row) {
           var pct = total > 0 ? Math.round(row.qty / total * 100) : 0;
           return '<tr>' +
@@ -2734,33 +3498,593 @@
             '<td class="num">' + pct + '%</td>' +
           '</tr>';
         }).join('');
-        document.getElementById('contrib-detail').innerHTML = rows.length
-          ? '<table class="detail-table contrib-table"><thead><tr><th>SKU</th><th class="num">建议总量</th><th class="num">占比</th></tr></thead><tbody>' + body + '</tbody></table>'
-          : '<div class="contrib-empty">暂无' + typeLabel + '建议量</div>';
+        if (!rows.length) return '<div class="contrib-empty">暂无' + typeLabel + '建议量</div>';
+        return scrollableTableWrap(
+          '<table class="detail-table contrib-table"><thead><tr><th>SKU</th><th class="num">建议总量</th><th class="num">占比</th></tr></thead><tbody>' + body + '</tbody></table>'
+        );
       }
 
-      function setCalcCollapsed(collapsed) {
-        document.getElementById('calc-detail').hidden = collapsed;
-        document.getElementById('calc-caret').textContent = collapsed ? '▸' : '▾';
-        document.getElementById('calc-collapse').setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+      function docTableHeadHtml(qtyColName, withGap) {
+        return '<th>SKU</th><th>seller-sku</th><th>条码</th><th class="num">' + escapeHtml(qtyColName) + '</th>' +
+          (withGap ? '<th>风险评级</th>' : '') +
+          (withGap ? '<th class="num">缺口数量<span class="header-help" tabindex="0" title="缺口数量 = 发货建议量 − 本地仓可用库存" data-tip="缺口数量 = 发货建议量 − 本地仓可用库存">!</span></th>' : '');
+      }
+
+      function docLineRowHtml(line, withGap) {
+        var gapCell = '';
+        if (withGap) {
+          var gap = (line.qty || 0) - (line.cnAvailable || 0);
+          gapCell = '<td class="num">' + formatNum(gap) + ' 双</td>';
+        }
+        return '<tr>' +
+          '<td><span class="sku-code">' + escapeHtml(line.sku) + '</span></td>' +
+          '<td>' + escapeHtml(line.sellerSku || line.sku || '-') + '</td>' +
+          '<td>' + escapeHtml(line.barcode || '-') + '</td>' +
+          '<td class="num strong-num">' + formatNum(line.qty || 0) + ' 双</td>' +
+          (withGap ? '<td>' + riskTagHtml(line.risk) + '</td>' : '') +
+          gapCell +
+        '</tr>';
+      }
+
+      function docCardHtml(title, bodyHtml, open) {
+        return '<div class="doc-card' + (open ? ' is-open' : '') + '">' +
+          '<button type="button" class="doc-card-head">' +
+            '<span class="doc-card-title">' + escapeHtml(title) + '</span>' +
+            '<span class="doc-card-arrow" aria-hidden="true"></span>' +
+          '</button>' +
+          '<div class="doc-card-body">' + bodyHtml + '</div>' +
+        '</div>';
+      }
+
+      function renderShipDocsHtml(item) {
+        return methodDetailHtml(item);
+      }
+
+      function renderPurchaseDocHtml(item) {
+        var lines = item.childItems.map(function(child) {
+          return {
+            sku: child.childSku,
+            sellerSku: child.sellerSku || child.childSku,
+            barcode: child.barcode || '-',
+            qty: activeChildSuggestedQty(child)
+          };
+        }).filter(function(line) { return line.qty > 0; })
+          .sort(function(a, b) { return b.qty - a.qty; });
+        if (!lines.length) return '<div class="contrib-empty">暂无采购单据</div>';
+        var total = lines.reduce(function(sum, line) { return sum + line.qty; }, 0);
+        var tableHtml = '<table class="detail-table doc-sku-table"><thead><tr>' +
+          docTableHeadHtml('采购数量') + '</tr></thead><tbody>' + lines.map(function(line) {
+            return docLineRowHtml(line);
+          }).join('') + '</tbody></table>';
+        return docCardHtml('共 ' + lines.length + ' 个 SKU · 合计 ' + formatNum(total) + ' 双', scrollableTableWrap(tableHtml), true);
+      }
+
+      function childTotalInventory(child) {
+        return (child.fbaInventory || 0) + (child.fbaInbound || 0) + (child.cnAvailable || 0) + (child.purchaseInbound || 0);
+      }
+
+      function calcSummaryMetrics(item) {
+        var children = item.childItems || [];
+        var avgDaily = children.length
+          ? Math.round(children.reduce(function(sum, child) {
+            return sum + activeChildForecastSum(child) / Math.max(activeCoverageDays(item), 1);
+          }, 0) / children.length)
+          : 0;
+        var inv = children.reduce(function(sum, child) {
+          return sum + activeChildInventoryDeduction(child);
+        }, 0);
+        return {
+          daily: formatNum(avgDaily) + ' 双/天',
+          days: formatNum(activeCoverageDays(item)) + ' 天',
+          inv: formatNum(inv) + ' 双'
+        };
+      }
+
+      var CALC_SEG_MAX = 4;
+
+      function calcStepNumber(value) {
+        var map = { '①': '1', '②': '2', '③': '3', '④': '4', '⑤': '5' };
+        return map[value] || value;
+      }
+
+      function calcSegBlock(segNo, title, hint, theadHtml, rowCells, footNoteHtml, tfootHtml, tableClass) {
+        var body = rowCells.map(function(cells, index) {
+          return '<tr' + (index >= CALC_SEG_MAX ? ' class="calc-extra-row" hidden' : '') + '>' + cells + '</tr>';
+        }).join('');
+        var more = rowCells.length > CALC_SEG_MAX
+          ? '<button type="button" class="calc-more-btn" data-action="toggle-calc-rows">展开全部 ' + rowCells.length + ' 个 ▾</button>'
+          : '';
+        var tableClassName = 'detail-table calc-seg-tbl' + (tableClass ? ' ' + tableClass : '');
+        return '<div class="calc-seg">' +
+          '<div class="seg-title"><span class="seg-no">' + escapeHtml(calcStepNumber(segNo)) + '</span>' + escapeHtml(title) +
+            (hint ? '<span class="seg-hint">' + escapeHtml(hint) + '</span>' : '') + '</div>' +
+          '<div class="seg-tbl-wrap"><table class="' + tableClassName + '"><thead>' + theadHtml +
+            '</thead><tbody>' + body + '</tbody>' + (tfootHtml || '') + '</table></div>' +
+          (footNoteHtml || '') + more +
+        '</div>';
+      }
+
+      function calcCondCell(text) {
+        var value = text || '-';
+        var needsToggle = value.length > 12;
+        return '<td class="cond-td"><div class="cond-cell">' +
+          '<span class="cond-text" title="' + escapeHtml(value) + '">' + escapeHtml(value) + '</span>' +
+          (needsToggle ? '<button type="button" class="cond-toggle" data-action="toggle-cond">展开</button>' : '') +
+        '</div></td>';
+      }
+
+      function filteredCalcChildren(item) {
+        return item.childItems.filter(function(child) {
+          if (drawerCalcFilter.color && child.color !== drawerCalcFilter.color) return false;
+          if (drawerCalcFilter.size && child.size !== drawerCalcFilter.size) return false;
+          return true;
+        });
+      }
+
+      function drawerCalcFilterBarHtml(item) {
+        var colors = uniqueList(item.childItems.map(function(c) { return c.color; }));
+        var sizes = uniqueList(item.childItems.map(function(c) { return c.size; }));
+        var colorOpts = '<option value="">全部颜色</option>' + colors.map(function(c) {
+          return '<option value="' + escapeHtml(c) + '"' + (drawerCalcFilter.color === c ? ' selected' : '') + '>' + escapeHtml(c) + '</option>';
+        }).join('');
+        var sizeOpts = '<option value="">全部尺码</option>' + sizes.map(function(s) {
+          return '<option value="' + escapeHtml(s) + '"' + (drawerCalcFilter.size === s ? ' selected' : '') + '>' + escapeHtml(s) + '</option>';
+        }).join('');
+        return '<div class="sku-filter-bar">' +
+          '<div class="filter-item"><span class="filter-label">颜色</span><select class="filter-control w-160" id="drawer-calc-color">' + colorOpts + '</select></div>' +
+          '<div class="filter-item"><span class="filter-label">尺码</span><select class="filter-control w-120" id="drawer-calc-size">' + sizeOpts + '</select></div>' +
+        '</div>';
+      }
+
+      function renderCalcProcessHtml(item) {
+        var isOrder = activeSuggestionType === 'order';
+        var sorted = filteredCalcChildren(item).sort(function(a, b) {
+          return activeChildSuggestedQty(b) - activeChildSuggestedQty(a);
+        });
+        function skuTd(child) {
+          var meta = [child.color, child.size].filter(Boolean).join(' · ');
+          return '<td><div class="sku-cell"><span class="sku-code">' + escapeHtml(child.childSku) + '</span>' +
+            (meta ? '<span class="sku-sub">' + escapeHtml(meta) + '</span>' : '') + '</div></td>';
+        }
+
+        // ① 每月销量
+        var months = nextMonthsFromToday(12);
+        var seg1Head = '<tr><th>SKU</th>' + months.map(function(m) {
+          return '<th class="num sales-period-col">' + escapeHtml(m.label) + '</th>';
+        }).join('') + '</tr>';
+        var seg1Rows = sorted.map(function(child) {
+          var monthly = monthlySalesForChild(child.baseSales, months);
+          return skuTd(child) + monthly.map(function(v) {
+            return '<td class="num sales-period-col">' + formatNum(v) + '</td>';
+          }).join('');
+        });
+
+        // ② 备货天数（目标库存天数拆解）
+        var seg2Head = isOrder
+          ? '<tr><th>SKU</th><th class="num">生产周期</th><th class="num">质检</th><th class="num">提货准备</th><th class="num">最长物流</th><th class="num">安全天数</th><th class="num">采购频率</th><th class="num">目标库存天数</th></tr>'
+          : '<tr><th>SKU</th><th class="num">最长物流</th><th class="num">安全天数</th><th class="num">发货频率</th><th class="num">目标库存天数</th></tr>';
+        var seg2Rows = sorted.map(function(child) {
+          var longest = Math.max(0, child.shipCoverageDays - child.safetyDays - child.shipFrequencyDays);
+          if (isOrder) {
+            return skuTd(child) +
+              '<td class="num">' + formatNum(child.purchaseLead) + '</td>' +
+              '<td class="num">' + formatNum(child.qualityInspection) + '</td>' +
+              '<td class="num">' + formatNum(child.pickupPrep) + '</td>' +
+              '<td class="num">' + formatNum(longest) + '</td>' +
+              '<td class="num">' + formatNum(child.safetyDays) + '</td>' +
+              '<td class="num">' + formatNum(child.purchaseFrequency) + '</td>' +
+              '<td class="num strong-num">' + formatNum(child.orderCoverageDays) + ' 天</td>';
+          }
+          return skuTd(child) +
+            '<td class="num">' + formatNum(longest) + '</td>' +
+            '<td class="num">' + formatNum(child.safetyDays) + '</td>' +
+            '<td class="num">' + formatNum(child.shipFrequencyDays) + '</td>' +
+            '<td class="num strong-num">' + formatNum(child.shipCoverageDays) + ' 天</td>';
+        });
+
+        // ③ 库存抵扣
+        var seg3Head = '<tr><th>SKU</th><th class="num">平台仓</th><th class="num">物流在途</th><th class="num">本地仓</th><th class="num">采购在途</th><th class="num">总库存</th></tr>';
+        var seg3Rows = sorted.map(function(child) {
+          var totalInv = (child.fbaInventory || 0) + (child.fbaInbound || 0) + (child.cnAvailable || 0) + (child.purchaseInbound || 0);
+          return skuTd(child) +
+            '<td class="num">' + formatNum(child.fbaInventory || 0) + '</td>' +
+            '<td class="num">' + formatNum(child.fbaInbound || 0) + '</td>' +
+            '<td class="num">' + formatNum(child.cnAvailable || 0) + '</td>' +
+            '<td class="num">' + formatNum(child.purchaseInbound || 0) + '</td>' +
+            '<td class="num strong-num">' + formatNum(totalInv) + '</td>';
+        });
+
+        var dailyAvg = sorted.length
+          ? (sorted.reduce(function(s, c) { return s + (c.baseSales || 0); }, 0) / sorted.length).toFixed(2)
+          : '0';
+        var coverDays = activeCoverageDays(item);
+        return drawerCalcFilterBarHtml(item) +
+          calcSegBlock('①', '每月销量', '日均 ≈ ' + dailyAvg + ' 件/天', seg1Head, seg1Rows, '', '', 'calc-sales-table') +
+          calcSegBlock('②', '备货天数', '目标库存天数 ' + (coverDays ? formatNum(coverDays) + ' 天' : '-'), seg2Head, seg2Rows, '', '') +
+          calcSegBlock('③', '库存抵扣', '平台仓 / 物流在途 / 本地仓 / 采购在途', seg3Head, seg3Rows, '', '');
+      }
+
+      function activeChildCoverageDays(child) {
+        return activeSuggestionType === 'order' ? child.orderCoverageDays : child.shipCoverageDays;
+      }
+
+      function childDemandScale(child) {
+        var base = Math.max(1, child.baseSales || 1);
+        var coverage = Math.max(activeChildCoverageDays(child), 1);
+        var rawSum = forecastSum(base, coverage);
+        return rawSum > 0 ? activeChildForecastSum(child) / rawSum : 1;
+      }
+
+      function childDailyDemand(child, day) {
+        var base = Math.max(1, child.baseSales || 1);
+        return Math.max(1, forecastAt(base, day) * childDemandScale(child));
+      }
+
+      function parentDailyDemand(item, day) {
+        return (item.childItems || []).reduce(function(sum, child) {
+          return sum + childDailyDemand(child, day);
+        }, 0);
+      }
+
+      function avgParentDailyDemand(item) {
+        var days = 7;
+        var total = 0;
+        for (var i = 0; i < days; i += 1) {
+          total += parentDailyDemand(item, i);
+        }
+        return Math.max(1, total / days);
+      }
+
+      function shortestFreightDays(item) {
+        var min = null;
+        (item.childItems || []).forEach(function(child) {
+          var lead = child.logisticsLeadDays != null ? child.logisticsLeadDays : child.methodLeadDays;
+          if (lead == null) return;
+          lead = Math.max(0, toInt(lead, 0));
+          if (min == null || lead < min) min = lead;
+        });
+        return min == null ? 0 : min;
+      }
+
+      function shortestPurchaseArrivalDays(item) {
+        var freightDays = shortestFreightDays(item);
+        var min = null;
+        (item.childItems || []).forEach(function(child) {
+          var days = toInt(child.procurementDeliveryDays, 0) + freightDays;
+          if (min == null || days < min) min = days;
+        });
+        return min == null ? freightDays : min;
+      }
+
+      function addTrendEvent(events, day, qty) {
+        var safeQty = Math.max(0, Math.round(qty || 0));
+        if (!safeQty) return;
+        var safeDay = Math.max(0, toInt(day, 0));
+        events[safeDay] = (events[safeDay] || 0) + safeQty;
+      }
+
+      function buildStockTrendEvents(item) {
+        var events = {};
+        (item.childItems || []).forEach(function(child) {
+          var freightDays = child.logisticsLeadDays != null ? child.logisticsLeadDays : child.methodLeadDays;
+          freightDays = Math.max(0, toInt(freightDays, 0));
+          addTrendEvent(events, freightDays, child.fbaInbound);
+          if (activeSuggestionType === 'order') {
+            addTrendEvent(events, freightDays, child.cnAvailable);
+            addTrendEvent(events, toInt(child.procurementDeliveryDays, 0) + freightDays, child.purchaseInbound);
+          }
+          activeChildMethodRows(child).forEach(function(methodRow) {
+            addTrendEvent(events, methodRow.arrivalDays, methodRow.qty);
+          });
+        });
+        return events;
+      }
+
+      function buildSpuStockTrendData(item) {
+        var children = item.childItems || [];
+        var events = buildStockTrendEvents(item);
+        var maxEventDay = Object.keys(events).reduce(function(max, key) {
+          return Math.max(max, toInt(key, 0));
+        }, 0);
+        var horizon = Math.max(7, activeCoverageDays(item));
+        var stock = children.reduce(function(sum, child) {
+          return sum + (child.fbaInventory || 0);
+        }, 0);
+        var labels = [];
+        var values = [];
+        for (var day = 0; day <= horizon; day += 1) {
+          if (events[day]) stock += events[day];
+          stock = Math.max(0, stock - parentDailyDemand(item, day));
+          labels.push(formatDate(addDays(todayDate(), day)).slice(5));
+          values.push(Math.round(stock));
+        }
+        return {
+          labels: labels,
+          values: values,
+          startQty: children.reduce(function(sum, child) { return sum + (child.fbaInventory || 0); }, 0),
+          eventQty: Object.keys(events).reduce(function(sum, key) { return sum + events[key]; }, 0),
+          horizon: horizon,
+          avgDaily: avgParentDailyDemand(item),
+          spu: item.spuText || item.parentCode
+        };
+      }
+
+      function niceChartMax(value) {
+        var safe = Math.max(10, value || 10);
+        var base = Math.pow(10, Math.floor(Math.log10(safe)));
+        var n = safe / base;
+        var nice = n <= 2 ? 2 : (n <= 5 ? 5 : 10);
+        return nice * base;
+      }
+
+      function renderStockTrendSvg(trend) {
+        var width = 760;
+        var height = 240;
+        var left = 54;
+        var right = 18;
+        var top = 24;
+        var bottom = 34;
+        var plotW = width - left - right;
+        var plotH = height - top - bottom;
+        var maxValue = niceChartMax(Math.max.apply(null, trend.values.concat([trend.startQty, trend.eventQty, 1])));
+        var lastIndex = Math.max(1, trend.values.length - 1);
+        function xAt(index) {
+          return left + plotW * (index / lastIndex);
+        }
+        function yAt(value) {
+          return top + plotH * (1 - Math.max(0, value) / maxValue);
+        }
+        var grid = [];
+        for (var i = 0; i <= 4; i += 1) {
+          var value = maxValue * i / 4;
+          var y = yAt(value);
+          grid.push('<line class="stock-trend-grid" x1="' + left + '" y1="' + y + '" x2="' + (width - right) + '" y2="' + y + '"></line>');
+          grid.push('<text class="stock-trend-label" x="' + (left - 8) + '" y="' + (y + 4) + '" text-anchor="end">' + formatNum(Math.round(value)) + '</text>');
+        }
+        var tickStep = Math.max(1, Math.round(lastIndex / 12));
+        var xTicks = [];
+        for (var tickDay = 0; tickDay <= lastIndex; tickDay += tickStep) {
+          xTicks.push(tickDay);
+        }
+        if (xTicks[xTicks.length - 1] !== lastIndex) xTicks.push(lastIndex);
+        xTicks.forEach(function(index) {
+          var x = xAt(index);
+          grid.push('<line class="stock-trend-grid" x1="' + x + '" y1="' + top + '" x2="' + x + '" y2="' + (height - bottom) + '"></line>');
+          grid.push('<text class="stock-trend-label" x="' + x + '" y="' + (height - 10) + '" text-anchor="middle">' + escapeHtml(trend.labels[index]) + '</text>');
+        });
+        var points = trend.values.map(function(value, index) {
+          return xAt(index) + ',' + yAt(value);
+        }).join(' ');
+        var areaPath = 'M' + xAt(0) + ',' + (height - bottom) + ' L' +
+          trend.values.map(function(value, index) {
+            return xAt(index) + ',' + yAt(value);
+          }).join(' L') +
+          ' L' + xAt(lastIndex) + ',' + (height - bottom) + ' Z';
+        return '<svg class="stock-trend-svg" viewBox="0 0 ' + width + ' ' + height + '" role="img" aria-label="库存走势图">' +
+          grid.join('') +
+          '<line class="stock-trend-axis" x1="' + left + '" y1="' + (height - bottom) + '" x2="' + (width - right) + '" y2="' + (height - bottom) + '"></line>' +
+          '<line class="stock-trend-axis" x1="' + left + '" y1="' + top + '" x2="' + left + '" y2="' + (height - bottom) + '"></line>' +
+          '<path class="stock-trend-area" d="' + areaPath + '"></path>' +
+          '<polyline class="stock-trend-line" points="' + points + '"></polyline>' +
+        '</svg>';
+      }
+
+      function renderStockTrendChartHtml(item) {
+        var trend = buildSpuStockTrendData(item);
+        return '<div class="forecast-chart-card drawer-stock-trend-card">' +
+          '<div class="forecast-chart-head">' +
+            '<div class="forecast-chart-title">库存走势<span class="chart-spu-tag">SPU ' + escapeHtml(trend.spu) + '</span></div>' +
+            '<div class="forecast-chart-meta">未来 ' + formatNum(trend.horizon) + ' 天 · 日均约 ' + formatNum(Math.round(trend.avgDaily)) + ' 双</div>' +
+          '</div>' +
+          '<div class="stock-trend-svg-wrap">' + renderStockTrendSvg(trend) + '</div>' +
+        '</div>';
+      }
+
+      function buildSpuTimeline(item) {
+        var children = item.childItems || [];
+        var fba = children.reduce(function(sum, child) { return sum + (child.fbaInventory || 0); }, 0);
+        var fbaInbound = children.reduce(function(sum, child) { return sum + (child.fbaInbound || 0); }, 0);
+        var local = children.reduce(function(sum, child) { return sum + (child.cnAvailable || 0); }, 0);
+        var purchaseInbound = children.reduce(function(sum, child) { return sum + (child.purchaseInbound || 0); }, 0);
+        var daily = avgParentDailyDemand(item);
+        var freightDays = shortestFreightDays(item);
+        var purchaseDays = shortestPurchaseArrivalDays(item);
+        var sourceRows = [
+          { key: 'fba', label: '平台仓', qty: fba, availableFrom: 0, solidClass: 'solid-green', dashedClass: '' },
+          { key: 'fbaInbound', label: '物流在途', qty: fbaInbound, availableFrom: freightDays, solidClass: 'solid-blue', dashedClass: 'dashed-blue' },
+          { key: 'local', label: '本地仓', qty: local, availableFrom: freightDays, solidClass: 'solid-yellow', dashedClass: 'dashed-yellow' },
+          { key: 'purchaseInbound', label: '采购在途', qty: purchaseInbound, availableFrom: purchaseDays, solidClass: 'solid-yellow', dashedClass: 'dashed-yellow' }
+        ];
+        var cursor = 0;
+        return sourceRows.map(function(row) {
+          var sellableDays = Math.max(0, Math.round((row.qty || 0) / daily));
+          var start = row.qty > 0 ? Math.max(row.availableFrom, cursor) : row.availableFrom;
+          var end = start + sellableDays;
+          if (row.qty > 0) cursor = end;
+          return {
+            key: row.key,
+            label: row.label,
+            qty: row.qty,
+            sellableDays: sellableDays,
+            availableFrom: row.availableFrom,
+            solidClass: row.solidClass,
+            dashedClass: row.dashedClass,
+            solidIntervals: sellableDays > 0 ? [{ start: start, end: end }] : [],
+            dashedIntervals: row.availableFrom > 0 ? [{ start: 0, end: row.availableFrom }] : []
+          };
+        });
+      }
+
+      function timelinePanelSummary(item) {
+        var rows = buildSpuTimeline(item);
+        var totalQty = rows.reduce(function(sum, row) { return sum + row.qty; }, 0);
+        var totalDays = rows.reduce(function(sum, row) { return sum + row.sellableDays; }, 0);
+        return formatNum(totalQty) + ' 双 / 可售 ' + formatNum(totalDays) + ' 天';
+      }
+
+      function getWeekStartMonday(date) {
+        var d = new Date(date.getTime());
+        var day = d.getDay();
+        var diff = d.getDate() - day + (day === 0 ? -6 : 1);
+        d.setDate(diff);
+        return d;
+      }
+
+      function buildDistWeeks(count) {
+        var weekStart = getWeekStartMonday(todayDate());
+        var weeks = [];
+        for (var i = 0; i < count; i += 1) {
+          var d = addDays(weekStart, i * 7);
+          weeks.push({
+            weekIndex: i,
+            weekLabel: 'W+' + i,
+            month: d.getMonth() + 1
+          });
+        }
+        return weeks;
+      }
+
+      function distDataFromTimeline(item) {
+        var rows = buildSpuTimeline(item);
+        var maxDay = rows.reduce(function(max, row) {
+          var solidMax = (row.solidIntervals || []).reduce(function(s, seg) { return Math.max(s, seg.end); }, 0);
+          var dashedMax = (row.dashedIntervals || []).reduce(function(s, seg) { return Math.max(s, seg.end); }, 0);
+          return Math.max(max, solidMax, dashedMax);
+        }, activeCoverageDays(item));
+        return {
+          horizonWeeks: Math.max(8, Math.min(18, Math.ceil((maxDay + 7) / 7))),
+          rows: rows
+        };
+      }
+
+      function renderInvDistHeaderHtml(weeks) {
+        var monthGroups = [];
+        var currentMonth = null;
+        var currentGroup = null;
+        weeks.forEach(function(week, index) {
+          if (week.month !== currentMonth) {
+            if (currentGroup) monthGroups.push(currentGroup);
+            currentMonth = week.month;
+            currentGroup = { month: week.month, count: 1, startIndex: index };
+          } else {
+            currentGroup.count += 1;
+          }
+        });
+        if (currentGroup) monthGroups.push(currentGroup);
+        var monthRow = '<tr class="inventory-dist-header-month">' + monthGroups.map(function(group) {
+          return '<th colspan="' + group.count + '">' + group.month + '月</th>';
+        }).join('') + '</tr>';
+        var weekRow = '<tr class="inventory-dist-header-week">' + weeks.map(function(week) {
+          return '<th>' + escapeHtml(week.weekLabel) + '</th>';
+        }).join('') + '</tr>';
+        return monthRow + weekRow;
+      }
+
+      function renderInvDistRightBodyHtml(distData, weeks) {
+        return distData.rows.map(function(rowData) {
+          var cells = weeks.map(function(week, index) {
+            var weekStartDay = index * 7;
+            var blocks = [];
+            function pushBlock(cssClass, leftDay, rightDay) {
+              var leftDayInWeek = Math.max(leftDay, weekStartDay);
+              var rightDayInWeek = Math.min(rightDay, weekStartDay + 7);
+              if (!cssClass || rightDayInWeek <= leftDayInWeek) return;
+              var leftPct = ((leftDayInWeek - weekStartDay) / 7) * 100;
+              var widthPct = ((rightDayInWeek - leftDayInWeek) / 7) * 100;
+              blocks.push('<div class="dist-block ' + cssClass + '" style="left:' + leftPct + '%;width:' + widthPct + '%;"></div>');
+            }
+            (rowData.dashedIntervals || []).forEach(function(seg) {
+              pushBlock(rowData.dashedClass, seg.start, seg.end);
+            });
+            (rowData.solidIntervals || []).forEach(function(seg) {
+              pushBlock(rowData.solidClass, seg.start, seg.end);
+            });
+            return '<td class="dist-cell"><div class="dist-cell-inner">' + blocks.join('') + '</div></td>';
+          }).join('');
+          return '<tr>' + cells + '</tr>';
+        }).join('');
+      }
+
+      function renderForecastTimelineHtml(item) {
+        var distData = distDataFromTimeline(item);
+        var weeks = buildDistWeeks(distData.horizonWeeks);
+        var leftBody = distData.rows.map(function(row) {
+          return '<tr class="inventory-type-row">' +
+            '<td>' + escapeHtml(row.label) + '</td>' +
+            '<td>' + formatNum(row.qty) + ' / ' + formatNum(row.sellableDays) + ' 天</td>' +
+          '</tr>';
+        }).join('');
+        return '<div class="forecast-chart-card drawer-inv-dist-card">' +
+          '<div class="forecast-chart-title-row">' +
+            '<div class="forecast-chart-title">库存销售时段</div>' +
+            '<div class="inventory-dist-legend">' +
+              '<span class="legend-item"><span class="legend-color" style="background:#52c41a;"></span>平台仓</span>' +
+              '<span class="legend-item"><span class="legend-color" style="background:#1890ff;"></span>物流在途</span>' +
+              '<span class="legend-item"><span class="legend-color" style="background:#faad14;"></span>本地仓 / 采购在途</span>' +
+              '<span class="legend-item"><span class="legend-color legend-dashed" style="border-color:#1890ff;"></span>物流等待</span>' +
+              '<span class="legend-item"><span class="legend-color legend-dashed" style="border-color:#faad14;"></span>采购等待</span>' +
+            '</div>' +
+          '</div>' +
+          '<div class="inventory-distribution-container">' +
+            '<div class="inventory-dist-left">' +
+              '<table class="inventory-dist-table">' +
+                '<thead>' +
+                  '<tr class="inventory-dist-header-month"><th>库存类型</th><th>总数 / 可售天数</th></tr>' +
+                  '<tr class="inventory-dist-header-week"><th></th><th></th></tr>' +
+                '</thead>' +
+                '<tbody>' + leftBody + '</tbody>' +
+              '</table>' +
+            '</div>' +
+            '<div class="inventory-dist-right">' +
+              '<div class="inventory-dist-scroll">' +
+                '<table class="inventory-dist-table">' +
+                  '<thead>' + renderInvDistHeaderHtml(weeks) + '</thead>' +
+                  '<tbody>' + renderInvDistRightBodyHtml(distData, weeks) + '</tbody>' +
+                '</table>' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+      }
+
+      function renderForecastResultHtml(item) {
+        return '<div class="forecast-chart-stack">' +
+          renderStockTrendChartHtml(item) +
+          renderForecastTimelineHtml(item) +
+        '</div>';
+      }
+
+      function renderDrawerAccordions(item) {
+        var typeLabel = activeTypeLabel();
+        var isOrder = activeSuggestionType === 'order';
+        var qtySummary = formatNum(activeSuggestionQty(item)) + ' 双';
+        var docQty = item.childItems.reduce(function(sum, child) { return sum + activeChildSuggestedQty(child); }, 0);
+        var docHtml = isOrder ? renderPurchaseDocHtml(item) : renderShipDocsHtml(item);
+        var docTitle = isOrder ? '采购单据' : '发货单据';
+        var panels = [
+          collapsePanelHtml('contrib', typeLabel + '建议构成', qtySummary, renderContributionHtml(item), false),
+          collapsePanelHtml('calc', '计算逻辑', calcSummaryMetrics(item).daily, renderCalcProcessHtml(item), false),
+          collapsePanelHtml('docs', docTitle, formatNum(docQty) + ' 双', docHtml, true),
+          collapsePanelHtml('forecast', '预计结果', timelinePanelSummary(item), renderForecastResultHtml(item), false)
+        ];
+        document.getElementById('drawer-accordions').innerHTML =
+          '<div class="drawer-accordion-stack">' + panels.join('') + '</div>';
       }
 
       function openDrawer(item) {
         currentSuggestion = item;
+        drawerCalcFilter = { color: '', size: '' };
         document.querySelectorAll('#suggestion-tbody tr').forEach(function(row) {
           row.classList.toggle('active', row.getAttribute('data-id') === item.id);
         });
         document.getElementById('drawer-title').innerHTML = '父体 ' + escapeHtml(item.parentCode) +
-          ' <span class="drawer-title-mute">· ' + escapeHtml(item.siteText || '-') + ' · ' + escapeHtml(item.ruleText || '-') + '</span>';
+          ' <span class="drawer-title-mute">· ' + escapeHtml(item.platformText || '-') + ' · ' + escapeHtml(item.storeText || '-') + '</span>';
         document.getElementById('drawer-subtitle').textContent =
-          (item.sourceLabel || '-') + ' · 负责人 ' + (item.ownerText || '-') + ' · 计算时间 ' + CALC_INFO.time +
-          ' · 父ASIN ' + (item.parentAsinText || '-') + ' / SPU ' + (item.spuText || '-');
-        syncDrawerTypeControls(item);
+          (item.sourceLabel || '-') + ' · 站点 ' + (item.siteText || '-') + ' · ' + (item.groupText || '-') +
+          ' · 负责人 ' + (item.ownerText || '-') + ' · 生成日期 ' + (item.generateDate || '-') +
+          ' · 父ASIN ' + (item.parentAsinText || '-');
         renderDrawerHero(item);
-        renderContribution(item);
-        renderChildDetail(item);
-        renderCalcDetail(item);
-        setCalcCollapsed(true);
+        renderDrawerAccordions(item);
         document.getElementById('drawer-mask').classList.add('show');
         document.getElementById('detail-drawer').classList.add('open');
         document.getElementById('detail-drawer').setAttribute('aria-hidden', 'false');
@@ -2785,37 +4109,32 @@
         var nextType = type === 'order' ? 'order' : 'ship';
         if (activeSuggestionType === nextType) return;
         activeSuggestionType = nextType;
-        selectedSuggestionIds = {};
         render();
+        if (currentSuggestion && document.getElementById('detail-drawer').classList.contains('open')) {
+          var latest = findSuggestion(currentSuggestion.id);
+          if (latest) openDrawer(latest);
+        }
       }
 
       function resetFilters() {
         document.getElementById('filter-keyword').value = '';
         document.getElementById('filter-owner').value = '';
-        document.getElementById('filter-rule').value = '';
-        document.getElementById('filter-source').value = 'annual';
-        document.getElementById('filter-positive').checked = false;
+        document.getElementById('filter-platform').value = '';
+        document.getElementById('filter-site').value = '';
+        document.getElementById('filter-store').value = '';
+        document.getElementById('filter-parent-asin').value = '';
+        document.getElementById('filter-group').value = '';
+        document.getElementById('filter-gen-date').value = formatDate(todayDate());
         render();
+      }
+
+      function initFilterGenDate() {
+        var el = document.getElementById('filter-gen-date');
+        if (el && !el.value) el.value = formatDate(todayDate());
       }
 
       function showAction(message) {
         alert(message);
-      }
-
-      function showBatchAction(type) {
-        var items = selectedItemsForType(type);
-        if (!items.length) {
-          showAction('请先勾选存在' + (type === 'ship' ? '发货' : '下单') + '建议量的父体');
-          return;
-        }
-        var total = items.reduce(function(sum, item) {
-          return sum + (type === 'ship' ? item.shipSuggestedQty : item.orderSuggestedQty);
-        }, 0);
-        var sourceText = uniqueList(items.map(function(item) {
-          return item.sourceLabel;
-        })).join(' / ');
-        var actionName = type === 'ship' ? '批量生成发货计划' : '批量生成采购计划';
-        showAction(actionName + '：' + items.length + '条建议，合计' + formatNum(total) + '件，计算来源：' + sourceText);
       }
 
       function initSidebarMenu() {
@@ -2872,67 +4191,61 @@
         });
       }
 
-      populateRuleFilter();
       buildSuggestions();
-      populateOwnerFilter();
+      populateListFilters();
+      initFilterGenDate();
       render();
       initSidebarMenu();
 
       document.getElementById('btn-search').addEventListener('click', render);
       document.getElementById('btn-reset').addEventListener('click', resetFilters);
-      document.querySelectorAll('.suggestion-tab').forEach(function(tab) {
+      document.querySelectorAll('.page-top-tab').forEach(function(tab) {
         tab.addEventListener('click', function() {
           setSuggestionType(tab.getAttribute('data-suggestion-type'));
         });
       });
       document.getElementById('suggestion-tbody').addEventListener('click', function(e) {
-        if (e.target.closest('.row-check')) return;
         var row = e.target.closest('tr[data-id]');
         if (!row) return;
         var item = findSuggestion(row.getAttribute('data-id'));
         if (!item) return;
-        var action = e.target.getAttribute('data-action');
         openDrawer(item);
       });
-      document.getElementById('suggestion-tbody').addEventListener('change', function(e) {
-        if (!e.target.classList.contains('row-check')) return;
-        var id = e.target.getAttribute('data-id');
-        if (e.target.checked) {
-          selectedSuggestionIds[id] = true;
-        } else {
-          delete selectedSuggestionIds[id];
+      document.getElementById('drawer-body').addEventListener('click', function(e) {
+        var collapseHead = e.target.closest('.collapse-head');
+        if (collapseHead) {
+          var panel = collapseHead.closest('.collapse-panel');
+          if (panel) panel.classList.toggle('is-open');
+          return;
         }
-        updateSelectionControls(parentSuggestions);
-      });
-      document.getElementById('check-all-suggestions').addEventListener('change', function(e) {
-        if (e.target.checked) {
-          parentSuggestions.forEach(function(item) {
-            selectedSuggestionIds[item.id] = true;
-          });
-        } else {
-          parentSuggestions.forEach(function(item) {
-            delete selectedSuggestionIds[item.id];
-          });
+        var logicHead = e.target.closest('.logic-step-head');
+        if (logicHead) {
+          var step = logicHead.closest('.logic-step');
+          if (step) step.classList.toggle('is-open');
+          return;
         }
-        renderTable();
-      });
-      document.getElementById('btn-batch-ship').addEventListener('click', function() {
-        showBatchAction('ship');
-      });
-      document.getElementById('btn-batch-order').addEventListener('click', function() {
-        showBatchAction('order');
-      });
-      document.getElementById('child-detail').addEventListener('click', function(e) {
-        var methodBtn = e.target.closest('[data-action="toggle-method"]');
-        if (methodBtn) {
-          var mTarget = methodBtn.getAttribute('data-target');
-          var detailRow = document.querySelector('#child-detail .method-detail-row[data-method-row="' + mTarget + '"]');
-          if (detailRow) {
-            var mOpen = detailRow.hidden;
-            detailRow.hidden = !mOpen;
-            methodBtn.classList.toggle('open', mOpen);
-            methodBtn.innerHTML = mOpen ? '收起 ▴' : '展开 ▾';
-          }
+        var docHead = e.target.closest('.doc-card-head');
+        if (docHead) {
+          var docCard = docHead.closest('.doc-card');
+          if (docCard) docCard.classList.toggle('is-open');
+          return;
+        }
+        var calcRowsBtn = e.target.closest('[data-action="toggle-calc-rows"]');
+        if (calcRowsBtn) {
+          var seg = calcRowsBtn.closest('.calc-seg');
+          if (!seg) return;
+          var rows = seg.querySelectorAll('.calc-extra-row');
+          var opening = Array.prototype.some.call(rows, function(row) { return row.hidden; });
+          rows.forEach(function(row) { row.hidden = !opening; });
+          calcRowsBtn.textContent = opening ? '收起 ▴' : '展开全部 ' + (rows.length + CALC_SEG_MAX) + ' 个 ▾';
+          return;
+        }
+        var condBtn = e.target.closest('[data-action="toggle-cond"]');
+        if (condBtn) {
+          var cond = condBtn.closest('.cond-cell');
+          if (!cond) return;
+          var condExpanded = cond.classList.toggle('expanded');
+          condBtn.textContent = condExpanded ? '收起' : '展开';
           return;
         }
         var btn = e.target.closest('[data-action="toggle-rule"]');
@@ -2941,6 +4254,13 @@
         if (!cell) return;
         var expanded = cell.classList.toggle('expanded');
         btn.textContent = expanded ? '收起' : '展开';
+      });
+      document.getElementById('drawer-body').addEventListener('change', function(e) {
+        if (e.target.id !== 'drawer-calc-color' && e.target.id !== 'drawer-calc-size') return;
+        if (e.target.id === 'drawer-calc-color') drawerCalcFilter.color = e.target.value;
+        else drawerCalcFilter.size = e.target.value;
+        var calcBody = document.querySelector('#drawer-body [data-panel="calc"] .collapse-body');
+        if (calcBody && currentSuggestion) calcBody.innerHTML = renderCalcProcessHtml(currentSuggestion);
       });
       document.getElementById('drawer-mask').addEventListener('click', closeDrawer);
       document.getElementById('drawer-close').addEventListener('click', closeDrawer);
@@ -2954,15 +4274,6 @@
             item.classList.toggle('active', item === btn);
           });
         });
-      });
-      document.getElementById('calc-collapse').addEventListener('click', function() {
-        setCalcCollapsed(!document.getElementById('calc-detail').hidden);
-      });
-      document.getElementById('drawer-create-ship').addEventListener('click', function() {
-        showAction('生成发货计划入口：' + (currentSuggestion ? currentSuggestion.parentCode : ''));
-      });
-      document.getElementById('drawer-create-order').addEventListener('click', function() {
-        showAction('生成采购计划入口：' + (currentSuggestion ? currentSuggestion.parentCode : ''));
       });
       document.getElementById('drawer-export').addEventListener('click', function() {
         showAction('导出计算明细入口：' + (currentSuggestion ? currentSuggestion.parentCode : ''));

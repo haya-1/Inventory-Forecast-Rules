@@ -710,6 +710,13 @@
       color: #909399;
     }
 
+    .param-locked-input {
+      border-color: #e4e7ed;
+      background: #f5f7fa;
+      color: #909399;
+      cursor: not-allowed;
+    }
+
     .input-suffix {
       color: #909399;
       font-size: 13px;
@@ -721,6 +728,33 @@
       color: #909399;
       margin: 0 0 10px;
       line-height: 1.6;
+    }
+
+    .param-maintained-note {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 26px;
+      margin: 0 0 10px;
+      padding: 4px 10px;
+      border: 1px solid #d9ecff;
+      border-radius: 4px;
+      background: #f4f9ff;
+      color: #606266;
+      font-size: 12px;
+      line-height: 18px;
+    }
+
+    .param-maintained-note::before {
+      content: "ⓘ";
+      color: #409eff;
+      font-size: 13px;
+    }
+
+    .param-source-text {
+      color: #909399;
+      font-size: 12px;
+      white-space: nowrap;
     }
 
     .drawer-tabs {
@@ -1209,6 +1243,7 @@
       </div>
       <div class="sidebar-submenu-panel" id="system-submenu">
         <div class="submenu-title">系统配置</div>
+        <a class="submenu-item" href="./基础参数配置.html">基础参数配置</a>
         <a class="submenu-item" href="./销量预测规则.html">销量预测规则</a>
         <a class="submenu-item active" href="./备货规则配置.html">备货规则</a>
       </div>
@@ -1332,6 +1367,7 @@
             <span class="stocking-subhead-bar" aria-hidden="true"></span>
             <span class="stocking-subhead-text">采购时效</span>
           </div>
+          <p class="param-maintained-note">采购交期、采购频率、提货准备由基础参数配置维护；质检在本页维护。</p>
           <table class="config-table">
             <thead>
               <tr>
@@ -1345,8 +1381,9 @@
                 <td>采购交期</td>
                 <td>
                   <div class="drawer-field">
-                    <input class="drawer-input numeric-input procurement-input" id="purchase-lead" type="number" min="0" value="30" />
+                    <input class="drawer-input numeric-input procurement-input param-locked-input" id="purchase-lead" type="number" min="0" value="30" readonly title="由基础参数配置维护" />
                     <span class="input-suffix">天</span>
+                    <span class="param-source-text">由基础参数配置维护</span>
                   </div>
                 </td>
                 <td>从下单到供应端交付的周期。</td>
@@ -1355,8 +1392,9 @@
                 <td>采购频率</td>
                 <td>
                   <div class="drawer-field">
-                    <input class="drawer-input numeric-input procurement-input" id="purchase-frequency" type="number" min="0" value="15" />
+                    <input class="drawer-input numeric-input procurement-input param-locked-input" id="purchase-frequency" type="number" min="0" value="15" readonly title="由基础参数配置维护" />
                     <span class="input-suffix">天</span>
+                    <span class="param-source-text">由基础参数配置维护</span>
                   </div>
                 </td>
                 <td>下一次采购机会间隔。</td>
@@ -1365,8 +1403,9 @@
                 <td>提货准备</td>
                 <td>
                   <div class="drawer-field">
-                    <input class="drawer-input numeric-input procurement-input" id="pickup-prep" type="number" min="0" value="7" />
+                    <input class="drawer-input numeric-input procurement-input param-locked-input" id="pickup-prep" type="number" min="0" value="7" readonly title="由基础参数配置维护" />
                     <span class="input-suffix">天</span>
+                    <span class="param-source-text">由基础参数配置维护</span>
                   </div>
                 </td>
                 <td>到货后可发货前的准备时间。</td>
@@ -1420,6 +1459,7 @@
             <span class="stocking-subhead-bar" aria-hidden="true"></span>
             <span class="stocking-subhead-text">直发物流时效</span>
           </div>
+          <p class="param-maintained-note">物流方式名称、物流时效和站点发货频率由基础参数配置维护；本页仅选择参与计算的物流方式并设置计算优先级。</p>
           <div class="site-card" data-site-key="northAmerica">
             <div class="site-card-head">
               <div class="site-title"><span class="tag tag-blue">北美站</span><span>本地仓 → FBA</span></div>
@@ -1427,8 +1467,9 @@
             <div class="site-body">
               <div class="site-frequency">
                 <span>本地仓发货频率</span>
-                <input class="drawer-input numeric-input site-frequency-input" type="number" min="0" value="7" />
+                <input class="drawer-input numeric-input site-frequency-input param-locked-input" type="number" min="0" value="7" readonly title="由基础参数配置维护" />
                 <span class="input-suffix">天</span>
+                <span class="param-source-text">由基础参数配置维护</span>
               </div>
               <table class="config-table">
                 <thead>
@@ -1454,8 +1495,9 @@
             <div class="site-body">
               <div class="site-frequency">
                 <span>本地仓发货频率</span>
-                <input class="drawer-input numeric-input site-frequency-input" type="number" min="0" value="7" />
+                <input class="drawer-input numeric-input site-frequency-input param-locked-input" type="number" min="0" value="7" readonly title="由基础参数配置维护" />
                 <span class="input-suffix">天</span>
+                <span class="param-source-text">由基础参数配置维护</span>
               </div>
               <table class="config-table">
                 <thead>
@@ -1688,6 +1730,151 @@
         ]
       };
 
+      var BASIC_PARAMS_STORAGE_KEY = 'sf_basic_params_v1';
+      var BASIC_SITE_DEFAULTS = {
+        northAmerica: {
+          storageKey: 'shippingNorthAmerica',
+          prepTime: 2,
+          shipFrequency: 7,
+          logistics: [
+            { name: '空运', days: 7 },
+            { name: '海运', days: 30 },
+            { name: '快递', days: 3 }
+          ]
+        },
+        europe: {
+          storageKey: 'shippingEurope',
+          prepTime: 3,
+          shipFrequency: 7,
+          logistics: [
+            { name: '空运', days: 10 },
+            { name: '海运', days: 35 },
+            { name: '快递', days: 5 }
+          ]
+        }
+      };
+
+      function basicToInt(value, fallback) {
+        var n = parseInt(value, 10);
+        if (Number.isNaN(n)) return fallback || 0;
+        return n;
+      }
+
+      function defaultBasicLogistics(siteKey) {
+        var defaults = BASIC_SITE_DEFAULTS[siteKey] && BASIC_SITE_DEFAULTS[siteKey].logistics || [];
+        return defaults.map(function(method, index) {
+          return {
+            id: index + 1,
+            key: 'method_' + siteKey + '_' + (index + 1),
+            name: method.name,
+            days: method.days,
+            leadTimeDays: method.days
+          };
+        });
+      }
+
+      function getDefaultBasicParams() {
+        return {
+          schemaVersion: 2,
+          purchase: {
+            purchaseLead: 30,
+            productionTime: 30,
+            warehouseTime: 7,
+            purchaseFrequency: 15
+          },
+          shippingNorthAmerica: {
+            prepTime: BASIC_SITE_DEFAULTS.northAmerica.prepTime,
+            shipFrequency: BASIC_SITE_DEFAULTS.northAmerica.shipFrequency,
+            logistics: defaultBasicLogistics('northAmerica')
+          },
+          shippingEurope: {
+            prepTime: BASIC_SITE_DEFAULTS.europe.prepTime,
+            shipFrequency: BASIC_SITE_DEFAULTS.europe.shipFrequency,
+            logistics: defaultBasicLogistics('europe')
+          }
+        };
+      }
+
+      function basicMethodKey(name, index) {
+        return String(name || ('method_' + index))
+          .trim()
+          .toLowerCase()
+          .replace(/\s+/g, '_')
+          .replace(/[^\w\u4e00-\u9fa5]/g, '_') || ('method_' + index);
+      }
+
+      function normalizeBasicLogistics(siteKey, item, index) {
+        var defaults = defaultBasicLogistics(siteKey);
+        var fallback = defaults[index] || defaults[0] || { key: 'method_' + index, name: item && item.name || '', leadTimeDays: 0 };
+        var matched = null;
+        if (item) {
+          matched = defaults.filter(function(option) {
+            return option.key === item.key || option.name === item.name;
+          })[0] || null;
+        }
+        var name = item && item.name || (matched && matched.name) || fallback.name;
+        var days = item && (item.days != null ? item.days : item.leadTimeDays);
+        if (days == null && matched) days = matched.leadTimeDays;
+        if (days == null) days = fallback.leadTimeDays;
+        return {
+          id: item && item.id != null ? item.id : index + 1,
+          key: item && item.key || (matched && matched.key) || fallback.key || basicMethodKey(name, index),
+          name: name,
+          days: basicToInt(days, 0),
+          leadTimeDays: basicToInt(days, 0)
+        };
+      }
+
+      function normalizeBasicParams(input) {
+        var defaults = getDefaultBasicParams();
+        input = input || {};
+        var legacyFromPreviousPrototype = input.schemaVersion !== 2 &&
+          (input.fbaSafetyDays != null || (input.purchase && (input.purchase.pickupPrep != null || input.purchase.qualityInspection != null)));
+        if (legacyFromPreviousPrototype) input = {};
+        var purchase = input.purchase || {};
+        var normalizeShipping = function(siteKey, storageKey) {
+          var d = defaults[storageKey];
+          var src = input[storageKey] || {};
+          var logistics = Array.isArray(src.logistics) && src.logistics.length ? src.logistics : d.logistics;
+          return {
+            prepTime: basicToInt(src.prepTime, d.prepTime),
+            shipFrequency: basicToInt(src.shipFrequency, d.shipFrequency),
+            logistics: logistics.map(function(item, index) {
+              return normalizeBasicLogistics(siteKey, item, index);
+            })
+          };
+        };
+        return {
+          schemaVersion: 2,
+          purchase: {
+            purchaseLead: basicToInt(purchase.purchaseLead != null ? purchase.purchaseLead : purchase.productionTime, defaults.purchase.purchaseLead),
+            productionTime: basicToInt(purchase.productionTime != null ? purchase.productionTime : purchase.purchaseLead, defaults.purchase.productionTime),
+            warehouseTime: basicToInt(purchase.warehouseTime, defaults.purchase.warehouseTime),
+            purchaseFrequency: basicToInt(purchase.purchaseFrequency, defaults.purchase.purchaseFrequency)
+          },
+          shippingNorthAmerica: normalizeShipping('northAmerica', 'shippingNorthAmerica'),
+          shippingEurope: normalizeShipping('europe', 'shippingEurope')
+        };
+      }
+
+      function loadBasicParams() {
+        try {
+          var raw = localStorage.getItem(BASIC_PARAMS_STORAGE_KEY);
+          return normalizeBasicParams(raw ? JSON.parse(raw) : null);
+        } catch (err) {
+          return normalizeBasicParams(null);
+        }
+      }
+
+      function basicShippingKey(siteKey) {
+        return siteKey === 'europe' ? 'shippingEurope' : 'shippingNorthAmerica';
+      }
+
+      function basicShippingConfig(siteKey) {
+        var params = loadBasicParams();
+        return params[basicShippingKey(siteKey)] || params.shippingNorthAmerica;
+      }
+
       var drawer = document.getElementById('rule-drawer');
       var drawerMask = document.getElementById('rule-drawer-mask');
       var parentModal = document.getElementById('sf-modal-parent-pick');
@@ -1838,15 +2025,26 @@
       }
 
       function getDefaultFormState() {
+        var basic = loadBasicParams();
+        var naOptions = getLogisticsMethodOptions('northAmerica');
+        var euOptions = getLogisticsMethodOptions('europe');
+        var withPriority = function(option, index) {
+          return {
+            key: option.key,
+            name: option.name,
+            priority: index + 1,
+            leadTimeDays: option.leadTimeDays
+          };
+        };
         return {
           ruleCode: '',
           name: '',
           enabled: true,
           parentCodes: [],
           procurement: {
-            purchaseLead: 30,
-            purchaseFrequency: 15,
-            pickupPrep: 7,
+            purchaseLead: basic.purchase.purchaseLead,
+            purchaseFrequency: basic.purchase.purchaseFrequency,
+            pickupPrep: basic.purchase.warehouseTime,
             qualityInspection: 2
           },
           fbaSafetyDays: 28,
@@ -1856,21 +2054,15 @@
               key: 'northAmerica',
               name: '北美站',
               enabled: true,
-              shipFrequencyDays: 7,
-              methods: [
-                { key: 'mason_regular', name: '美森正班', priority: 1, leadTimeDays: 37 },
-                { key: 'sea_standard', name: '普船', priority: 2, leadTimeDays: 57 }
-              ]
+              shipFrequencyDays: basic.shippingNorthAmerica.shipFrequency,
+              methods: naOptions.slice(0, 2).map(withPriority)
             },
             {
               key: 'europe',
               name: '欧洲站',
               enabled: true,
-              shipFrequencyDays: 7,
-              methods: [
-                { key: 'sea_standard', name: '普船', priority: 1, leadTimeDays: 45 },
-                { key: 'air', name: '空运', priority: 2, leadTimeDays: 15 }
-              ]
+              shipFrequencyDays: basic.shippingEurope.shipFrequency,
+              methods: euOptions.slice(0, 2).map(withPriority)
             }
           ],
           calculation: {
@@ -1903,7 +2095,13 @@
       }
 
       function getLogisticsMethodOptions(siteKey) {
-        return LOGISTICS_METHOD_OPTIONS[siteKey] || [];
+        return (basicShippingConfig(siteKey).logistics || []).map(function(method, index) {
+          return {
+            key: method.key || basicMethodKey(method.name, index),
+            name: method.name,
+            leadTimeDays: method.leadTimeDays != null ? method.leadTimeDays : method.days
+          };
+        });
       }
 
       function findLogisticsMethodOption(siteKey, value) {
@@ -1954,7 +2152,10 @@
         var d = getDefaultFormState();
         form = form || {};
         var merged = Object.assign({}, d, form);
-        merged.procurement = Object.assign({}, d.procurement, form.procurement || {});
+        merged.procurement = Object.assign({}, d.procurement, {
+          qualityInspection: toInt(form.procurement && form.procurement.qualityInspection, d.procurement.qualityInspection)
+        });
+        merged.fbaSafetyDays = toInt(form.fbaSafetyDays, d.fbaSafetyDays);
         merged.calculation = Object.assign({}, d.calculation, form.calculation || {});
         merged.calculation.annualPlanSource = true;
         merged.parentCodes = Array.isArray(form.parentCodes) ? form.parentCodes : [];
@@ -1966,7 +2167,7 @@
             key: site.key,
             name: site.name,
             enabled: true,
-            shipFrequencyDays: foundSite.shipFrequencyDays != null ? foundSite.shipFrequencyDays : site.shipFrequencyDays,
+            shipFrequencyDays: site.shipFrequencyDays,
             methods: sourceMethods.map(function(method, index) {
               return normalizeLogisticsMethod(site.key, method, index);
             })
@@ -2297,7 +2498,7 @@
           return '<tr data-method-key="' + escapeHtml(normalized.key || makeLogisticsMethodKey()) + '">' +
             '<td><select class="drawer-select method-select">' + optionRows + '</select></td>' +
             '<td><input class="drawer-input numeric-input method-priority-input" type="number" min="1" step="1" value="' + escapeHtml(normalized.priority) + '" /></td>' +
-            '<td><span class="method-lead-display" data-lead-days="' + escapeHtml(normalized.leadTimeDays) + '">' + escapeHtml(normalized.leadTimeDays) + '</span> <span class="input-suffix">天</span></td>' +
+            '<td><span class="method-lead-display" data-lead-days="' + escapeHtml(normalized.leadTimeDays) + '">' + escapeHtml(normalized.leadTimeDays) + '</span> <span class="input-suffix">天</span> <span class="param-source-text">由基础参数配置维护</span></td>' +
             '<td style="text-align:center;"><button type="button" class="btn-text btn-danger logistics-method-delete">删除</button></td>' +
           '</tr>';
         }).join('');
