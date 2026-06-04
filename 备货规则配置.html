@@ -757,6 +757,78 @@
       white-space: nowrap;
     }
 
+    .target-days-preview {
+      margin: 2px 0 18px;
+      padding: 18px 20px;
+      border: 1px solid #dfe6f1;
+      border-radius: 8px;
+      background: #f6f8fb;
+    }
+
+    .target-days-preview-title {
+      margin-bottom: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      color: #303133;
+    }
+
+    .target-days-preview-row {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 14px;
+      min-height: 38px;
+    }
+
+    .target-days-preview-row + .target-days-preview-row {
+      margin-top: 6px;
+    }
+
+    .preview-badge {
+      min-width: 56px;
+      padding: 5px 12px;
+      border-radius: 4px;
+      color: #fff;
+      font-weight: 600;
+      text-align: center;
+      line-height: 18px;
+    }
+
+    .preview-badge.purchase {
+      background: #409eff;
+    }
+
+    .preview-badge.shipping {
+      background: #67c23a;
+    }
+
+    .preview-formula {
+      color: #606266;
+      line-height: 22px;
+      word-break: break-word;
+    }
+
+    .preview-result {
+      min-width: 96px;
+      text-align: right;
+      color: #303133;
+      white-space: nowrap;
+    }
+
+    .preview-result strong {
+      color: #409eff;
+      font-size: 18px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .target-days-preview-note {
+      margin-top: 10px;
+      color: #909399;
+      font-size: 12px;
+      line-height: 20px;
+    }
+
     .drawer-tabs {
       display: flex;
       align-items: center;
@@ -1352,6 +1424,25 @@
             <button type="button" class="btn" id="rule-parent-pick">选择父体</button>
           </div>
         </div>
+      </section>
+
+      <section class="target-days-preview" aria-label="目标库存天数预览">
+        <div class="target-days-preview-title">目标库存天数（按当前配置实时预览）</div>
+        <div class="target-days-preview-row">
+          <span class="preview-badge purchase">采购</span>
+          <div class="preview-formula">
+            生产周期<span id="preview-production-days">30</span> + 质检<span id="preview-quality-days">2</span> + 提货准备<span id="preview-pickup-days">7</span> + 最长物流<span id="preview-purchase-max-logistics-days">57</span> + 安全天数<span id="preview-purchase-safety-days">28</span> + 采购频率<span id="preview-purchase-frequency-days">15</span>
+          </div>
+          <div class="preview-result">= <strong id="preview-purchase-target-days">139</strong> 天</div>
+        </div>
+        <div class="target-days-preview-row">
+          <span class="preview-badge shipping">发货</span>
+          <div class="preview-formula">
+            最长物流<span id="preview-shipping-max-logistics-days">57</span> + 安全天数<span id="preview-shipping-safety-days">28</span> + 发货频率<span id="preview-shipping-frequency-days">7</span>
+          </div>
+          <div class="preview-result">= <strong id="preview-shipping-target-days">92</strong> 天</div>
+        </div>
+        <div class="target-days-preview-note" id="target-days-preview-note">生产周期默认按 30 天（实际取自 PLM）；最长物流取「物流时效」中已配置物流方式的最大时效；频率取自基础参数配置。</div>
       </section>
 
       <div class="drawer-tabs" role="tablist" aria-label="备货规则配置项">
@@ -2397,6 +2488,56 @@
         var pickup = toInt(document.getElementById('pickup-prep').value, 0);
         var qc = toInt(document.getElementById('quality-inspection').value, 0);
         document.getElementById('procurement-total').textContent = lead + freq + pickup + qc;
+        updateTargetDaysPreview();
+      }
+
+      function setPreviewText(id, value) {
+        var el = document.getElementById(id);
+        if (el) el.textContent = value;
+      }
+
+      function getPreviewLogisticsMetrics() {
+        var maxLead = 0;
+        var maxFrequency = 0;
+        document.querySelectorAll('.site-card').forEach(function(card) {
+          maxFrequency = Math.max(maxFrequency, toInt(card.querySelector('.site-frequency-input') && card.querySelector('.site-frequency-input').value, 0));
+          card.querySelectorAll('.method-lead-display').forEach(function(lead) {
+            maxLead = Math.max(maxLead, toInt(lead.getAttribute('data-lead-days') || lead.textContent, 0));
+          });
+        });
+        return {
+          maxLead: maxLead,
+          maxFrequency: maxFrequency
+        };
+      }
+
+      function updateTargetDaysPreview() {
+        if (!document.getElementById('preview-purchase-target-days')) return;
+        var production = toInt(document.getElementById('purchase-lead') && document.getElementById('purchase-lead').value, 0);
+        var purchaseFrequency = toInt(document.getElementById('purchase-frequency') && document.getElementById('purchase-frequency').value, 0);
+        var pickup = toInt(document.getElementById('pickup-prep') && document.getElementById('pickup-prep').value, 0);
+        var qc = toInt(document.getElementById('quality-inspection') && document.getElementById('quality-inspection').value, 0);
+        var safety = toInt(document.getElementById('fba-safety-days') && document.getElementById('fba-safety-days').value, 0);
+        var logistics = getPreviewLogisticsMetrics();
+        var purchaseTarget = production + qc + pickup + logistics.maxLead + safety + purchaseFrequency;
+        var shippingTarget = logistics.maxLead + safety + logistics.maxFrequency;
+
+        setPreviewText('preview-production-days', production);
+        setPreviewText('preview-quality-days', qc);
+        setPreviewText('preview-pickup-days', pickup);
+        setPreviewText('preview-purchase-max-logistics-days', logistics.maxLead);
+        setPreviewText('preview-purchase-safety-days', safety);
+        setPreviewText('preview-purchase-frequency-days', purchaseFrequency);
+        setPreviewText('preview-purchase-target-days', purchaseTarget);
+        setPreviewText('preview-shipping-max-logistics-days', logistics.maxLead);
+        setPreviewText('preview-shipping-safety-days', safety);
+        setPreviewText('preview-shipping-frequency-days', logistics.maxFrequency);
+        setPreviewText('preview-shipping-target-days', shippingTarget);
+
+        var note = document.getElementById('target-days-preview-note');
+        if (note) {
+          note.textContent = '生产周期默认按 ' + production + ' 天（实际取自 PLM）；最长物流取「物流时效」中已配置物流方式的最大时效；频率取自基础参数配置。';
+        }
       }
 
       function renderSafetyConditionOptions(category, currentCode) {
@@ -2939,6 +3080,7 @@
           var methods = collectLogisticsMethods(addCard);
           methods.push(nextLogisticsMethod(addCard.getAttribute('data-site-key'), methods));
           renderLogisticsMethodRows(addCard, methods);
+          updateTargetDaysPreview();
           return;
         }
 
@@ -2946,6 +3088,7 @@
         if (delBtn) {
           var row = delBtn.closest('tr');
           if (row) row.remove();
+          updateTargetDaysPreview();
         }
       });
 
@@ -2961,6 +3104,10 @@
           lead.setAttribute('data-lead-days', option.leadTimeDays);
           lead.textContent = option.leadTimeDays;
         }
+        updateTargetDaysPreview();
+      });
+      document.getElementById('drawer-tab-logistics').addEventListener('input', function(e) {
+        if (e.target.matches('.site-frequency-input')) updateTargetDaysPreview();
       });
 
       document.getElementById('rule-list-tbody').addEventListener('click', function(e) {
@@ -2997,6 +3144,7 @@
       document.querySelectorAll('.procurement-input').forEach(function(input) {
         input.addEventListener('input', updateProcurementSummary);
       });
+      document.getElementById('fba-safety-days').addEventListener('input', updateTargetDaysPreview);
       document.addEventListener('keydown', function(e) {
         if (e.key !== 'Escape') return;
         if (parentModal.classList.contains('show')) {
