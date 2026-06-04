@@ -1367,7 +1367,7 @@
             <span class="stocking-subhead-bar" aria-hidden="true"></span>
             <span class="stocking-subhead-text">采购时效</span>
           </div>
-          <p class="param-maintained-note">采购交期、采购频率、提货准备由基础参数配置维护；质检在本页维护。</p>
+          <p class="param-maintained-note">生产周期由 PLM 按子体维护，本系统不重复配置，计算时自动取用。采购频率由「基础参数配置」统一维护，此处仅只读展示。</p>
           <table class="config-table">
             <thead>
               <tr>
@@ -1377,7 +1377,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr>
+              <tr style="display: none;">
                 <td>采购交期</td>
                 <td>
                   <div class="drawer-field">
@@ -1420,7 +1420,7 @@
                 </td>
                 <td>到货后质检处理时间。</td>
               </tr>
-              <tr class="summary-row">
+              <tr class="summary-row" style="display: none;">
                 <td>合计</td>
                 <td><strong id="procurement-total">54</strong> 天</td>
                 <td></td>
@@ -1535,12 +1535,12 @@
             </div>
           </div>
 
-          <div class="drawer-tab-block">
+          <div class="drawer-tab-block" style="display: none;">
             <div class="stocking-subhead" role="heading" aria-level="3">
               <span class="stocking-subhead-bar" aria-hidden="true"></span>
               <span class="stocking-subhead-text">建议量计算设置</span>
             </div>
-            <div class="settings-panel" style="display: none;">
+            <div class="settings-panel" >
               <label class="settings-checkbox">
                 <input type="checkbox" id="deduct-stockout-sales" checked />
                 建议量扣除必断货量
@@ -1734,23 +1734,17 @@
       var BASIC_SITE_DEFAULTS = {
         northAmerica: {
           storageKey: 'shippingNorthAmerica',
-          prepTime: 2,
           shipFrequency: 7,
-          logistics: [
-            { name: '空运', days: 7 },
-            { name: '海运', days: 30 },
-            { name: '快递', days: 3 }
-          ]
+          logistics: LOGISTICS_METHOD_OPTIONS.northAmerica.map(function(option) {
+            return { key: option.key, name: option.name, days: option.leadTimeDays };
+          })
         },
         europe: {
           storageKey: 'shippingEurope',
-          prepTime: 3,
           shipFrequency: 7,
-          logistics: [
-            { name: '空运', days: 10 },
-            { name: '海运', days: 35 },
-            { name: '快递', days: 5 }
-          ]
+          logistics: LOGISTICS_METHOD_OPTIONS.europe.map(function(option) {
+            return { key: option.key, name: option.name, days: option.leadTimeDays };
+          })
         }
       };
 
@@ -1765,7 +1759,7 @@
         return defaults.map(function(method, index) {
           return {
             id: index + 1,
-            key: 'method_' + siteKey + '_' + (index + 1),
+            key: method.key || ('method_' + siteKey + '_' + (index + 1)),
             name: method.name,
             days: method.days,
             leadTimeDays: method.days
@@ -1775,20 +1769,20 @@
 
       function getDefaultBasicParams() {
         return {
-          schemaVersion: 2,
+          schemaVersion: 3,
           purchase: {
             purchaseLead: 30,
             productionTime: 30,
             warehouseTime: 7,
-            purchaseFrequency: 15
+            purchaseFrequency: 15,
+            qualityInspection: 2,
+            pickupPrep: 3
           },
           shippingNorthAmerica: {
-            prepTime: BASIC_SITE_DEFAULTS.northAmerica.prepTime,
             shipFrequency: BASIC_SITE_DEFAULTS.northAmerica.shipFrequency,
             logistics: defaultBasicLogistics('northAmerica')
           },
           shippingEurope: {
-            prepTime: BASIC_SITE_DEFAULTS.europe.prepTime,
             shipFrequency: BASIC_SITE_DEFAULTS.europe.shipFrequency,
             logistics: defaultBasicLogistics('europe')
           }
@@ -1812,14 +1806,12 @@
             return option.key === item.key || option.name === item.name;
           })[0] || null;
         }
-        var name = item && item.name || (matched && matched.name) || fallback.name;
-        var days = item && (item.days != null ? item.days : item.leadTimeDays);
-        if (days == null && matched) days = matched.leadTimeDays;
-        if (days == null) days = fallback.leadTimeDays;
+        var option = matched || fallback;
+        var days = option.leadTimeDays != null ? option.leadTimeDays : option.days;
         return {
           id: item && item.id != null ? item.id : index + 1,
-          key: item && item.key || (matched && matched.key) || fallback.key || basicMethodKey(name, index),
-          name: name,
+          key: option.key || basicMethodKey(option.name, index),
+          name: option.name,
           days: basicToInt(days, 0),
           leadTimeDays: basicToInt(days, 0)
         };
@@ -1828,16 +1820,15 @@
       function normalizeBasicParams(input) {
         var defaults = getDefaultBasicParams();
         input = input || {};
-        var legacyFromPreviousPrototype = input.schemaVersion !== 2 &&
+        var legacyFromPreviousPrototype = input.schemaVersion !== 3 &&
           (input.fbaSafetyDays != null || (input.purchase && (input.purchase.pickupPrep != null || input.purchase.qualityInspection != null)));
         if (legacyFromPreviousPrototype) input = {};
         var purchase = input.purchase || {};
         var normalizeShipping = function(siteKey, storageKey) {
           var d = defaults[storageKey];
           var src = input[storageKey] || {};
-          var logistics = Array.isArray(src.logistics) && src.logistics.length ? src.logistics : d.logistics;
+          var logistics = input.schemaVersion === 3 && Array.isArray(src.logistics) && src.logistics.length ? src.logistics : d.logistics;
           return {
-            prepTime: basicToInt(src.prepTime, d.prepTime),
             shipFrequency: basicToInt(src.shipFrequency, d.shipFrequency),
             logistics: logistics.map(function(item, index) {
               return normalizeBasicLogistics(siteKey, item, index);
@@ -1845,12 +1836,14 @@
           };
         };
         return {
-          schemaVersion: 2,
+          schemaVersion: 3,
           purchase: {
             purchaseLead: basicToInt(purchase.purchaseLead != null ? purchase.purchaseLead : purchase.productionTime, defaults.purchase.purchaseLead),
             productionTime: basicToInt(purchase.productionTime != null ? purchase.productionTime : purchase.purchaseLead, defaults.purchase.productionTime),
             warehouseTime: basicToInt(purchase.warehouseTime, defaults.purchase.warehouseTime),
-            purchaseFrequency: basicToInt(purchase.purchaseFrequency, defaults.purchase.purchaseFrequency)
+            purchaseFrequency: basicToInt(purchase.purchaseFrequency, defaults.purchase.purchaseFrequency),
+            qualityInspection: basicToInt(purchase.qualityInspection, defaults.purchase.qualityInspection),
+            pickupPrep: basicToInt(purchase.pickupPrep, defaults.purchase.pickupPrep)
           },
           shippingNorthAmerica: normalizeShipping('northAmerica', 'shippingNorthAmerica'),
           shippingEurope: normalizeShipping('europe', 'shippingEurope')
@@ -2044,8 +2037,8 @@
           procurement: {
             purchaseLead: basic.purchase.purchaseLead,
             purchaseFrequency: basic.purchase.purchaseFrequency,
-            pickupPrep: basic.purchase.warehouseTime,
-            qualityInspection: 2
+            pickupPrep: basic.purchase.pickupPrep,
+            qualityInspection: basic.purchase.qualityInspection
           },
           fbaSafetyDays: 28,
           safetyAdjustments: defaultSafetyAdjustments(),
@@ -2152,9 +2145,7 @@
         var d = getDefaultFormState();
         form = form || {};
         var merged = Object.assign({}, d, form);
-        merged.procurement = Object.assign({}, d.procurement, {
-          qualityInspection: toInt(form.procurement && form.procurement.qualityInspection, d.procurement.qualityInspection)
-        });
+        merged.procurement = Object.assign({}, d.procurement);
         merged.fbaSafetyDays = toInt(form.fbaSafetyDays, d.fbaSafetyDays);
         merged.calculation = Object.assign({}, d.calculation, form.calculation || {});
         merged.calculation.annualPlanSource = true;

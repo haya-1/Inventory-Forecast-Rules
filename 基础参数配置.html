@@ -52,6 +52,8 @@
     .input:focus { border-color: #409eff; }
     .input-num { width: 104px; }
     .input-name { width: 126px; }
+    .method-select { width: 180px; }
+    .method-days-display { color: #303133; font-variant-numeric: tabular-nums; }
     .unit { color: #606266; }
     .section { margin-top: 18px; }
     .section-title { font-size: 15px; font-weight: 600; color: #303133; margin-bottom: 14px; }
@@ -117,6 +119,8 @@
           <label class="inline-field">工厂生产时间：<input class="input input-num" id="production-time" type="number" min="0" /><span class="unit">天</span></label>
           <label class="inline-field">大货入仓时间：<input class="input input-num" id="warehouse-time" type="number" min="0" /><span class="unit">天</span></label>
           <label class="inline-field">采购频率：<input class="input input-num" id="purchase-frequency" type="number" min="0" /><span class="unit">天</span></label>
+          <label class="inline-field">质检时间：<input class="input input-num" id="quality-inspection" type="number" min="0" /><span class="unit">天</span></label>
+          <label class="inline-field">提货准备时间：<input class="input input-num" id="pickup-prep" type="number" min="0" /><span class="unit">天</span></label>
         </div>
 
         <div id="shipping-sections"></div>
@@ -128,10 +132,30 @@
   <script>
     (function initBasicParamsPage() {
       var BASIC_PARAMS_STORAGE_KEY = 'sf_basic_params_v1';
+      var LOGISTICS_OPTIONS = {
+        shippingNorthAmerica: [
+          { key: 'mason_regular', name: '美森正班', days: 37 },
+          { key: 'sea_standard', name: '普船', days: 57 },
+          { key: 'air', name: '空运', days: 22 },
+          { key: 'qisuda', name: '琦速达', days: 40 },
+          { key: 'mason_extra', name: '美森加班', days: 42 },
+          { key: 'fast_delivery', name: '快速达', days: 42 },
+          { key: 'limited_delivery', name: '限时达', days: 37 },
+          { key: 'hede', name: '合德', days: 42 },
+          { key: 'zxing', name: '以星', days: 45 }
+        ],
+        shippingEurope: [
+          { key: 'sea_standard', name: '普船', days: 45 },
+          { key: 'air', name: '空运', days: 15 },
+          { key: 'truck_delivery', name: '卡派', days: 40 },
+          { key: 'railway', name: '铁路', days: 35 },
+          { key: 'uk_sea', name: '英国海运', days: 45 },
+          { key: 'eu_sea', name: '欧洲海运', days: 45 }
+        ]
+      };
       var SITE_META = [
-        { key: 'shippingNorthAmerica', title: '发货参数 - 北美', prep: 2, freq: 7, logistics: [{ name: '空运', days: 7 }, { name: '海运', days: 30 }, { name: '快递', days: 3 }] },
-        { key: 'shippingEurope', title: '发货参数 - 欧洲', prep: 3, freq: 7, logistics: [{ name: '空运', days: 10 }, { name: '海运', days: 35 }, { name: '快递', days: 5 }] },
-        { key: 'shippingOther', title: '发货参数 - 其他', prep: 3, freq: 7, logistics: [{ name: '空运', days: 12 }, { name: '海运', days: 40 }, { name: '快递', days: 7 }] }
+        { key: 'shippingNorthAmerica', title: '发货参数 - 北美', freq: 7, logistics: LOGISTICS_OPTIONS.shippingNorthAmerica },
+        { key: 'shippingEurope', title: '发货参数 - 欧洲', freq: 7, logistics: LOGISTICS_OPTIONS.shippingEurope }
       ];
       var state = null;
 
@@ -155,22 +179,23 @@
 
       function defaultParams() {
         var result = {
-          schemaVersion: 2,
+          schemaVersion: 3,
           purchase: {
             productionTime: 30,
             purchaseLead: 30,
             warehouseTime: 7,
-            purchaseFrequency: 15
+            purchaseFrequency: 15,
+            qualityInspection: 2,
+            pickupPrep: 3
           }
         };
         SITE_META.forEach(function(site) {
           result[site.key] = {
-            prepTime: site.prep,
             shipFrequency: site.freq,
             logistics: site.logistics.map(function(item, index) {
               return {
                 id: index + 1,
-                key: 'method_' + site.key + '_' + (index + 1),
+                key: item.key,
                 name: item.name,
                 days: item.days,
                 leadTimeDays: item.days
@@ -182,41 +207,44 @@
       }
 
       function normalizeMethod(siteKey, item, index, fallback) {
-        var name = item && item.name || fallback.name;
-        var days = item && (item.days != null ? item.days : item.leadTimeDays);
-        if (days == null) days = fallback.days;
+        var options = LOGISTICS_OPTIONS[siteKey] || [];
+        var matched = item ? options.filter(function(option) {
+          return option.key === item.key || option.name === item.name;
+        })[0] : null;
+        var option = matched || fallback || options[0] || { key: 'method_' + index, name: '', days: 0 };
         return {
           id: item && item.id != null ? item.id : index + 1,
-          key: item && item.key || ('method_' + siteKey + '_' + (index + 1)),
-          name: name,
-          days: toInt(days, 0),
-          leadTimeDays: toInt(days, 0)
+          key: option.key || ('method_' + siteKey + '_' + (index + 1)),
+          name: option.name,
+          days: toInt(option.days, 0),
+          leadTimeDays: toInt(option.days, 0)
         };
       }
 
       function normalizeParams(input) {
         var defaults = defaultParams();
         input = input || {};
-        var legacyFromPreviousPrototype = input.schemaVersion !== 2 &&
+        var legacyFromPreviousPrototype = input.schemaVersion !== 3 &&
           (input.fbaSafetyDays != null || (input.purchase && (input.purchase.pickupPrep != null || input.purchase.qualityInspection != null)));
         if (legacyFromPreviousPrototype) input = {};
         var p = input.purchase || {};
         var result = {
-          schemaVersion: 2,
+          schemaVersion: 3,
           purchase: {
             productionTime: toInt(p.productionTime != null ? p.productionTime : p.purchaseLead, defaults.purchase.productionTime),
             purchaseLead: toInt(p.purchaseLead != null ? p.purchaseLead : p.productionTime, defaults.purchase.purchaseLead),
             warehouseTime: toInt(p.warehouseTime, defaults.purchase.warehouseTime),
-            purchaseFrequency: toInt(p.purchaseFrequency, defaults.purchase.purchaseFrequency)
+            purchaseFrequency: toInt(p.purchaseFrequency, defaults.purchase.purchaseFrequency),
+            qualityInspection: toInt(p.qualityInspection, defaults.purchase.qualityInspection),
+            pickupPrep: toInt(p.pickupPrep, defaults.purchase.pickupPrep)
           }
         };
         result.purchase.purchaseLead = result.purchase.productionTime;
         SITE_META.forEach(function(site) {
           var src = input[site.key] || {};
           var fallback = defaults[site.key];
-          var srcRows = Array.isArray(src.logistics) && src.logistics.length ? src.logistics : fallback.logistics;
+          var srcRows = input.schemaVersion === 3 && Array.isArray(src.logistics) && src.logistics.length ? src.logistics : fallback.logistics;
           result[site.key] = {
-            prepTime: toInt(src.prepTime, fallback.prepTime),
             shipFrequency: toInt(src.shipFrequency, fallback.shipFrequency),
             logistics: srcRows.map(function(item, index) {
               return normalizeMethod(site.key, item, index, fallback.logistics[index] || fallback.logistics[0]);
@@ -257,7 +285,15 @@
         setValue('production-time', state.purchase.productionTime);
         setValue('warehouse-time', state.purchase.warehouseTime);
         setValue('purchase-frequency', state.purchase.purchaseFrequency);
+        setValue('quality-inspection', state.purchase.qualityInspection);
+        setValue('pickup-prep', state.purchase.pickupPrep);
         document.getElementById('shipping-sections').innerHTML = SITE_META.map(renderSiteSection).join('');
+      }
+
+      function renderMethodOptions(siteKey, selectedKey) {
+        return (LOGISTICS_OPTIONS[siteKey] || []).map(function(option) {
+          return '<option value="' + escapeHtml(option.key) + '"' + (option.key === selectedKey ? ' selected' : '') + '>' + escapeHtml(option.name) + '</option>';
+        }).join('');
       }
 
       function renderSiteSection(meta) {
@@ -265,15 +301,15 @@
         return '<section class="section" data-site-key="' + meta.key + '">' +
           '<div class="section-title">' + escapeHtml(meta.title) + '</div>' +
           '<div class="site-fields">' +
-            '<label class="inline-field">提货准备时间：<input class="input input-num site-prep" type="number" min="0" value="' + escapeHtml(config.prepTime) + '" /><span class="unit">天</span></label>' +
             '<label class="inline-field">发货频率：<input class="input input-num site-frequency" type="number" min="0" value="' + escapeHtml(config.shipFrequency) + '" /><span class="unit">天</span></label>' +
           '</div>' +
           '<table class="param-table">' +
             '<thead><tr><th>物流方式</th><th>时间（天）</th><th style="width: 140px;">操作</th></tr></thead>' +
             '<tbody>' + config.logistics.map(function(row, index) {
+              var normalized = normalizeMethod(meta.key, row, index, config.logistics[index]);
               return '<tr data-index="' + index + '">' +
-                '<td><input class="input input-name method-name" value="' + escapeHtml(row.name) + '" /></td>' +
-                '<td><input class="input input-num method-days" type="number" min="0" value="' + escapeHtml(row.days) + '" /></td>' +
+                '<td><select class="input method-select">' + renderMethodOptions(meta.key, normalized.key) + '</select></td>' +
+                '<td><span class="method-days-display" data-days="' + escapeHtml(normalized.days) + '">' + escapeHtml(normalized.days) + '</span><span class="unit"> 天</span></td>' +
                 '<td class="table-actions"><button type="button" class="btn-danger method-delete">删除</button></td>' +
               '</tr>';
             }).join('') + '</tbody>' +
@@ -287,21 +323,22 @@
         state.purchase.purchaseLead = state.purchase.productionTime;
         state.purchase.warehouseTime = toInt(document.getElementById('warehouse-time').value, 0);
         state.purchase.purchaseFrequency = toInt(document.getElementById('purchase-frequency').value, 0);
+        state.purchase.qualityInspection = toInt(document.getElementById('quality-inspection').value, 0);
+        state.purchase.pickupPrep = toInt(document.getElementById('pickup-prep').value, 0);
         document.querySelectorAll('.section[data-site-key]').forEach(function(section) {
           var key = section.getAttribute('data-site-key');
           var config = state[key];
-          config.prepTime = toInt(section.querySelector('.site-prep').value, 0);
           config.shipFrequency = toInt(section.querySelector('.site-frequency').value, 0);
           config.logistics = Array.from(section.querySelectorAll('tbody tr')).map(function(row, index) {
-            var name = row.querySelector('.method-name').value.trim();
-            var days = toInt(row.querySelector('.method-days').value, 0);
+            var selectedKey = row.querySelector('.method-select').value;
+            var option = normalizeMethod(key, { key: selectedKey }, index);
             var old = config.logistics[index] || {};
             return {
               id: old.id != null ? old.id : index + 1,
-              key: old.key || ('method_' + key + '_' + Date.now().toString(36) + '_' + index),
-              name: name,
-              days: days,
-              leadTimeDays: days
+              key: option.key,
+              name: option.name,
+              days: option.days,
+              leadTimeDays: option.days
             };
           });
         });
@@ -365,7 +402,15 @@
           var key = add.getAttribute('data-site-key');
           var list = state[key].logistics;
           var nextId = list.reduce(function(max, item) { return Math.max(max, toInt(item.id, 0)); }, 0) + 1;
-          list.push({ id: nextId, key: 'method_' + key + '_' + nextId, name: '新增物流方式', days: 0, leadTimeDays: 0 });
+          var used = {};
+          list.forEach(function(item) {
+            used[item.key] = true;
+            used[item.name] = true;
+          });
+          var nextOption = (LOGISTICS_OPTIONS[key] || []).filter(function(option) {
+            return !used[option.key] && !used[option.name];
+          })[0] || (LOGISTICS_OPTIONS[key] || [])[0] || { key: 'method_' + key + '_' + nextId, name: '', days: 0 };
+          list.push({ id: nextId, key: nextOption.key, name: nextOption.name, days: nextOption.days, leadTimeDays: nextOption.days });
           render();
           return;
         }
@@ -376,6 +421,17 @@
           var index = toInt(del.closest('tr').getAttribute('data-index'), 0);
           state[section.getAttribute('data-site-key')].logistics.splice(index, 1);
           render();
+        }
+      });
+      document.getElementById('shipping-sections').addEventListener('change', function(e) {
+        var select = e.target.closest('.method-select');
+        if (!select) return;
+        var section = select.closest('.section[data-site-key]');
+        var option = normalizeMethod(section.getAttribute('data-site-key'), { key: select.value }, 0);
+        var days = select.closest('tr').querySelector('.method-days-display');
+        if (days) {
+          days.textContent = option.days;
+          days.setAttribute('data-days', option.days);
         }
       });
 
