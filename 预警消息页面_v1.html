@@ -294,13 +294,16 @@
     .sidebar-submenu-panel { position: fixed; left: 88px; top: 0; bottom: 0; width: 184px; background: #fff; border-right: 1px solid #e5e7eb; padding: 18px 14px; transform: translateX(-100%); opacity: 0; pointer-events: none; transition: transform 0.24s ease, opacity 0.2s ease; z-index: 1202; box-shadow: 4px 0 18px rgba(0, 0, 0, 0.07); }
     .sidebar-submenu-panel.open { transform: translateX(0); opacity: 1; pointer-events: auto; }
     .submenu-title { font-size: 24px; color: #111827; margin-bottom: 14px; }
+    .submenu-group-title { color: #909399; font-size: 14px; padding: 8px 10px 6px; margin-top: 6px; }
     .submenu-item { display: block; color: #374151; text-decoration: none; padding: 10px 10px; margin-bottom: 6px; border-radius: 8px; font-size: 14px; }
     .submenu-item:hover { background: #f3f4f6; }
     .submenu-item.active { background: #eef2ff; color: #2563eb; font-weight: 600; }
     .main-content { margin-left: 88px; transition: margin-left 0.2s ease; }
     .sidebar-backdrop { position: fixed; inset: 0; background: rgba(17, 24, 39, 0.32); opacity: 0; pointer-events: none; transition: opacity 0.2s ease; z-index: 1190; }
     .app-layout.submenu-open .sidebar-backdrop { opacity: 1; pointer-events: auto; }
+    .primary-item[data-submenu="system"],
     .primary-item[data-submenu="proto"],
+    #system-submenu,
     #proto-submenu {
       display: none !important;
     }
@@ -326,12 +329,13 @@
       <div class="sidebar-submenu-panel" id="replenish-submenu">
         <a class="submenu-item" href="./补货列表.html">补货列表</a>
         <a class="submenu-item" href="./备货建议.html">备货建议</a>
-      </div>
-      <div class="sidebar-submenu-panel" id="system-submenu">
-        <div class="submenu-title">系统配置</div>
+        <div class="submenu-group-title">补货规则配置</div>
         <a class="submenu-item" href="./基础参数配置.html">基础参数配置</a>
         <a class="submenu-item" href="./销量预测规则.html">销量预测规则</a>
         <a class="submenu-item" href="./备货规则配置.html">备货规则</a>
+      </div>
+      <div class="sidebar-submenu-panel" id="system-submenu">
+        <div class="submenu-title">系统配置</div>
       </div>
       <div class="sidebar-submenu-panel" id="proto-submenu">
         <div class="submenu-title">初始原型</div>
