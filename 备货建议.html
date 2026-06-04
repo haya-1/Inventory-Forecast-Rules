@@ -3757,10 +3757,13 @@
           ? (sorted.reduce(function(s, c) { return s + (c.baseSales || 0); }, 0) / sorted.length).toFixed(2)
           : '0';
         var coverDays = activeCoverageDays(item);
+        var inventoryTotal = sorted.reduce(function(sum, child) {
+          return sum + activeChildInventoryDeduction(child);
+        }, 0);
         return drawerCalcFilterBarHtml(item) +
           calcSegBlock('①', '每月销量', '日均 ≈ ' + dailyAvg + ' 件/天', seg1Head, seg1Rows, '', '', 'calc-sales-table') +
           calcSegBlock('②', '备货天数', '目标库存天数 ' + (coverDays ? formatNum(coverDays) + ' 天' : '-'), seg2Head, seg2Rows, '', '') +
-          calcSegBlock('③', '库存抵扣', '平台仓 / 物流在途 / 本地仓 / 采购在途', seg3Head, seg3Rows, '', '');
+          calcSegBlock('③', '库存抵扣', formatNum(inventoryTotal) + ' 件', seg3Head, seg3Rows, '', '');
       }
 
       function activeChildCoverageDays(child) {
