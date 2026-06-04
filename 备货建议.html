@@ -820,7 +820,7 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      min-width: 68px;
+      min-width: 86px;
       height: 24px;
       padding: 0 8px;
       border-radius: 4px;
@@ -1162,16 +1162,29 @@
       border: 1px solid #ebeef5;
       border-radius: 6px;
       background: #fff;
-      padding: 12px;
+      overflow: hidden;
     }
     .calc-seg:first-child { margin-top: 0; }
-    .seg-title {
-      display: flex;
+    .calc-seg-head {
+      width: 100%;
+      min-height: 56px;
+      border: none;
+      background: #fff;
+      display: grid;
+      grid-template-columns: 28px minmax(0, 1fr) auto 18px;
       align-items: center;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 10px;
-      font-size: 13px;
+      gap: 10px;
+      padding: 12px 16px;
+      text-align: left;
+      color: #303133;
+      cursor: pointer;
+    }
+    .calc-seg-head:hover {
+      background: #fafcff;
+    }
+    .calc-seg-title {
+      min-width: 0;
+      font-size: 14px;
       font-weight: 700;
       color: #303133;
     }
@@ -1179,8 +1192,8 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 20px;
-      height: 20px;
+      width: 28px;
+      height: 28px;
       border-radius: 50%;
       background: #409eff;
       color: #fff;
@@ -1189,7 +1202,34 @@
       line-height: 1;
       flex-shrink: 0;
     }
-    .seg-hint { font-weight: 400; font-size: 11.5px; color: #909399; }
+    .seg-hint {
+      color: #606266;
+      font-size: 13px;
+      font-weight: 400;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+    .calc-seg-arrow {
+      width: 9px;
+      height: 9px;
+      border-right: 2px solid #c0c4cc;
+      border-bottom: 2px solid #c0c4cc;
+      transform: rotate(-45deg);
+      transition: transform .18s ease;
+      justify-self: end;
+    }
+    .calc-seg.is-open .calc-seg-arrow {
+      transform: rotate(45deg);
+    }
+    .calc-seg-body {
+      display: none;
+      padding: 12px;
+      border-top: 1px solid #ebeef5;
+      background: #fff;
+    }
+    .calc-seg.is-open .calc-seg-body {
+      display: block;
+    }
     .sku-filter-bar { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; margin-bottom: 12px; }
     .sku-filter-bar .filter-item { display: flex; align-items: center; gap: 6px; }
     .sku-filter-bar .filter-label { color: #606266; font-size: 13px; white-space: nowrap; }
@@ -2448,6 +2488,15 @@
         return '库存扣减<span class="header-help" tabindex="0" title="' + escapeHtml(tip) + '" data-tip="' + escapeHtml(tip) + '">!</span>';
       }
 
+      function riskLevelTip() {
+        return 'A：必断货 = 最快物流也补不上；B：紧急补货 = 需立即安排最快物流；C：优先补货 = 有缓冲但需优先处理；D：常规可达 = 最慢物流也能补上';
+      }
+
+      function riskHeaderHtml(label) {
+        var tip = riskLevelTip();
+        return escapeHtml(label || '风险评级') + '<span class="header-help" tabindex="0" title="' + escapeHtml(tip) + '" data-tip="' + escapeHtml(tip) + '">!</span>';
+      }
+
       function sourceKeys() {
         return Object.keys(DATA_SOURCE_META);
       }
@@ -2916,22 +2965,22 @@
         var stockoutDay = childShipStockoutDay(child);
         var rescueDay = range.fastest + Math.max(0, toInt(child.shipFrequencyDays, 0));
         if (stockoutDay < range.fastest) {
-          return { level: 4, name: '必定断货', className: 'risk-critical', stockoutDay: stockoutDay };
+          return { level: 4, name: 'A：必断货', className: 'risk-critical', stockoutDay: stockoutDay };
         }
         if (stockoutDay < rescueDay) {
-          return { level: 3, name: '尽快补救', className: 'risk-high', stockoutDay: stockoutDay };
+          return { level: 3, name: 'B：紧急补货', className: 'risk-high', stockoutDay: stockoutDay };
         }
         if (stockoutDay < range.slowest) {
-          return { level: 2, name: '优先发货', className: 'risk-medium', stockoutDay: stockoutDay };
+          return { level: 2, name: 'C：优先补货', className: 'risk-medium', stockoutDay: stockoutDay };
         }
-        return { level: 1, name: '月内发货', className: 'risk-low', stockoutDay: stockoutDay };
+        return { level: 1, name: 'D：常规可达', className: 'risk-low', stockoutDay: stockoutDay };
       }
 
       function parentShipRisk(item) {
         var children = (item.childItems || []).filter(function(child) {
           return child.shipSuggestedQty > 0;
         });
-        if (!children.length) return { level: 1, name: '月内发货', className: 'risk-low', stockoutDay: null };
+        if (!children.length) return { level: 1, name: 'D：常规可达', className: 'risk-low', stockoutDay: null };
         return children.map(childShipRisk).sort(function(a, b) {
           return b.level - a.level || toInt(a.stockoutDay, 9999) - toInt(b.stockoutDay, 9999);
         })[0];
@@ -3358,7 +3407,10 @@
         document.getElementById('cycle-head').innerHTML = activeCycleLabel();
         document.getElementById('qty-head').textContent = activeQtyLabel();
         var riskHead = document.getElementById('risk-head');
-        if (riskHead) riskHead.style.display = activeSuggestionType === 'ship' ? '' : 'none';
+        if (riskHead) {
+          riskHead.innerHTML = riskHeaderHtml('风险评级');
+          riskHead.style.display = activeSuggestionType === 'ship' ? '' : 'none';
+        }
       }
 
       function generatedDocCount(item) {
@@ -3437,7 +3489,6 @@
               size: child.size,
               tagText: child.tagText,
               safetyDays: child.safetyDays,
-              risk: childShipRisk(child),
               arrivalDate: methodRow.arrivalDate || '-',
               cnAvailable: child.cnAvailable || 0,
               qty: methodRow.qty
@@ -3486,27 +3537,30 @@
       function renderContributionHtml(item) {
         var typeLabel = activeTypeLabel();
         var total = activeSuggestionQty(item) || 0;
+        var showRisk = activeSuggestionType === 'ship';
         var rows = item.childItems.map(function(child) {
-          return { sku: child.childSku, qty: activeChildSuggestedQty(child) };
+          return { sku: child.childSku, qty: activeChildSuggestedQty(child), risk: childShipRisk(child) };
         }).filter(function(row) { return row.qty > 0; })
           .sort(function(a, b) { return b.qty - a.qty; });
         var body = rows.map(function(row) {
           var pct = total > 0 ? Math.round(row.qty / total * 100) : 0;
           return '<tr>' +
             '<td><span class="sku-code">' + escapeHtml(row.sku) + '</span></td>' +
+            (showRisk ? '<td>' + riskTagHtml(row.risk) + '</td>' : '') +
             '<td class="num strong-num">' + formatNum(row.qty) + '</td>' +
             '<td class="num">' + pct + '%</td>' +
           '</tr>';
         }).join('');
         if (!rows.length) return '<div class="contrib-empty">暂无' + typeLabel + '建议量</div>';
         return scrollableTableWrap(
-          '<table class="detail-table contrib-table"><thead><tr><th>SKU</th><th class="num">建议总量</th><th class="num">占比</th></tr></thead><tbody>' + body + '</tbody></table>'
+          '<table class="detail-table contrib-table"><thead><tr><th>SKU</th>' +
+          (showRisk ? '<th>' + riskHeaderHtml('SKU风险') + '</th>' : '') +
+          '<th class="num">建议总量</th><th class="num">占比</th></tr></thead><tbody>' + body + '</tbody></table>'
         );
       }
 
       function docTableHeadHtml(qtyColName, withGap) {
         return '<th>SKU</th><th>seller-sku</th><th>条码</th><th class="num">' + escapeHtml(qtyColName) + '</th>' +
-          (withGap ? '<th>风险评级</th>' : '') +
           (withGap ? '<th class="num">缺口数量<span class="header-help" tabindex="0" title="缺口数量 = 发货建议量 − 本地仓可用库存" data-tip="缺口数量 = 发货建议量 − 本地仓可用库存">!</span></th>' : '');
       }
 
@@ -3521,7 +3575,6 @@
           '<td>' + escapeHtml(line.sellerSku || line.sku || '-') + '</td>' +
           '<td>' + escapeHtml(line.barcode || '-') + '</td>' +
           '<td class="num strong-num">' + formatNum(line.qty || 0) + ' 双</td>' +
-          (withGap ? '<td>' + riskTagHtml(line.risk) + '</td>' : '') +
           gapCell +
         '</tr>';
       }
@@ -3587,7 +3640,7 @@
         return map[value] || value;
       }
 
-      function calcSegBlock(segNo, title, hint, theadHtml, rowCells, footNoteHtml, tfootHtml, tableClass) {
+      function calcSegBlock(segNo, title, hint, theadHtml, rowCells, footNoteHtml, tfootHtml, tableClass, open) {
         var body = rowCells.map(function(cells, index) {
           return '<tr' + (index >= CALC_SEG_MAX ? ' class="calc-extra-row" hidden' : '') + '>' + cells + '</tr>';
         }).join('');
@@ -3595,12 +3648,18 @@
           ? '<button type="button" class="calc-more-btn" data-action="toggle-calc-rows">展开全部 ' + rowCells.length + ' 个 ▾</button>'
           : '';
         var tableClassName = 'detail-table calc-seg-tbl' + (tableClass ? ' ' + tableClass : '');
-        return '<div class="calc-seg">' +
-          '<div class="seg-title"><span class="seg-no">' + escapeHtml(calcStepNumber(segNo)) + '</span>' + escapeHtml(title) +
-            (hint ? '<span class="seg-hint">' + escapeHtml(hint) + '</span>' : '') + '</div>' +
-          '<div class="seg-tbl-wrap"><table class="' + tableClassName + '"><thead>' + theadHtml +
-            '</thead><tbody>' + body + '</tbody>' + (tfootHtml || '') + '</table></div>' +
-          (footNoteHtml || '') + more +
+        return '<div class="calc-seg' + (open ? ' is-open' : '') + '">' +
+          '<button type="button" class="calc-seg-head">' +
+            '<span class="seg-no">' + escapeHtml(calcStepNumber(segNo)) + '</span>' +
+            '<span class="calc-seg-title">' + escapeHtml(title) + '</span>' +
+            '<span class="seg-hint">' + escapeHtml(hint || '') + '</span>' +
+            '<span class="calc-seg-arrow" aria-hidden="true"></span>' +
+          '</button>' +
+          '<div class="calc-seg-body">' +
+            '<div class="seg-tbl-wrap"><table class="' + tableClassName + '"><thead>' + theadHtml +
+              '</thead><tbody>' + body + '</tbody>' + (tfootHtml || '') + '</table></div>' +
+            (footNoteHtml || '') + more +
+          '</div>' +
         '</div>';
       }
 
@@ -3873,7 +3932,7 @@
         var trend = buildSpuStockTrendData(item);
         return '<div class="forecast-chart-card drawer-stock-trend-card">' +
           '<div class="forecast-chart-head">' +
-            '<div class="forecast-chart-title">库存走势<span class="chart-spu-tag">SPU ' + escapeHtml(trend.spu) + '</span></div>' +
+            '<div class="forecast-chart-title">库存走势</div>' +
             '<div class="forecast-chart-meta">未来 ' + formatNum(trend.horizon) + ' 天 · 日均约 ' + formatNum(Math.round(trend.avgDaily)) + ' 双</div>' +
           '</div>' +
           '<div class="stock-trend-svg-wrap">' + renderStockTrendSvg(trend) + '</div>' +
@@ -4222,6 +4281,12 @@
         if (logicHead) {
           var step = logicHead.closest('.logic-step');
           if (step) step.classList.toggle('is-open');
+          return;
+        }
+        var calcSegHead = e.target.closest('.calc-seg-head');
+        if (calcSegHead) {
+          var calcSeg = calcSegHead.closest('.calc-seg');
+          if (calcSeg) calcSeg.classList.toggle('is-open');
           return;
         }
         var docHead = e.target.closest('.doc-card-head');

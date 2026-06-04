@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>补货系统 - 基础参数配置</title>
+  <link rel="stylesheet" href="./css/style.css">
+  <link rel="stylesheet" href="./css/sidebar.css">
+</head>
+<body data-sidebar-primary="replenish" data-sidebar-submenu="basic-params">
+  <div class="app-layout">
+    <div id="sidebar-root"></div>
+    <main class="main-content">
+      <div class="page-container">
+        <div class="card">
+          <div class="flex-between mb-md">
+            <div>
+              <h2 style="font-size: 18px; font-weight: 500; margin-bottom: 8px;">基础参数配置</h2>
+              <p class="text-secondary">配置采购与发货相关的时间参数，用于库存预测和补货计划计算。</p>
+            </div>
+            <div class="flex gap-sm" id="paramConfigFooter"></div>
+          </div>
+          <div id="paramConfigContainer"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="./js/mock-data.js"></script>
+  <script src="./js/common.js"></script>
+  <script src="./js/sidebar.js"></script>
+  <script src="./js/basic-params.js"></script>
+</body>
+</html>
