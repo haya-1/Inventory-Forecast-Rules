@@ -1644,8 +1644,8 @@
             <div class="settings-panel" >
               <label class="settings-checkbox">
                 <input type="checkbox" id="deduct-stockout-sales" checked />
-                建议量扣除必断货量
-                <span class="settings-info" title="扣除最快物流方式无法填补的断货期间的销量">ⓘ</span>
+                下单建议量扣除必断货量
+                <span class="settings-info" title="仅下单建议量扣除采购到货前无法挽回的断货损失；发货建议量不再扣除必断货量">ⓘ</span>
               </label>
             </div>
           </div>
@@ -2162,7 +2162,7 @@
           calculation: {
             annualPlanSource: true,
             forecastSalesSource: true,
-            deductStockoutSales: true
+            deductOrderStockoutSales: true
           }
         };
       }
@@ -2250,6 +2250,9 @@
         merged.fbaSafetyDays = toInt(form.fbaSafetyDays, d.fbaSafetyDays);
         merged.calculation = Object.assign({}, d.calculation, form.calculation || {});
         merged.calculation.annualPlanSource = true;
+        if (merged.calculation.deductOrderStockoutSales == null) {
+          merged.calculation.deductOrderStockoutSales = merged.calculation.deductStockoutSales !== false;
+        }
         merged.parentCodes = Array.isArray(form.parentCodes) ? form.parentCodes : [];
         merged.safetyAdjustments = normalizeSafetyAdjustments(form.safetyAdjustments);
         merged.logisticsSites = d.logisticsSites.map(function(site) {
@@ -2693,7 +2696,7 @@
           calculation: {
             annualPlanSource: true,
             forecastSalesSource: document.getElementById('source-forecast-sales').checked,
-            deductStockoutSales: document.getElementById('deduct-stockout-sales').checked
+            deductOrderStockoutSales: document.getElementById('deduct-stockout-sales').checked
           }
         });
       }
@@ -2727,7 +2730,7 @@
         setInputValue('fba-safety-days', form.fbaSafetyDays);
         setChecked('source-annual-plan', true);
         setChecked('source-forecast-sales', form.calculation.forecastSalesSource !== false);
-        setChecked('deduct-stockout-sales', form.calculation.deductStockoutSales !== false);
+        setChecked('deduct-stockout-sales', form.calculation.deductOrderStockoutSales !== false);
         selectedParents = (form.parentCodes || []).map(function(code) {
           var found = getParentList().filter(function(parent) { return parent.code === code; })[0];
           return found || { code: code, asin: '', platform: '', site: '', store: '', spu: '', owner: '', days: '' };

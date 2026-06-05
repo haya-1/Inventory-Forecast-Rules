@@ -2388,10 +2388,6 @@
         return activeSuggestionType === 'order' ? child.orderInventoryDeduction : child.shipInventoryDeduction;
       }
 
-      function activeChildDeduction(child) {
-        return activeSuggestionType === 'order' ? child.orderDeduction : child.shipDeduction;
-      }
-
       function inventoryDeductionChips(child) {
         var parts = [
           { label: 'FBA库存', value: child.fbaInventory },
@@ -2553,7 +2549,7 @@
                 { key: 'northAmerica', name: '北美站', enabled: true, shipFrequencyDays: 7, methods: [{ key: 'mason_regular', name: '美森正班', priority: 1, leadTimeDays: 37 }, { key: 'sea_standard', name: '普船', priority: 2, leadTimeDays: 57 }] },
                 { key: 'europe', name: '欧洲站', enabled: true, shipFrequencyDays: 7, methods: [{ key: 'sea_standard', name: '普船', priority: 1, leadTimeDays: 45 }, { key: 'air', name: '空运', priority: 2, leadTimeDays: 15 }] }
               ],
-              calculation: { deductStockoutSales: true }
+              calculation: { deductOrderStockoutSales: true }
             }
           },
           {
@@ -2568,7 +2564,7 @@
                 { key: 'northAmerica', name: '北美站', enabled: true, shipFrequencyDays: 7, methods: [{ key: 'mason_regular', name: '美森正班', priority: 1, leadTimeDays: 37 }, { key: 'sea_standard', name: '普船', priority: 2, leadTimeDays: 57 }] },
                 { key: 'europe', name: '欧洲站', enabled: true, shipFrequencyDays: 7, methods: [{ key: 'sea_standard', name: '普船', priority: 1, leadTimeDays: 45 }, { key: 'air', name: '空运', priority: 2, leadTimeDays: 15 }] }
               ],
-              calculation: { deductStockoutSales: true }
+              calculation: { deductOrderStockoutSales: true }
             }
           }
         ];
@@ -2621,8 +2617,16 @@
           },
           fbaSafetyDays: toInt(form.fbaSafetyDays, 28),
           logisticsSites: logisticsSites.length ? logisticsSites : defaultRules()[0].form.logisticsSites,
-          calculation: form.calculation || { deductStockoutSales: true }
+          calculation: form.calculation || { deductOrderStockoutSales: true }
         };
+      }
+
+      function orderStockoutDeductionEnabled(rule) {
+        var calculation = rule && rule.calculation ? rule.calculation : {};
+        if (calculation.deductOrderStockoutSales != null) {
+          return calculation.deductOrderStockoutSales !== false;
+        }
+        return calculation.deductStockoutSales !== false;
       }
 
       function siteGroup(site) {
@@ -3001,19 +3005,17 @@
         return '<span class="risk-tag ' + escapeHtml(risk.className || 'risk-low') + '">' + escapeHtml(risk.name || '-') + '</span>';
       }
 
-      function makeSourceResult(shipForecastSum, orderForecastSum, shipInventoryDeduction, orderInventoryDeduction, shipDeduction, orderDeduction, factor) {
+      function makeSourceResult(shipForecastSum, orderForecastSum, shipInventoryDeduction, orderInventoryDeduction, orderDeduction, factor) {
         var sourceShipForecast = Math.round(shipForecastSum * factor);
         var sourceOrderForecast = Math.round(orderForecastSum * factor);
-        var sourceShipDeduction = Math.round(shipDeduction * factor);
         var sourceOrderDeduction = Math.round(orderDeduction * factor);
         return {
-          shipSuggestedQty: Math.max(0, Math.ceil(sourceShipForecast - shipInventoryDeduction - sourceShipDeduction)),
+          shipSuggestedQty: Math.max(0, Math.ceil(sourceShipForecast - shipInventoryDeduction)),
           orderSuggestedQty: Math.max(0, Math.ceil(sourceOrderForecast - orderInventoryDeduction - sourceOrderDeduction)),
           shipForecastSum: sourceShipForecast,
           orderForecastSum: sourceOrderForecast,
           shipInventoryDeduction: shipInventoryDeduction,
           orderInventoryDeduction: orderInventoryDeduction,
-          shipDeduction: sourceShipDeduction,
           orderDeduction: sourceOrderDeduction
         };
       }
@@ -3095,12 +3097,11 @@
         var projection = makeProjection(baseSales, fbaInventory, inboundDay, fbaInbound, Math.min(orderCoverageDays, 150));
         var shipForecastSum = forecastSum(baseSales, shipCoverageDays);
         var orderForecastSum = forecastSum(baseSales, orderCoverageDays);
-        var deductEnabled = rule.calculation.deductStockoutSales !== false;
-        var shipDeduction = deductEnabled ? stockoutDeduction(projection, shortestLeadTimeDays) : 0;
-        var orderDeduction = deductEnabled ? stockoutDeduction(projection, orderEarliestAvailableDays) : 0;
+        var orderDeductEnabled = orderStockoutDeductionEnabled(rule);
+        var orderDeduction = orderDeductEnabled ? stockoutDeduction(projection, orderEarliestAvailableDays) : 0;
         var shipInventoryDeduction = fbaInventory + fbaInbound;
         var orderInventoryDeduction = fbaInventory + fbaInbound + cnAvailable + purchaseInbound;
-        var shipSuggested = Math.max(0, Math.ceil(shipForecastSum - shipInventoryDeduction - shipDeduction));
+        var shipSuggested = Math.max(0, Math.ceil(shipForecastSum - shipInventoryDeduction));
         var orderSuggested = Math.max(0, Math.ceil(orderForecastSum - orderInventoryDeduction - orderDeduction));
         var forecastResult = {
           shipSuggestedQty: shipSuggested,
@@ -3109,7 +3110,6 @@
           orderForecastSum: orderForecastSum,
           shipInventoryDeduction: shipInventoryDeduction,
           orderInventoryDeduction: orderInventoryDeduction,
-          shipDeduction: shipDeduction,
           orderDeduction: orderDeduction
         };
         var annualFactor = [0.92, 1.06, 0.95, 1.1, 0.9, 1.04, 0.98, 1.08][sequence % 8];
@@ -3118,7 +3118,6 @@
           orderForecastSum,
           shipInventoryDeduction,
           orderInventoryDeduction,
-          shipDeduction,
           orderDeduction,
           annualFactor
         );
@@ -3165,7 +3164,6 @@
           orderForecastSum: annualResult.orderForecastSum,
           shipInventoryDeduction: annualResult.shipInventoryDeduction,
           orderInventoryDeduction: annualResult.orderInventoryDeduction,
-          shipDeduction: annualResult.shipDeduction,
           orderDeduction: annualResult.orderDeduction,
           fbaInventory: fbaInventory,
           fbaInbound: fbaInbound,
