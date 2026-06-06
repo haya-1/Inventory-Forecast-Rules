@@ -1,0 +1,1857 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>备货规则配置页面 — PRD</title>
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['\\(', '\\)']],
+        displayMath: [['\\[', '\\]']],
+        processEscapes: true
+      },
+      options: {
+        skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      },
+      startup: {
+        pageReady: () => MathJax.startup.defaultPageReady().then(() => {
+          document.documentElement.classList.add('math-ready');
+        })
+      }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f8fa;
+      --paper: #ffffff;
+      --ink: #24292f;
+      --muted: #57606a;
+      --subtle: #6e7781;
+      --border: #d8dee4;
+      --border-strong: #afb8c1;
+      --code-bg: #f6f8fa;
+      --code-ink: #0f172a;
+      --accent: #0969da;
+      --accent-soft: #ddf4ff;
+      --green: #1a7f37;
+      --amber: #9a6700;
+      --shadow: 0 12px 40px rgba(27, 31, 36, 0.08);
+      --sans: "Segoe UI", "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif;
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --serif: Cambria, "Times New Roman", "Noto Serif CJK SC", serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      text-size-adjust: 100%;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--sans);
+      font-size: 16px;
+      line-height: 1.72;
+      overflow-wrap: break-word;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .viewer {
+      display: grid;
+      grid-template-columns: minmax(252px, 304px) minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow: auto;
+      border-right: 1px solid var(--border);
+      background: #ffffff;
+      padding: 28px 20px 32px;
+    }
+
+    .sidebar-title {
+      margin: 0 0 4px;
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1.4;
+      color: var(--ink);
+    }
+
+    .sidebar-meta {
+      margin: 0 0 20px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .toc {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      border-top: 1px solid var(--border);
+      padding-top: 16px;
+    }
+
+    .toc-link {
+      display: block;
+      border-radius: 6px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+      padding: 6px 8px;
+    }
+
+    .toc-link:hover {
+      background: var(--code-bg);
+      color: var(--ink);
+      text-decoration: none;
+    }
+
+    .toc-link.active {
+      background: var(--accent-soft);
+      color: #0550ae;
+      font-weight: 650;
+    }
+
+    .toc-level-2 {
+      padding-left: 18px;
+    }
+
+    .toc-level-3 {
+      padding-left: 30px;
+      font-size: 12px;
+    }
+
+    main {
+      min-width: 0;
+      padding: 42px 28px 72px;
+    }
+
+    .markdown-body {
+      max-width: 940px;
+      margin: 0 auto;
+      background: var(--paper);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      padding: 48px 56px 60px;
+    }
+
+    .doc-kicker {
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .doc-kicker code {
+      color: var(--muted);
+      background: transparent;
+      border: 0;
+      padding: 0;
+      font-size: inherit;
+    }
+
+    .markdown-body > :first-child {
+      margin-top: 0;
+    }
+
+    .markdown-body h1,
+    .markdown-body h2,
+    .markdown-body h3,
+    .markdown-body h4,
+    .markdown-body h5,
+    .markdown-body h6 {
+      position: relative;
+      color: var(--ink);
+      font-weight: 700;
+      line-height: 1.32;
+      scroll-margin-top: 24px;
+      text-wrap: pretty;
+    }
+
+    .markdown-body h1 {
+      margin: 0 0 24px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--border);
+      font-size: 32px;
+      line-height: 1.25;
+    }
+
+    .markdown-body h2 {
+      margin: 42px 0 18px;
+      padding-bottom: 9px;
+      border-bottom: 1px solid var(--border);
+      font-size: 24px;
+    }
+
+    .markdown-body h3 {
+      margin: 30px 0 12px;
+      font-size: 19px;
+    }
+
+    .markdown-body h4 {
+      margin: 24px 0 10px;
+      font-size: 16px;
+    }
+
+    .markdown-body h5,
+    .markdown-body h6 {
+      margin: 20px 0 8px;
+      font-size: 15px;
+      color: var(--muted);
+    }
+
+    .heading-anchor {
+      position: absolute;
+      left: -24px;
+      width: 20px;
+      color: var(--border-strong);
+      opacity: 0;
+      font-weight: 600;
+      text-align: center;
+      text-decoration: none;
+    }
+
+    h1:hover .heading-anchor,
+    h2:hover .heading-anchor,
+    h3:hover .heading-anchor,
+    h4:hover .heading-anchor,
+    h5:hover .heading-anchor,
+    h6:hover .heading-anchor {
+      opacity: 1;
+    }
+
+    .markdown-body p,
+    .markdown-body blockquote,
+    .markdown-body ul,
+    .markdown-body ol,
+    .markdown-body dl,
+    .markdown-body table,
+    .markdown-body pre {
+      margin-top: 0;
+      margin-bottom: 16px;
+    }
+
+    .markdown-body p {
+      text-wrap: pretty;
+    }
+
+    .markdown-body strong {
+      font-weight: 700;
+      color: #111827;
+    }
+
+    .markdown-body ul,
+    .markdown-body ol {
+      padding-left: 1.65em;
+    }
+
+    .markdown-body li + li {
+      margin-top: 4px;
+    }
+
+    .markdown-body hr {
+      height: 1px;
+      margin: 32px 0;
+      background: var(--border);
+      border: 0;
+    }
+
+    .markdown-body blockquote {
+      border-left: 4px solid var(--border-strong);
+      background: #f6f8fa;
+      color: var(--muted);
+      padding: 12px 16px;
+      border-radius: 0 6px 6px 0;
+    }
+
+    .markdown-body blockquote > :last-child {
+      margin-bottom: 0;
+    }
+
+    .markdown-body table {
+      display: block;
+      width: 100%;
+      overflow-x: auto;
+      border-collapse: collapse;
+      border-spacing: 0;
+      font-size: 14px;
+      line-height: 1.58;
+    }
+
+    .markdown-body table th,
+    .markdown-body table td {
+      border: 1px solid var(--border);
+      padding: 8px 12px;
+      vertical-align: top;
+    }
+
+    .markdown-body table th {
+      background: #f6f8fa;
+      color: var(--ink);
+      font-weight: 700;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    .markdown-body table tr:nth-child(2n) td {
+      background: #fbfcfd;
+    }
+
+    .markdown-body code,
+    .markdown-body tt {
+      border: 1px solid rgba(175, 184, 193, 0.35);
+      border-radius: 5px;
+      background: var(--code-bg);
+      color: var(--code-ink);
+      font-family: var(--mono);
+      font-size: 0.88em;
+      padding: 0.16em 0.38em;
+    }
+
+    .markdown-body pre {
+      overflow: auto;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      background: var(--code-bg);
+      color: var(--code-ink);
+      padding: 14px 16px;
+      line-height: 1.55;
+    }
+
+    .markdown-body pre code {
+      display: block;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      padding: 0;
+      font-size: 13px;
+      white-space: pre;
+    }
+
+    .math-block {
+      overflow-x: auto;
+      margin: 18px 0;
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--green);
+      border-radius: 7px;
+      background: #f8faf8;
+      color: #172a1c;
+      padding: 16px 18px;
+      font-family: var(--serif);
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .math-inline {
+      border-radius: 4px;
+      background: #f8faf8;
+      color: #172a1c;
+      font-family: var(--serif);
+      padding: 0 0.18em;
+      white-space: nowrap;
+    }
+
+    .math-ready .math-block,
+    .math-ready .math-inline {
+      background: transparent;
+      border-color: transparent;
+      color: inherit;
+      padding-left: 0;
+      padding-right: 0;
+    }
+
+    .markdown-body img {
+      max-width: 100%;
+      border-radius: 6px;
+    }
+
+    .markdown-body kbd {
+      display: inline-block;
+      border: 1px solid var(--border-strong);
+      border-bottom-width: 2px;
+      border-radius: 5px;
+      background: #f6f8fa;
+      padding: 2px 5px;
+      font-family: var(--mono);
+      font-size: 0.85em;
+      line-height: 1.2;
+    }
+
+    @media (max-width: 980px) {
+      .viewer {
+        display: block;
+      }
+
+      .sidebar {
+        position: static;
+        height: auto;
+        max-height: 42vh;
+        overflow: auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .toc {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      }
+
+      main {
+        padding: 24px 14px 48px;
+      }
+
+      .markdown-body {
+        padding: 32px 24px 42px;
+      }
+
+      .heading-anchor {
+        display: none;
+      }
+    }
+
+    @media (max-width: 560px) {
+      body {
+        font-size: 15px;
+      }
+
+      .sidebar {
+        padding: 22px 16px;
+      }
+
+      .markdown-body {
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+        padding: 26px 18px 36px;
+      }
+
+      .markdown-body h1 {
+        font-size: 26px;
+      }
+
+      .markdown-body h2 {
+        font-size: 21px;
+      }
+    }
+
+    @media print {
+      body {
+        background: #fff;
+      }
+
+      .viewer {
+        display: block;
+      }
+
+      .sidebar {
+        display: none;
+      }
+
+      main {
+        padding: 0;
+      }
+
+      .markdown-body {
+        max-width: none;
+        border: 0;
+        box-shadow: none;
+        padding: 0;
+      }
+
+      .markdown-body h1,
+      .markdown-body h2,
+      .markdown-body h3 {
+        break-after: avoid;
+      }
+
+      .markdown-body table,
+      .markdown-body pre,
+      .math-block {
+        break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="viewer">
+    <aside class="sidebar" aria-label="文档目录">
+      <p class="sidebar-title">备货规则配置页面 — PRD</p>
+      <p class="sidebar-meta">源文件：<code>prd/备货规则配置页面需求.md</code><br>更新：2026年6月6日 16:25</p>
+      <nav class="toc">
+<a class="toc-link toc-level-1" href="#备货规则配置页面-prd">备货规则配置页面 — PRD</a>
+<a class="toc-link toc-level-2" href="#1-背景与目标">1. 背景与目标</a>
+<a class="toc-link toc-level-2" href="#2-页面定位">2. 页面定位</a>
+<a class="toc-link toc-level-2" href="#3-功能范围">3. 功能范围</a>
+<a class="toc-link toc-level-3" href="#31-本期范围">3.1 本期范围</a>
+<a class="toc-link toc-level-2" href="#4-依赖关系">4. 依赖关系</a>
+<a class="toc-link toc-level-2" href="#5-页面结构">5. 页面结构</a>
+<a class="toc-link toc-level-2" href="#6-规则基础信息">6. 规则基础信息</a>
+<a class="toc-link toc-level-3" href="#61-字段">6.1 字段</a>
+<a class="toc-link toc-level-3" href="#62-交互">6.2 交互</a>
+<a class="toc-link toc-level-3" href="#63-目标库存天数实时预览">6.3 目标库存天数实时预览</a>
+<a class="toc-link toc-level-2" href="#7-适用范围">7. 适用范围</a>
+<a class="toc-link toc-level-3" href="#71-字段">7.1 字段</a>
+<a class="toc-link toc-level-3" href="#72-规则">7.2 规则</a>
+<a class="toc-link toc-level-2" href="#8-采购时效">8. 采购时效</a>
+<a class="toc-link toc-level-3" href="#81-字段">8.1 字段</a>
+<a class="toc-link toc-level-3" href="#82-计算口径">8.2 计算口径</a>
+<a class="toc-link toc-level-3" href="#83-校验">8.3 校验</a>
+<a class="toc-link toc-level-2" href="#9-fba-安全库存">9. FBA 安全库存</a>
+<a class="toc-link toc-level-3" href="#91-字段">9.1 字段</a>
+<a class="toc-link toc-level-3" href="#92-业务含义">9.2 业务含义</a>
+<a class="toc-link toc-level-3" href="#93-校验">9.3 校验</a>
+<a class="toc-link toc-level-2" href="#10-安全库存天数调整">10. 安全库存天数调整</a>
+<a class="toc-link toc-level-3" href="#101-规则说明">10.1 规则说明</a>
+<a class="toc-link toc-level-3" href="#102-配置维度">10.2 配置维度</a>
+<a class="toc-link toc-level-3" href="#103-示例">10.3 示例</a>
+<a class="toc-link toc-level-3" href="#104-交互">10.4 交互</a>
+<a class="toc-link toc-level-2" href="#11-直发物流时效">11. 直发物流时效</a>
+<a class="toc-link toc-level-3" href="#111-业务链路">11.1 业务链路</a>
+<a class="toc-link toc-level-3" href="#112-字段">11.2 字段</a>
+<a class="toc-link toc-level-3" href="#113-默认配置示例">11.3 默认配置示例</a>
+<a class="toc-link toc-level-3" href="#114-交互">11.4 交互</a>
+<a class="toc-link toc-level-3" href="#115-多运输方式计算口径">11.5 多运输方式计算口径</a>
+<a class="toc-link toc-level-3" href="#116-校验">11.6 校验</a>
+<a class="toc-link toc-level-2" href="#12-计算设置">12. 计算设置</a>
+<a class="toc-link toc-level-3" href="#121-字段">12.1 字段</a>
+<a class="toc-link toc-level-3" href="#122-业务含义">12.2 业务含义</a>
+<a class="toc-link toc-level-2" href="#13-发货建议量">13. 发货建议量</a>
+<a class="toc-link toc-level-3" href="#131-业务含义">13.1 业务含义</a>
+<a class="toc-link toc-level-3" href="#132-覆盖天数">13.2 覆盖天数</a>
+<a class="toc-link toc-level-3" href="#133-多运输方式优先级分配">13.3 多运输方式优先级分配</a>
+<a class="toc-link toc-level-3" href="#134-计算公式">13.4 计算公式</a>
+<a class="toc-link toc-level-3" href="#135-库存扣减口径">13.5 库存扣减口径</a>
+<a class="toc-link toc-level-2" href="#14-下单建议量">14. 下单建议量</a>
+<a class="toc-link toc-level-3" href="#141-业务含义">14.1 业务含义</a>
+<a class="toc-link toc-level-3" href="#142-覆盖天数">14.2 覆盖天数</a>
+<a class="toc-link toc-level-3" href="#143-多运输方式优先级分配">14.3 多运输方式优先级分配</a>
+<a class="toc-link toc-level-3" href="#144-计算公式">14.4 计算公式</a>
+<a class="toc-link toc-level-3" href="#145-库存扣减口径">14.5 库存扣减口径</a>
+<a class="toc-link toc-level-2" href="#15-库存投影与断货风险边界">15. 库存投影与断货风险边界</a>
+<a class="toc-link toc-level-3" href="#151-推导方式">15.1 推导方式</a>
+<a class="toc-link toc-level-3" href="#152-计算公式">15.2 计算公式</a>
+<a class="toc-link toc-level-3" href="#153-展示要求">15.3 展示要求</a>
+<a class="toc-link toc-level-2" href="#16-异常提示">16. 异常提示</a>
+<a class="toc-link toc-level-3" href="#161-建议量小于等于-0">16.1 建议量小于等于 0</a>
+<a class="toc-link toc-level-3" href="#162-断货风险提示边界">16.2 断货风险提示边界</a>
+<a class="toc-link toc-level-3" href="#163-远期库存风险边界">16.3 远期库存风险边界</a>
+<a class="toc-link toc-level-2" href="#17-保存数据建议">17. 保存数据建议</a>
+<a class="toc-link toc-level-2" href="#18-输出结果建议">18. 输出结果建议</a>
+<a class="toc-link toc-level-2" href="#19-验收标准">19. 验收标准</a>
+<a class="toc-link toc-level-3" href="#191-配置验收">19.1 配置验收</a>
+<a class="toc-link toc-level-3" href="#192-计算验收">19.2 计算验收</a>
+<a class="toc-link toc-level-3" href="#193-提示验收">19.3 提示验收</a>
+<a class="toc-link toc-level-2" href="#20-待确认项">20. 待确认项</a>
+<a class="toc-link toc-level-2" href="#21-修订记录">21. 修订记录</a>
+      </nav>
+    </aside>
+    <main>
+      <article class="markdown-body">
+        <p class="doc-kicker">源文件：<code>prd/备货规则配置页面需求.md</code> · 更新：2026年6月6日 16:25</p>
+<h1 id="备货规则配置页面-prd"><a class="heading-anchor" href="#备货规则配置页面-prd" aria-label="Link to 备货规则配置页面 — PRD">#</a>备货规则配置页面 — PRD</h1>
+<h2 id="1-背景与目标"><a class="heading-anchor" href="#1-背景与目标" aria-label="Link to 1. 背景与目标">#</a>1. 背景与目标</h2>
+<p>备货规则配置页面用于配置补货建议量的计算参数，使系统能够基于从计算日开始的每日预测销量、采购时效、物流时效、安全库存天数和库存状态，输出可解释的发货建议量与下单建议量。</p>
+<p>本页面的核心目标是：</p>
+<ul>
+<li>建立一套清晰、可配置、可追溯的备货规则。</li>
+<li>将销量预测模块输出的从计算日开始的每日预测销量曲线用于备货计算。</li>
+<li>支持分别计算「发货建议量」与「下单建议量」。</li>
+<li>在建议量异常时给出明确提示，帮助用户识别断货风险或库存积压风险。</li>
+</ul>
+<hr>
+<h2 id="2-页面定位"><a class="heading-anchor" href="#2-页面定位" aria-label="Link to 2. 页面定位">#</a>2. 页面定位</h2>
+<p>页面名称：</p>
+<pre><code class="language-text">备货规则配置
+</code></pre>
+<p>页面用途：</p>
+<pre><code class="language-text">配置补货建议量计算所需的规则参数，并提供覆盖天数拆解、计算公式说明和异常提示说明。
+</code></pre>
+<p>适用对象：</p>
+<ul>
+<li>产品运营</li>
+<li>供应链计划人员</li>
+<li>采购计划人员</li>
+<li>补货策略配置人员</li>
+</ul>
+<hr>
+<h2 id="3-功能范围"><a class="heading-anchor" href="#3-功能范围" aria-label="Link to 3. 功能范围">#</a>3. 功能范围</h2>
+<h3 id="31-本期范围"><a class="heading-anchor" href="#31-本期范围" aria-label="Link to 3.1 本期范围">#</a>3.1 本期范围</h3>
+<p>本期页面支持配置：</p>
+<ul>
+<li>规则基础信息。</li>
+<li>规则适用范围。</li>
+<li>采购时效参数。</li>
+<li>FBA 默认安全天数。</li>
+<li>安全库存天数调整规则。</li>
+<li>直发物流时效。</li>
+<li>发货建议量与下单建议量计算公式说明。</li>
+</ul>
+<hr>
+<h2 id="4-依赖关系"><a class="heading-anchor" href="#4-依赖关系" aria-label="Link to 4. 依赖关系">#</a>4. 依赖关系</h2>
+<p>备货规则依赖销量预测模块输出的从计算日开始的每日预测销量：</p>
+<div class="math-block">\[\hat{a}_{D}, \hat{a}_{D+1}, \ldots, \hat{a}_{D+n-1}\]</div>
+<p>其中：</p>
+<table>
+<thead>
+<tr>
+<th>符号</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><span class="math-inline">\(D\)</span></td>
+<td>计算日 / 决策日</td>
+</tr>
+<tr>
+<td><span class="math-inline">\(\hat{a}_{D+i}\)</span></td>
+<td>从计算日起第 <span class="math-inline">\(i+1\)</span> 个自然日的预测日销量，<span class="math-inline">\(i\)</span> 从 0 开始</td>
+</tr>
+<tr>
+<td><span class="math-inline">\(N\)</span></td>
+<td>当前备货场景的覆盖天数</td>
+</tr>
+</tbody></table>
+<p>预测销量求和：</p>
+<div class="math-block">\[F(N) = \sum_{i=0}^{N-1} \hat{a}_{D+i}\]</div>
+<p>积分区间固定为：</p>
+<pre><code class="language-text">D ~ D+N-1
+</code></pre>
+<p>示例：</p>
+<pre><code class="language-text">覆盖天数 = 70 天
+预测销量求和 = Σ forecastSales(D ... D+69)
+</code></pre>
+<hr>
+<h2 id="5-页面结构"><a class="heading-anchor" href="#5-页面结构" aria-label="Link to 5. 页面结构">#</a>5. 页面结构</h2>
+<p>页面建议按以下模块组织：</p>
+<ol>
+<li>规则基础信息</li>
+<li>目标库存天数实时预览</li>
+<li>适用范围</li>
+<li>采购时效</li>
+<li>FBA 安全库存</li>
+<li>安全库存天数调整</li>
+<li>直发物流时效</li>
+<li>建议量计算设置</li>
+<li>保存与校验</li>
+</ol>
+<hr>
+<h2 id="6-规则基础信息"><a class="heading-anchor" href="#6-规则基础信息" aria-label="Link to 6. 规则基础信息">#</a>6. 规则基础信息</h2>
+<h3 id="61-字段"><a class="heading-anchor" href="#61-字段" aria-label="Link to 6.1 字段">#</a>6.1 字段</h3>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>类型</th>
+<th>必填</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>规则名称</td>
+<td>文本</td>
+<td>是</td>
+<td>用户自定义备货规则名称</td>
+</tr>
+<tr>
+<td>规则编码</td>
+<td>文本 / 系统生成</td>
+<td>是</td>
+<td>用于唯一识别规则</td>
+</tr>
+<tr>
+<td>规则状态</td>
+<td>开关</td>
+<td>是</td>
+<td>启用 / 停用</td>
+</tr>
+<tr>
+<td>备注</td>
+<td>文本</td>
+<td>否</td>
+<td>规则说明</td>
+</tr>
+</tbody></table>
+<h3 id="62-交互"><a class="heading-anchor" href="#62-交互" aria-label="Link to 6.2 交互">#</a>6.2 交互</h3>
+<ul>
+<li>新增规则时，规则状态默认启用。</li>
+<li>停用规则不参与补货建议量计算。</li>
+<li>规则编码可由系统生成，用户不可编辑。</li>
+</ul>
+<h3 id="63-目标库存天数实时预览"><a class="heading-anchor" href="#63-目标库存天数实时预览" aria-label="Link to 6.3 目标库存天数实时预览">#</a>6.3 目标库存天数实时预览</h3>
+<p>基础信息下方展示「目标库存天数（按当前配置实时预览）」卡片，用于让用户在配置阶段理解当前规则会形成多长的目标库存周期。</p>
+<p>预览分为两个动作：</p>
+<pre><code class="language-text">采购目标库存天数 =
+生产周期 + 质检 + 提货准备 + 最长物流时效 + 安全天数 + 采购频率
+
+发货目标库存天数 =
+最长物流时效 + 安全天数 + 发货频率
+</code></pre>
+<p>说明：</p>
+<ul>
+<li>生产周期默认展示为 30 天，实际计算时取自 PLM 或基础参数来源。</li>
+<li>质检、提货准备、采购频率、发货频率由「基础参数配置」维护，备货规则页只读展示。</li>
+<li>最长物流时效取当前规则物流时效页签中已配置物流方式的最大时效。</li>
+<li>安全天数取当前默认安全天数；实际子体计算时仍以子体最终安全天数为准。</li>
+<li>当用户调整默认安全天数、物流方式、物流优先级或基础参数回填值时，预览需实时刷新。</li>
+</ul>
+<p>示例：</p>
+<pre><code class="language-text">生产周期 30 + 质检 2 + 提货准备 3 + 最长物流 57 + 安全天数 28 + 采购频率 15 = 135 天
+最长物流 57 + 安全天数 28 + 发货频率 7 = 92 天
+</code></pre>
+<hr>
+<h2 id="7-适用范围"><a class="heading-anchor" href="#7-适用范围" aria-label="Link to 7. 适用范围">#</a>7. 适用范围</h2>
+<h3 id="71-字段"><a class="heading-anchor" href="#71-字段" aria-label="Link to 7.1 字段">#</a>7.1 字段</h3>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>类型</th>
+<th>是否必填</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>指定父体</td>
+<td>选择器</td>
+<td>否</td>
+<td>可选择当前作用父体；未选择时暂不绑定指定父体</td>
+</tr>
+</tbody></table>
+<h3 id="72-规则"><a class="heading-anchor" href="#72-规则" aria-label="Link to 7.2 规则">#</a>7.2 规则</h3>
+<ul>
+<li>选择指定父体时，限定一个父体只能绑定一种备货规则。</li>
+<li>未选择指定父体时，规则允许保存，但不与具体父体建立绑定。</li>
+</ul>
+<hr>
+<h2 id="8-采购时效"><a class="heading-anchor" href="#8-采购时效" aria-label="Link to 8. 采购时效">#</a>8. 采购时效</h2>
+<h3 id="81-字段"><a class="heading-anchor" href="#81-字段" aria-label="Link to 8.1 字段">#</a>8.1 字段</h3>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>类型</th>
+<th>默认值</th>
+<th>必填</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>采购频率</td>
+<td>只读数字</td>
+<td>15 天</td>
+<td>是</td>
+<td>下一次采购机会间隔，由基础参数配置维护</td>
+</tr>
+<tr>
+<td>采购交期 / 生产周期</td>
+<td>只读数字</td>
+<td>30 天</td>
+<td>是</td>
+<td>从下单到供应端交付的周期，实际可取自 PLM 或基础参数</td>
+</tr>
+<tr>
+<td>提货准备</td>
+<td>只读数字</td>
+<td>3 天</td>
+<td>是</td>
+<td>到货后可发货前的准备时间，由基础参数配置维护</td>
+</tr>
+<tr>
+<td>质检</td>
+<td>只读数字</td>
+<td>2 天</td>
+<td>是</td>
+<td>到货后质检处理时间，由基础参数配置维护</td>
+</tr>
+</tbody></table>
+<h3 id="82-计算口径"><a class="heading-anchor" href="#82-计算口径" aria-label="Link to 8.2 计算口径">#</a>8.2 计算口径</h3>
+<p>为避免将「本次下单多久能形成可发货库存」与「下一次采购机会间隔」混淆，采购相关时间拆分为两个口径：</p>
+<pre><code class="language-text">采购交付提前期 = 采购交期 + 提货准备 + 质检
+&lt;!-- 人工注释：目前暂时没有直接使用&quot;采购交付提前期&quot;的公式，基本都是&quot;采购周期覆盖天数&quot;参与计算 --&gt;
+</code></pre>
+<pre><code class="language-text">采购周期覆盖天数 = 采购交付提前期 + 采购频率
+</code></pre>
+<p>其中：</p>
+<ul>
+<li>采购交付提前期表示本次下单后，货物最早可进入 CN 仓 / 本地仓可发状态所需的时间。</li>
+<li>采购频率表示下一次采购机会间隔，不代表本次下单的交付时间，但需要纳入下单建议量的覆盖周期。</li>
+<li>页面需实时展示采购交付提前期和采购周期覆盖天数两个汇总值；若采用目标库存天数预览卡片，则以采购目标库存天数公式展示给用户。</li>
+</ul>
+<p>示例：</p>
+<pre><code class="language-text">采购交付提前期 = 30 + 3 + 2 = 35 天
+采购周期覆盖天数 = 35 + 15 = 50 天
+</code></pre>
+<p>后续公式中，如无特别说明，「采购周期覆盖天数」用于下单覆盖天数，「采购交付提前期」用于判断本次下单动作的最早生效时间。</p>
+<h3 id="83-校验"><a class="heading-anchor" href="#83-校验" aria-label="Link to 8.3 校验">#</a>8.3 校验</h3>
+<ul>
+<li>采购交期、提货准备、质检由 PLM 或基础参数配置维护，本页只读展示。</li>
+<li>基础参数回填到本页时，采购交期、提货准备、质检必须为大于等于 0 的整数。</li>
+<li>采购频率由基础参数配置维护；若配置为 0，需明确解释为「可随时下单，无固定采购间隔」。</li>
+<li>建议配置合理上限，例如不超过 365 天。</li>
+<li>若输入为空，保存时需提示用户补全。</li>
+</ul>
+<hr>
+<h2 id="9-fba-安全库存"><a class="heading-anchor" href="#9-fba-安全库存" aria-label="Link to 9. FBA 安全库存">#</a>9. FBA 安全库存</h2>
+<h3 id="91-字段"><a class="heading-anchor" href="#91-字段" aria-label="Link to 9.1 字段">#</a>9.1 字段</h3>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>类型</th>
+<th>默认值</th>
+<th>必填</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>FBA 默认安全天数</td>
+<td>数字</td>
+<td>28 天</td>
+<td>是</td>
+<td>未命中安全库存调整条件时使用</td>
+</tr>
+</tbody></table>
+<h3 id="92-业务含义"><a class="heading-anchor" href="#92-业务含义" aria-label="Link to 9.2 业务含义">#</a>9.2 业务含义</h3>
+<p>FBA 默认安全天数表示 FBA 端需要保持的最低库存缓冲天数，用于抵御销量波动、物流延误等风险。</p>
+<h3 id="93-校验"><a class="heading-anchor" href="#93-校验" aria-label="Link to 9.3 校验">#</a>9.3 校验</h3>
+<ul>
+<li>必须为大于等于 0 的整数。</li>
+<li>建议配置合理上限，例如不超过 180 天。</li>
+</ul>
+<hr>
+<h2 id="10-安全库存天数调整"><a class="heading-anchor" href="#10-安全库存天数调整" aria-label="Link to 10. 安全库存天数调整">#</a>10. 安全库存天数调整</h2>
+<h3 id="101-规则说明"><a class="heading-anchor" href="#101-规则说明" aria-label="Link to 10.1 规则说明">#</a>10.1 规则说明</h3>
+<p>当父体 / SKU 命中多个安全库存条件时，最终安全天数取所有命中条件中的最高值：</p>
+<pre><code class="language-text">最终安全天数 = max(默认安全天数, 所有命中条件安全天数)
+</code></pre>
+<p>不按优先级覆盖，不叠加。</p>
+<h3 id="102-配置维度"><a class="heading-anchor" href="#102-配置维度" aria-label="Link to 10.2 配置维度">#</a>10.2 配置维度</h3>
+<p>安全库存天数调整按「分类」独立配置。每个分类可单独启用 / 停用，并可在分类下维护多条条件。系统根据父体 / SKU 命中的条件取最高安全天数。</p>
+<table>
+<thead>
+<tr>
+<th>分类</th>
+<th>默认条件</th>
+<th>默认安全天数</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>销售层级</td>
+<td>A - 爆款</td>
+<td>45 天</td>
+<td>补货激进</td>
+</tr>
+<tr>
+<td>销售层级</td>
+<td>B - 旺款</td>
+<td>28 天</td>
+<td>补货稳健</td>
+</tr>
+<tr>
+<td>销售层级</td>
+<td>C - 利润款</td>
+<td>20 天</td>
+<td>补货保守</td>
+</tr>
+<tr>
+<td>生命周期</td>
+<td>新品（0-3个月）</td>
+<td>45 天</td>
+<td>新品爬坡期，降低早期断货风险</td>
+</tr>
+<tr>
+<td>生命周期</td>
+<td>新品（3-9个月）</td>
+<td>32 天</td>
+<td>新品爬坡期，降低早期断货风险</td>
+</tr>
+<tr>
+<td>生命周期</td>
+<td>老品（9个月以上）</td>
+<td>20 天</td>
+<td>新品爬坡期，降低早期断货风险</td>
+</tr>
+<tr>
+<td>颜色标签</td>
+<td>主色</td>
+<td>45 天</td>
+<td>核心颜色，优先保障库存</td>
+</tr>
+<tr>
+<td>颜色标签</td>
+<td>次色</td>
+<td>28 天</td>
+<td>常规颜色，按稳健安全天数覆盖</td>
+</tr>
+<tr>
+<td>流量</td>
+<td>OR 自然流量 ASIN</td>
+<td>45 天</td>
+<td>自然流量入口，优先保障库存</td>
+</tr>
+<tr>
+<td>流量</td>
+<td>AD 广告流量 ASIN</td>
+<td>28 天</td>
+<td>广告承接款，按稳健安全天数覆盖</td>
+</tr>
+</tbody></table>
+<p>分类配置要求：</p>
+<ul>
+<li>销售层级、生命周期、颜色标签、流量为彼此独立的配置分类。</li>
+<li>每个分类均支持独立启用 / 停用。</li>
+<li>每个分类下均支持新增、编辑、删除条件行。</li>
+<li>条件名称为下拉选项，不支持自由文本输入。</li>
+<li>每条条件至少包含条件名称、安全天数、启用状态。</li>
+<li>同一分类下条件名称不允许重复。</li>
+<li>当某分类下所有可选条件均已添加时，新增条件入口置灰或隐藏。</li>
+<li>停用的分类或条件不参与最终安全天数计算。</li>
+</ul>
+<p>默认下拉选项：</p>
+<table>
+<thead>
+<tr>
+<th>分类</th>
+<th>条件名称下拉选项</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>销售层级</td>
+<td>A - 爆款、B - 旺款、C - 利润款</td>
+</tr>
+<tr>
+<td>生命周期</td>
+<td>新品（0-3个月）、新品（3-9个月）、老品（9个月以上）</td>
+</tr>
+<tr>
+<td>颜色标签</td>
+<td>主色、次色、边缘色、淘汰色</td>
+</tr>
+<tr>
+<td>流量</td>
+<td>OR 自然流量 ASIN、AD 广告流量 ASIN</td>
+</tr>
+</tbody></table>
+<p>本期默认仅提供上表中的条件名称选项。若后续需要新增其他选项，需先扩展对应分类的条件字典，再允许用户在页面中选择。</p>
+<h3 id="103-示例"><a class="heading-anchor" href="#103-示例" aria-label="Link to 10.3 示例">#</a>10.3 示例</h3>
+<p>某 SKU 命中：</p>
+<table>
+<thead>
+<tr>
+<th>命中条件</th>
+<th>安全天数</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>B - 旺款</td>
+<td>28 天</td>
+</tr>
+<tr>
+<td>新品（0-3 月）</td>
+<td>45 天</td>
+</tr>
+<tr>
+<td>AD 广告流量 ASIN</td>
+<td>28 天</td>
+</tr>
+</tbody></table>
+<p>最终安全天数：</p>
+<pre><code class="language-text">max(28, 45, 28) = 45 天
+</code></pre>
+<h3 id="104-交互"><a class="heading-anchor" href="#104-交互" aria-label="Link to 10.4 交互">#</a>10.4 交互</h3>
+<ul>
+<li>各安全天数调整维度可独立启用 / 停用。</li>
+<li>用户在分类下新增条件时，先从该分类的条件名称下拉选项中选择条件，再配置安全天数和启用状态。</li>
+<li>条件名称下拉选项按分类过滤，不允许跨分类选择。</li>
+<li>分类停用时，该分类下全部条件不参与最终安全天数计算。</li>
+<li>条件停用时，仅该条件不参与最终安全天数计算。</li>
+<li>页面需在每个分类内展示条件列表、启用状态、安全天数和操作入口。</li>
+</ul>
+<hr>
+<h2 id="11-直发物流时效"><a class="heading-anchor" href="#11-直发物流时效" aria-label="Link to 11. 直发物流时效">#</a>11. 直发物流时效</h2>
+<h3 id="111-业务链路"><a class="heading-anchor" href="#111-业务链路" aria-label="Link to 11.1 业务链路">#</a>11.1 业务链路</h3>
+<p>本期仅支持直发链路：</p>
+<pre><code class="language-text">CN 仓 / 本地仓 → FBA 仓
+</code></pre>
+<h3 id="112-字段"><a class="heading-anchor" href="#112-字段" aria-label="Link to 11.2 字段">#</a>11.2 字段</h3>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>类型</th>
+<th>必填</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>大站点</td>
+<td>选择 / 文本</td>
+<td>是</td>
+<td>例如北美、欧洲</td>
+</tr>
+<tr>
+<td>本地仓发货频率</td>
+<td>数字</td>
+<td>是</td>
+<td>下一次发货机会间隔</td>
+</tr>
+<tr>
+<td>物流方式</td>
+<td>选择</td>
+<td>是</td>
+<td>按大站点从外部物流参数中选择</td>
+</tr>
+<tr>
+<td>计算优先级</td>
+<td>数字 / 排序</td>
+<td>是</td>
+<td>多物流方式下按优先级从高到低计算，数字越小优先级越高</td>
+</tr>
+<tr>
+<td>本地仓至 FBA 时效</td>
+<td>只读展示</td>
+<td>是</td>
+<td>添加物流方式后自动从外部系统取值，页面不可手动填写</td>
+</tr>
+</tbody></table>
+<h3 id="113-默认配置示例"><a class="heading-anchor" href="#113-默认配置示例" aria-label="Link to 11.3 默认配置示例">#</a>11.3 默认配置示例</h3>
+<table>
+<thead>
+<tr>
+<th>大站点</th>
+<th>发货频率</th>
+<th>物流方式</th>
+<th>计算优先级</th>
+<th>物流时效</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>北美</td>
+<td>7 天</td>
+<td>美森正班</td>
+<td>1</td>
+<td>37 天</td>
+</tr>
+<tr>
+<td>北美</td>
+<td>7 天</td>
+<td>普船</td>
+<td>2</td>
+<td>57 天</td>
+</tr>
+<tr>
+<td>北美</td>
+<td>7 天</td>
+<td>空运</td>
+<td>3</td>
+<td>22 天</td>
+</tr>
+<tr>
+<td>北美</td>
+<td>7 天</td>
+<td>琦速达</td>
+<td>4</td>
+<td>40 天</td>
+</tr>
+<tr>
+<td>北美</td>
+<td>7 天</td>
+<td>美森加班</td>
+<td>5</td>
+<td>42 天</td>
+</tr>
+<tr>
+<td>北美</td>
+<td>7 天</td>
+<td>快速达</td>
+<td>6</td>
+<td>42 天</td>
+</tr>
+<tr>
+<td>北美</td>
+<td>7 天</td>
+<td>限时达</td>
+<td>7</td>
+<td>37 天</td>
+</tr>
+<tr>
+<td>北美</td>
+<td>7 天</td>
+<td>合德</td>
+<td>8</td>
+<td>42 天</td>
+</tr>
+<tr>
+<td>北美</td>
+<td>7 天</td>
+<td>以星</td>
+<td>9</td>
+<td>45 天</td>
+</tr>
+<tr>
+<td>欧洲</td>
+<td>7 天</td>
+<td>普船</td>
+<td>1</td>
+<td>45 天</td>
+</tr>
+<tr>
+<td>欧洲</td>
+<td>7 天</td>
+<td>空运</td>
+<td>2</td>
+<td>15 天</td>
+</tr>
+<tr>
+<td>欧洲</td>
+<td>7 天</td>
+<td>卡派</td>
+<td>3</td>
+<td>40 天</td>
+</tr>
+<tr>
+<td>欧洲</td>
+<td>7 天</td>
+<td>铁路</td>
+<td>4</td>
+<td>35 天</td>
+</tr>
+<tr>
+<td>欧洲</td>
+<td>7 天</td>
+<td>英国海运</td>
+<td>5</td>
+<td>45 天</td>
+</tr>
+<tr>
+<td>欧洲</td>
+<td>7 天</td>
+<td>欧洲海运</td>
+<td>6</td>
+<td>45 天</td>
+</tr>
+</tbody></table>
+<h3 id="114-交互"><a class="heading-anchor" href="#114-交互" aria-label="Link to 11.4 交互">#</a>11.4 交互</h3>
+<ul>
+<li>支持按站点维护多条物流方式。</li>
+<li>同一站点至少保留一条物流方式。</li>
+<li>发货频率按站点配置。</li>
+<li>物流方式为下拉选择，选项来自外部物流参数。</li>
+<li>物流时效按选中的物流方式自动展示，不允许手动修改。</li>
+<li>计算优先级用于多物流方式建议量分配顺序，可由用户调整；数字越小优先级越高。</li>
+</ul>
+<h3 id="115-多运输方式计算口径"><a class="heading-anchor" href="#115-多运输方式计算口径" aria-label="Link to 11.5 多运输方式计算口径">#</a>11.5 多运输方式计算口径</h3>
+<p>当同一站点配置多种运输方式时，系统需要按运输方式分别输出建议量。</p>
+<p>多运输方式计算不是对每种运输方式都重复计算一整段覆盖周期，而是按物流方式计算优先级依次认领覆盖周期内可被该物流方式覆盖的日期需求：</p>
+<ul>
+<li>先按计算优先级从高到低排序运输方式；数字越小优先级越高。</li>
+<li>若优先级相同，按物流时效从短到长作为兜底排序。</li>
+<li>每种运输方式只能覆盖其到货可用日及之后的需求，不能覆盖到货日前的销量。</li>
+<li>系统按优先级顺序计算当前运输方式可覆盖区间内尚未被更高优先级运输方式覆盖的日期需求。</li>
+<li>当覆盖周期内所有可被运输方式覆盖的日期均已被认领后，停止后续低优先级运输方式计算。</li>
+<li>最短物流方式到货日前的预测销量不归属于任何运输方式建议量，仅用于库存投影和发货紧急程度提示，不作为扣减项影响建议量。</li>
+</ul>
+<p>示例：</p>
+<pre><code class="language-text">运输方式：空运 15 天，普船 45 天
+发货覆盖周期结束日：D+90
+优先级：空运 = 1，普船 = 2
+
+空运建议量覆盖：D+15 ~ D+90
+普船建议量覆盖：0（可覆盖日期已被更高优先级空运覆盖）
+</code></pre>
+<p>若优先级调整为普船 = 1，空运 = 2，则：</p>
+<pre><code class="language-text">普船建议量覆盖：D+45 ~ D+90
+空运建议量覆盖：D+15 ~ D+44
+</code></pre>
+<p>如果只有一种运输方式，则该运输方式覆盖从其到货日至覆盖周期结束的全部需求。</p>
+<p>库存扣减口径：</p>
+<ul>
+<li>FBA 库存、FBA 在途、本地仓库存、已下单未入库等库存类扣减项不能在每种运输方式上重复扣减。</li>
+<li>系统应基于库存投影或统一缺口分摊口径，将可用库存优先用于较早日期需求，再按运输方式分段得到各运输方式建议量。</li>
+<li>各运输方式建议量求和应等于当前动作维度下的最终建议量，允许因向上取整存在极小差异，差异需落到最后一种运输方式上。</li>
+</ul>
+<h3 id="116-校验"><a class="heading-anchor" href="#116-校验" aria-label="Link to 11.6 校验">#</a>11.6 校验</h3>
+<ul>
+<li>发货频率必须为大于等于 0 的整数。</li>
+<li>物流时效由外部系统提供，页面不做手动填写校验。</li>
+<li>同一站点下物流方式不允许重复。</li>
+<li>同一站点下启用且参与计算的物流方式不允许出现重复优先级；保存时若重复，需阻止提交并提示用户调整。</li>
+<li>若历史数据已存在重复优先级，系统读取时可按物流时效从短到长作为兜底排序，但编辑提交前必须修正为唯一优先级。</li>
+</ul>
+<hr>
+<h2 id="12-计算设置"><a class="heading-anchor" href="#12-计算设置" aria-label="Link to 12. 计算设置">#</a>12. 计算设置</h2>
+<h3 id="121-字段"><a class="heading-anchor" href="#121-字段" aria-label="Link to 12.1 字段">#</a>12.1 字段</h3>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>年规目标</td>
+<td>勾选项</td>
+<td>勾选且不可取消</td>
+<td>使用年规目标作为建议量计算来源之一</td>
+</tr>
+<tr>
+<td>预测日销量</td>
+<td>勾选项</td>
+<td>勾选</td>
+<td>使用销量预测模块输出的预测日销量作为建议量计算来源之一</td>
+</tr>
+</tbody></table>
+<h3 id="122-业务含义"><a class="heading-anchor" href="#122-业务含义" aria-label="Link to 12.2 业务含义">#</a>12.2 业务含义</h3>
+<p>页面允许同时输出年规目标和预测日销量两类计算结果。年规目标为必选来源，预测日销量可按业务需要启用或关闭。</p>
+<p>发货建议量和下单建议量均不再扣减必断货扣除量。库存投影推断出的断货损失只用于库存走势解释、发货紧急程度或后续预警模块，不作为建议量计算扣减项。</p>
+<hr>
+<h2 id="13-发货建议量"><a class="heading-anchor" href="#13-发货建议量" aria-label="Link to 13. 发货建议量">#</a>13. 发货建议量</h2>
+<h3 id="131-业务含义"><a class="heading-anchor" href="#131-业务含义" aria-label="Link to 13.1 业务含义">#</a>13.1 业务含义</h3>
+<p>发货建议量用于回答：</p>
+<pre><code class="language-text">当前应从 CN 仓 / 本地仓发多少货到 FBA？
+</code></pre>
+<h3 id="132-覆盖天数"><a class="heading-anchor" href="#132-覆盖天数" aria-label="Link to 13.2 覆盖天数">#</a>13.2 覆盖天数</h3>
+<p>发货动作最早可用天数：</p>
+<pre><code class="language-text">发货最早可用天数 = CN仓至FBA时效
+</code></pre>
+<p>发货最早可用天数表示本次从 CN 仓 / 本地仓发出的货，最早可以成为 FBA 可售库存的时间。</p>
+<p>发货覆盖天数：</p>
+<pre><code class="language-text">发货覆盖天数 =
+CN仓至FBA时效 + 安全天数 + CN仓发货频率
+</code></pre>
+<p>当同一站点仅配置一种运输方式时，按该运输方式的物流时效计算发货覆盖天数。</p>
+<p>当同一站点配置多种运输方式时，发货覆盖周期以最长物流时效作为周期终点基础：</p>
+<pre><code class="language-text">发货覆盖天数 =
+最长CN仓至FBA时效 + 安全天数 + CN仓发货频率
+</code></pre>
+<p>说明：</p>
+<ul>
+<li>CN 仓至 FBA 时效表示运输与入仓可用周期。</li>
+<li>安全天数表示 FBA 端风险缓冲。</li>
+<li>CN 仓发货频率表示下一次补货机会间隔，不是运输时间，但需要纳入覆盖周期。</li>
+<li>发货最早可用天数用于发货紧急程度判断与多物流方式可覆盖日期判断，不再用于计算发货必断货扣除量。</li>
+<li>发货覆盖天数用于计算本次发货需要覆盖的总需求周期。</li>
+</ul>
+<h3 id="133-多运输方式优先级分配"><a class="heading-anchor" href="#133-多运输方式优先级分配" aria-label="Link to 13.3 多运输方式优先级分配">#</a>13.3 多运输方式优先级分配</h3>
+<p>若发货规则命中多种运输方式，按物流方式计算优先级进行分配：</p>
+<pre><code class="language-text">第 k 种运输方式发货最早可用天数 = 该运输方式 CN仓至FBA时效
+
+第 k 种运输方式理论可覆盖区间 =
+D + 第 k 种运输方式发货最早可用天数 ~ D + 发货覆盖天数
+
+第 k 种运输方式实际负责区间 =
+理论可覆盖区间内尚未被更高优先级运输方式覆盖的日期
+</code></pre>
+<p>示例：</p>
+<pre><code class="language-text">空运 15 天，普船 45 天，发货覆盖天数 90 天
+优先级：空运 = 1，普船 = 2
+
+空运建议量覆盖：D+15 ~ D+90
+普船建议量覆盖：0（可覆盖日期已被更高优先级空运覆盖）
+</code></pre>
+<p>若优先级调整为普船 = 1，空运 = 2：</p>
+<pre><code class="language-text">普船建议量覆盖：D+45 ~ D+90
+空运建议量覆盖：D+15 ~ D+44
+</code></pre>
+<p>发货建议量需要同时输出总量与各运输方式明细：</p>
+<pre><code class="language-text">发货建议总量 = Σ 各运输方式发货建议量
+</code></pre>
+<h3 id="134-计算公式"><a class="heading-anchor" href="#134-计算公式" aria-label="Link to 13.4 计算公式">#</a>13.4 计算公式</h3>
+<pre><code class="language-text">建议发货量 =
+ceil(
+  Σ forecastSales(D ... D+发货覆盖天数-1)
+  − FBA库存
+  − FBA在途
+)
+</code></pre>
+<p>最终展示值：</p>
+<pre><code class="language-text">max(0, 建议发货量)
+</code></pre>
+<p>多运输方式下，每种运输方式建议量基于其按优先级认领的实际负责日期段内的预测销量计算。到货前累计销量只参与库存投影和发货紧急程度判断，不直接计入该运输方式建议量，也不作为发货必断货扣除量从建议量中扣减。库存扣减项不得按运输方式重复扣减，应通过库存投影或统一缺口分摊后落到对应运输方式。</p>
+<h3 id="135-库存扣减口径"><a class="heading-anchor" href="#135-库存扣减口径" aria-label="Link to 13.5 库存扣减口径">#</a>13.5 库存扣减口径</h3>
+<p>发货建议量扣减：</p>
+<ul>
+<li>FBA 库存。</li>
+<li>FBA 在途。</li>
+</ul>
+<p>FBA 在途建议按预计到货时间参与库存投影，仅将覆盖周期内可用的在途库存纳入本次建议量扣减。若仍采用全量扣减口径，由此产生的远期库存风险提示不在备货规则配置页闭环，后续由预警模块承接。</p>
+<hr>
+<h2 id="14-下单建议量"><a class="heading-anchor" href="#14-下单建议量" aria-label="Link to 14. 下单建议量">#</a>14. 下单建议量</h2>
+<h3 id="141-业务含义"><a class="heading-anchor" href="#141-业务含义" aria-label="Link to 14.1 业务含义">#</a>14.1 业务含义</h3>
+<p>下单建议量用于回答：</p>
+<pre><code class="language-text">当前应向供应端 / 采购端下单多少？
+</code></pre>
+<h3 id="142-覆盖天数"><a class="heading-anchor" href="#142-覆盖天数" aria-label="Link to 14.2 覆盖天数">#</a>14.2 覆盖天数</h3>
+<p>下单动作最早可用天数：</p>
+<pre><code class="language-text">下单最早可用天数 =
+采购交付提前期 + CN仓至FBA时效
+</code></pre>
+<p>下单最早可用天数表示本次向供应端 / 采购端下单后，货物最早可以成为 FBA 可售库存的时间。</p>
+<p>下单覆盖天数：</p>
+<pre><code class="language-text">下单覆盖天数 =
+采购周期覆盖天数 + CN仓至FBA时效 + 安全天数 + CN仓发货频率
+</code></pre>
+<p>当同一站点仅配置一种运输方式时，按该运输方式的物流时效计算下单覆盖天数。</p>
+<p>当同一站点配置多种运输方式时，下单覆盖周期以最长物流时效作为周期终点基础：</p>
+<pre><code class="language-text">下单覆盖天数 =
+采购周期覆盖天数 + 最长CN仓至FBA时效 + 安全天数 + CN仓发货频率
+</code></pre>
+<p>其中：</p>
+<pre><code class="language-text">采购交付提前期 = 采购交期 + 提货准备 + 质检
+采购周期覆盖天数 = 采购交付提前期 + 采购频率
+</code></pre>
+<p>说明：</p>
+<ul>
+<li>采购交付提前期用于判断本次下单动作的最早可用时间。</li>
+<li>采购频率表示下一次采购机会间隔，只纳入覆盖周期，不纳入本次下单动作的最早可用时间。</li>
+<li>CN 仓发货频率表示下一次发货机会间隔，只纳入覆盖周期，不纳入本次下单动作的最早可用时间。</li>
+</ul>
+<h3 id="143-多运输方式优先级分配"><a class="heading-anchor" href="#143-多运输方式优先级分配" aria-label="Link to 14.3 多运输方式优先级分配">#</a>14.3 多运输方式优先级分配</h3>
+<p>若下单规则命中多种运输方式，按物流方式计算优先级进行分配：</p>
+<pre><code class="language-text">第 k 种运输方式下单最早可用天数 =
+采购交付提前期 + 第 k 种运输方式 CN仓至FBA时效
+
+第 k 种运输方式理论可覆盖区间 =
+D + 第 k 种运输方式下单最早可用天数 ~ D + 下单覆盖天数
+
+第 k 种运输方式实际负责区间 =
+理论可覆盖区间内尚未被更高优先级运输方式覆盖的日期
+</code></pre>
+<p>示例：</p>
+<pre><code class="language-text">采购交付提前期 39 天
+空运 15 天，普船 45 天，下单覆盖天数 135 天
+优先级：空运 = 1，普船 = 2
+
+空运下单最早可用日：D+54
+普船下单最早可用日：D+84
+
+空运建议量覆盖：D+54 ~ D+135
+普船建议量覆盖：0（可覆盖日期已被更高优先级空运覆盖）
+</code></pre>
+<p>若优先级调整为普船 = 1，空运 = 2：</p>
+<pre><code class="language-text">普船建议量覆盖：D+84 ~ D+135
+空运建议量覆盖：D+54 ~ D+83
+</code></pre>
+<p>下单建议量需要同时输出总量与各运输方式明细：</p>
+<pre><code class="language-text">下单建议总量 = Σ 各运输方式下单建议量
+</code></pre>
+<h3 id="144-计算公式"><a class="heading-anchor" href="#144-计算公式" aria-label="Link to 14.4 计算公式">#</a>14.4 计算公式</h3>
+<pre><code class="language-text">建议下单量 =
+ceil(
+  Σ forecastSales(D ... D+下单覆盖天数-1)
+  − FBA库存
+  − FBA在途
+− 本地仓库存
+  − 已下单未入库
+)
+</code></pre>
+<p>最终展示值：</p>
+<pre><code class="language-text">max(0, 建议下单量)
+</code></pre>
+<p>多运输方式下，每种运输方式建议量基于其按优先级认领的实际负责日期段内的预测销量计算。到货前累计销量只参与库存投影和发货紧急程度提示，不直接计入该运输方式建议量，也不作为扣减项影响建议量。库存扣减项不得按运输方式重复扣减，应通过库存投影或统一缺口分摊后落到对应运输方式。</p>
+<h3 id="145-库存扣减口径"><a class="heading-anchor" href="#145-库存扣减口径" aria-label="Link to 14.5 库存扣减口径">#</a>14.5 库存扣减口径</h3>
+<p>下单建议量扣减：</p>
+<ul>
+<li>FBA 库存。</li>
+<li>FBA 在途。</li>
+<li>本地仓库存。</li>
+<li>已下单未入库。</li>
+</ul>
+<p>FBA 在途与已下单未入库建议按预计到货时间参与库存投影，仅将覆盖周期内可用的库存纳入本次建议量扣减。若仍采用全量扣减口径，由此产生的远期库存风险提示不在备货规则配置页闭环，后续由预警模块承接。</p>
+<p>发货建议和采购建议的库存抵扣表均保留完整库存列，包括平台仓、物流在途、本地仓库存、采购在途、总库存。发货建议中的本地仓库存列需展示为：</p>
+<pre><code class="language-text">本地仓库存(预发货+剩余) = 总量(预发货库存 + 剩余库存)
+</code></pre>
+<p>采购建议中的本地仓库存列展示普通本地仓库存数值，不拆分预发货库存和剩余库存。该展示不改变发货建议量与采购建议量各自的库存扣减口径。</p>
+<hr>
+<h2 id="15-库存投影与断货风险边界"><a class="heading-anchor" href="#15-库存投影与断货风险边界" aria-label="Link to 15. 库存投影与断货风险边界">#</a>15. 库存投影与断货风险边界</h2>
+<h3 id="151-推导方式"><a class="heading-anchor" href="#151-推导方式" aria-label="Link to 15.1 推导方式">#</a>15.1 推导方式</h3>
+<p>系统可基于库存投影推断预计断货点与断货损失，用于解释库存走势、发货紧急程度或后续预警模块。</p>
+<p>发货建议量和下单建议量均不再扣减必断货扣除量。断货损失只作为风险信息，不作为建议量计算扣减项。</p>
+<p>库存投影示意：</p>
+<pre><code class="language-text">当日日初可售库存 =
+max(0, 前一日期末可售库存) + 当日预计可用入库
+
+当日可满足销量 =
+min(当日日初可售库存, 当日预测销量)
+
+当日断货损失 =
+当日预测销量 − 当日可满足销量
+
+当日期末可售库存 =
+max(0, 当日日初可售库存 − 当日预测销量)
+</code></pre>
+<p>等价地，当日断货损失也可写为：</p>
+<pre><code class="language-text">当日断货损失 =
+min(当日预测销量, max(0, 当日预测销量 − 当日日初可售库存))
+</code></pre>
+<p>这样可以避免将当天已经能够满足的销量也计入断货损失。</p>
+<p>默认口径：</p>
+<ul>
+<li>当日预计可用入库在当日销售前可用。</li>
+<li>当某日当日断货损失大于 0，可记录为预计断货日或断货风险日。</li>
+<li>若数据源口径为日末入库，库存投影展示需按实际数据源口径调整。</li>
+</ul>
+<h3 id="152-计算公式"><a class="heading-anchor" href="#152-计算公式" aria-label="Link to 15.2 计算公式">#</a>15.2 计算公式</h3>
+<pre><code class="language-text">发货必断货扣除量 = 不计算
+下单必断货扣除量 = 不计算
+</code></pre>
+<p>发货建议量与下单建议量只扣减各自库存类扣减项。断货损失不重复分摊到各物流方式，也不从总建议量中扣减。</p>
+<h3 id="153-展示要求"><a class="heading-anchor" href="#153-展示要求" aria-label="Link to 15.3 展示要求">#</a>15.3 展示要求</h3>
+<p>若库存投影出现断货风险，页面可展示：</p>
+<ul>
+<li>预计断货日期范围。</li>
+<li>断货日期内每日预测销量。</li>
+<li>断货日期内每日可满足销量。</li>
+<li>断货日期内每日断货损失。</li>
+</ul>
+<p>提示文案：</p>
+<pre><code class="language-text">库存投影存在预计断货风险，请关注库存走势与发货紧急程度；该风险不改变本次建议量。
+</code></pre>
+<hr>
+<h2 id="16-异常提示"><a class="heading-anchor" href="#16-异常提示" aria-label="Link to 16. 异常提示">#</a>16. 异常提示</h2>
+<h3 id="161-建议量小于等于-0"><a class="heading-anchor" href="#161-建议量小于等于-0" aria-label="Link to 16.1 建议量小于等于 0">#</a>16.1 建议量小于等于 0</h3>
+<p>若原始建议量小于或等于 0：</p>
+<pre><code class="language-text">最终建议量展示为 0
+</code></pre>
+<p>提示文案：</p>
+<pre><code class="language-text">当前库存及在途库存已覆盖目标周期，建议量为 0，请关注库存积压或远期到货风险。
+</code></pre>
+<h3 id="162-断货风险提示边界"><a class="heading-anchor" href="#162-断货风险提示边界" aria-label="Link to 16.2 断货风险提示边界">#</a>16.2 断货风险提示边界</h3>
+<p>断货风险不再作为建议量扣减项，也不在备货规则配置页内输出“必断货扣除量较大”类提示。</p>
+<p>若库存投影显示短期断货，但建议量因库存覆盖、在途到货或其他扣减项计算为 0，该风险由发货紧急程度、库存投影说明或后续预警模块承接。</p>
+<h3 id="163-远期库存风险边界"><a class="heading-anchor" href="#163-远期库存风险边界" aria-label="Link to 16.3 远期库存风险边界">#</a>16.3 远期库存风险边界</h3>
+<p>备货规则配置页不承接远期库存风险提示闭环。若计算层按预计到货时间过滤库存，仅扣减覆盖周期内可用的在途库存，则覆盖周期外远期库存不会压低本次建议量，可不在本页单独提示远期库存风险。</p>
+<p>若后续计算层仍采用全量扣减 FBA 在途、已下单未入库等库存口径，短期断货但建议量为 0 的风险由后续预警模块或库存投影模块承接，不作为备货规则配置页必需提示项。</p>
+<hr>
+<h2 id="17-保存数据建议"><a class="heading-anchor" href="#17-保存数据建议" aria-label="Link to 17. 保存数据建议">#</a>17. 保存数据建议</h2>
+<p>保存时建议提交如下结构：</p>
+<pre><code class="language-json">{
+  &quot;ruleBasic&quot;: {
+    &quot;ruleCode&quot;: &quot;BR20260520001&quot;,
+    &quot;ruleName&quot;: &quot;默认备货规则&quot;,
+    &quot;enabled&quot;: true,
+    &quot;remark&quot;: &quot;&quot;
+  },
+  &quot;scope&quot;: {
+    &quot;type&quot;: &quot;all&quot;,
+    &quot;parentCodes&quot;: []
+  },
+  &quot;procurement&quot;: {
+    &quot;purchaseFrequency&quot;: 15,
+    &quot;purchaseLeadTime&quot;: 30,
+    &quot;pickupPrepDays&quot;: 3,
+    &quot;qualityInspectionDays&quot;: 2
+  },
+  &quot;fbaSafety&quot;: {
+    &quot;defaultSafetyDays&quot;: 28
+  },
+  &quot;safetyAdjustments&quot;: {
+    &quot;salesLevel&quot;: {
+      &quot;enabled&quot;: true,
+      &quot;conditions&quot;: [
+        {
+          &quot;conditionCode&quot;: &quot;LEVEL_A&quot;,
+          &quot;conditionName&quot;: &quot;A - 爆款&quot;,
+          &quot;safetyDays&quot;: 45,
+          &quot;enabled&quot;: true
+        },
+        {
+          &quot;conditionCode&quot;: &quot;LEVEL_B&quot;,
+          &quot;conditionName&quot;: &quot;B - 旺款&quot;,
+          &quot;safetyDays&quot;: 28,
+          &quot;enabled&quot;: true
+        },
+        {
+          &quot;conditionCode&quot;: &quot;LEVEL_C&quot;,
+          &quot;conditionName&quot;: &quot;C - 利润款&quot;,
+          &quot;safetyDays&quot;: 20,
+          &quot;enabled&quot;: true
+        }
+      ]
+    },
+    &quot;lifecycle&quot;: {
+      &quot;enabled&quot;: true,
+      &quot;conditions&quot;: [
+        {
+          &quot;conditionCode&quot;: &quot;NEW_0_3_MONTHS&quot;,
+          &quot;conditionName&quot;: &quot;新品（0-3 月）&quot;,
+          &quot;safetyDays&quot;: 45,
+          &quot;enabled&quot;: true
+        }
+      ]
+    },
+    &quot;colorTag&quot;: {
+      &quot;enabled&quot;: true,
+      &quot;conditions&quot;: [
+        {
+          &quot;conditionCode&quot;: &quot;MAIN_COLOR&quot;,
+          &quot;conditionName&quot;: &quot;主色&quot;,
+          &quot;safetyDays&quot;: 45,
+          &quot;enabled&quot;: true
+        },
+        {
+          &quot;conditionCode&quot;: &quot;SUB_COLOR&quot;,
+          &quot;conditionName&quot;: &quot;次色&quot;,
+          &quot;safetyDays&quot;: 28,
+          &quot;enabled&quot;: true
+        }
+      ]
+    },
+    &quot;traffic&quot;: {
+      &quot;enabled&quot;: true,
+      &quot;conditions&quot;: [
+        {
+          &quot;conditionCode&quot;: &quot;ORGANIC_TRAFFIC_ASIN&quot;,
+          &quot;conditionName&quot;: &quot;OR 自然流量 ASIN&quot;,
+          &quot;safetyDays&quot;: 45,
+          &quot;enabled&quot;: true
+        },
+        {
+          &quot;conditionCode&quot;: &quot;AD_TRAFFIC_ASIN&quot;,
+          &quot;conditionName&quot;: &quot;AD 广告流量 ASIN&quot;,
+          &quot;safetyDays&quot;: 28,
+          &quot;enabled&quot;: true
+        }
+      ]
+    }
+  },
+  &quot;directLogistics&quot;: [
+    {
+      &quot;site&quot;: &quot;NA&quot;,
+      &quot;shipFrequencyDays&quot;: 7,
+      &quot;methods&quot;: [
+        {
+          &quot;method&quot;: &quot;空运&quot;,
+          &quot;priority&quot;: 1,
+          &quot;leadTimeDays&quot;: 22
+        },
+        {
+          &quot;method&quot;: &quot;普船&quot;,
+          &quot;priority&quot;: 2,
+          &quot;leadTimeDays&quot;: 57
+        }
+      ]
+    }
+  ],
+  &quot;calculation&quot;: {
+    &quot;annualPlanSource&quot;: true,
+    &quot;forecastSalesSource&quot;: true,
+    &quot;inventoryReceiptTiming&quot;: &quot;beforeSales&quot;,
+    &quot;rounding&quot;: &quot;ceil&quot;,
+    &quot;minSuggestedQty&quot;: 0
+  }
+}
+</code></pre>
+<hr>
+<h2 id="18-输出结果建议"><a class="heading-anchor" href="#18-输出结果建议" aria-label="Link to 18. 输出结果建议">#</a>18. 输出结果建议</h2>
+<p>补货详情或计算接口建议输出：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>decisionDate</code></td>
+<td>计算日 D</td>
+</tr>
+<tr>
+<td><code>forecastCurve</code></td>
+<td>从计算日开始的每日预测销量</td>
+</tr>
+<tr>
+<td><code>safetyDaysDefault</code></td>
+<td>默认安全天数</td>
+</tr>
+<tr>
+<td><code>safetyDaysHits</code></td>
+<td>命中的安全天数规则</td>
+</tr>
+<tr>
+<td><code>safetyDaysFinal</code></td>
+<td>最终安全天数</td>
+</tr>
+<tr>
+<td><code>procurementDeliveryLeadDays</code></td>
+<td>采购交付提前期</td>
+</tr>
+<tr>
+<td><code>procurementCycleCoverageDays</code></td>
+<td>采购周期覆盖天数</td>
+</tr>
+<tr>
+<td><code>shipEarliestAvailableDays</code></td>
+<td>发货动作最早可用天数</td>
+</tr>
+<tr>
+<td><code>orderEarliestAvailableDays</code></td>
+<td>下单动作最早可用天数</td>
+</tr>
+<tr>
+<td><code>shipCoverageDays</code></td>
+<td>发货覆盖天数</td>
+</tr>
+<tr>
+<td><code>orderCoverageDays</code></td>
+<td>下单覆盖天数</td>
+</tr>
+<tr>
+<td><code>shipForecastSum</code></td>
+<td>发货覆盖周期预测销量求和</td>
+</tr>
+<tr>
+<td><code>orderForecastSum</code></td>
+<td>下单覆盖周期预测销量求和</td>
+</tr>
+<tr>
+<td><code>stockoutProjectionDetails</code></td>
+<td>库存投影明细，包含每日预测销量、可满足销量、断货损失</td>
+</tr>
+<tr>
+<td><code>shipRawQty</code></td>
+<td>发货原始建议量</td>
+</tr>
+<tr>
+<td><code>shipSuggestedQty</code></td>
+<td>发货最终建议量</td>
+</tr>
+<tr>
+<td><code>shipMethodSuggestions</code></td>
+<td>发货建议量按运输方式拆分明细</td>
+</tr>
+<tr>
+<td><code>orderRawQty</code></td>
+<td>下单原始建议量</td>
+</tr>
+<tr>
+<td><code>orderSuggestedQty</code></td>
+<td>下单最终建议量</td>
+</tr>
+<tr>
+<td><code>orderMethodSuggestions</code></td>
+<td>下单建议量按运输方式拆分明细</td>
+</tr>
+<tr>
+<td><code>hasFutureInventoryRisk</code></td>
+<td>可选字段；是否存在远期库存已扣减但短期仍断货的风险，若后续由预警模块承接，本页可不输出</td>
+</tr>
+<tr>
+<td><code>warnings</code></td>
+<td>异常提示列表</td>
+</tr>
+</tbody></table>
+<p>运输方式拆分明细建议结构：</p>
+<pre><code class="language-json">{
+  &quot;method&quot;: &quot;空运&quot;,
+  &quot;priority&quot;: 1,
+  &quot;leadTimeDays&quot;: 15,
+  &quot;earliestAvailableDays&quot;: 15,
+  &quot;coverageStartDay&quot;: 15,
+  &quot;coverageEndDay&quot;: 90,
+  &quot;forecastSum&quot;: 1200,
+  &quot;allocatedInventoryDeduction&quot;: 300,
+  &quot;rawQty&quot;: 900,
+  &quot;suggestedQty&quot;: 900
+}
+</code></pre>
+<hr>
+<h2 id="19-验收标准"><a class="heading-anchor" href="#19-验收标准" aria-label="Link to 19. 验收标准">#</a>19. 验收标准</h2>
+<h3 id="191-配置验收"><a class="heading-anchor" href="#191-配置验收" aria-label="Link to 19.1 配置验收">#</a>19.1 配置验收</h3>
+<ul>
+<li>用户可以创建、编辑、启用、停用备货规则。</li>
+<li>用户可以查看采购频率、采购交期 / 生产周期、提货准备、质检等参数，相关字段由 PLM 或基础参数配置维护，本页只读展示。</li>
+<li>页面能实时展示目标库存天数预览，并随默认安全天数、物流方式与基础参数回填值变化刷新。</li>
+<li>用户可以配置默认安全天数。</li>
+<li>用户可以配置并启停各安全库存天数调整维度。</li>
+<li>用户可以按站点维护直发物流方式、物流时效和计算优先级。</li>
+</ul>
+<h3 id="192-计算验收"><a class="heading-anchor" href="#192-计算验收" aria-label="Link to 19.2 计算验收">#</a>19.2 计算验收</h3>
+<ul>
+<li>采购交付提前期按以下公式计算：</li>
+</ul>
+<pre><code class="language-text">采购交期 + 提货准备 + 质检
+</code></pre>
+<ul>
+<li>采购周期覆盖天数按以下公式计算：</li>
+</ul>
+<pre><code class="language-text">采购交付提前期 + 采购频率
+</code></pre>
+<ul>
+<li>发货最早可用天数按以下公式计算：</li>
+</ul>
+<pre><code class="language-text">CN仓至FBA时效
+</code></pre>
+<ul>
+<li>下单最早可用天数按以下公式计算：</li>
+</ul>
+<pre><code class="language-text">采购交付提前期 + CN仓至FBA时效
+</code></pre>
+<ul>
+<li>发货覆盖天数按以下公式计算：</li>
+</ul>
+<pre><code class="language-text">CN仓至FBA时效 + 安全天数 + CN仓发货频率
+</code></pre>
+<ul>
+<li>下单覆盖天数按以下公式计算：</li>
+</ul>
+<pre><code class="language-text">采购周期覆盖天数 + CN仓至FBA时效 + 安全天数 + CN仓发货频率
+</code></pre>
+<ul>
+<li>预测销量求和区间为：</li>
+</ul>
+<pre><code class="language-text">D ~ D+N-1
+</code></pre>
+<ul>
+<li>建议量向上取整数。</li>
+<li>最终建议量不得小于 0。</li>
+<li>安全天数取所有命中条件中的最高值。</li>
+<li>当日断货损失基于当日预测销量、当日日初可售库存、当日可满足销量推导。</li>
+<li>发货建议量与下单建议量均不扣减必断货扣除量。</li>
+<li>断货损失仅用于库存投影、发货紧急程度或后续预警模块，不改变建议量。</li>
+<li>同一站点配置多种运输方式时，发货建议量需要按运输方式计算优先级依次认领可覆盖日期并输出拆分明细。</li>
+<li>同一站点配置多种运输方式时，下单建议量需要按运输方式计算优先级依次认领可覆盖日期并输出拆分明细。</li>
+<li>多运输方式下，若高优先级运输方式已覆盖全部可覆盖日期，后续低优先级运输方式建议量为 0。</li>
+<li>多运输方式下，运输方式到货前累计销量只参与库存投影和发货紧急程度提示，不直接计入该运输方式建议量，也不作为扣减项影响建议量。</li>
+<li>多运输方式建议量的库存扣减项不得在每种运输方式上重复扣减。</li>
+</ul>
+<h3 id="193-提示验收"><a class="heading-anchor" href="#193-提示验收" aria-label="Link to 19.3 提示验收">#</a>19.3 提示验收</h3>
+<ul>
+<li>原始建议量小于等于 0 时，页面展示 0 并提示库存覆盖风险。</li>
+<li>库存投影断货风险不作为建议量扣减项，后续可由预警模块或库存投影模块承接。</li>
+<li>远期库存风险不作为备货规则配置页必需提示项，后续由预警模块或库存投影模块承接。</li>
+</ul>
+<hr>
+<h2 id="20-待确认项"><a class="heading-anchor" href="#20-待确认项" aria-label="Link to 20. 待确认项">#</a>20. 待确认项</h2>
+<table>
+<thead>
+<tr>
+<th>项</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>多规则命中策略</td>
+<td>同一父体命中多条备货规则时，是否按优先级、最新规则或人工选择</td>
+</tr>
+<tr>
+<td>库存投影字段来源</td>
+<td>FBA 库存、FBA 在途、本地仓库存、已下单未入库的数据来源与刷新频率</td>
+</tr>
+<tr>
+<td>日内入库口径</td>
+<td>当日预计可用入库默认按销售前可用，是否需要按数据源改为日末可用</td>
+</tr>
+<tr>
+<td>物流绑定关系</td>
+<td>站点、仓库、运输方式与父体 / SKU 的绑定方式</td>
+</tr>
+<tr>
+<td>箱规 / MOQ</td>
+<td>后续是否需要按箱规、MOQ、整箱倍数调整建议量</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="21-修订记录"><a class="heading-anchor" href="#21-修订记录" aria-label="Link to 21. 修订记录">#</a>21. 修订记录</h2>
+<table>
+<thead>
+<tr>
+<th>版本</th>
+<th>日期</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>v1.7</td>
+<td>2026-06-06</td>
+<td>发货建议量与下单建议量均不再扣减必断货扣除量，配置页移除扣除开关，断货损失仅作为库存投影、发货风险评级或预警模块信息</td>
+</tr>
+<tr>
+<td>v1.6</td>
+<td>2026-06-05</td>
+<td>发货必断货扣除量不再纳入计算范畴，仅保留下单必断货扣除量；发货侧断货改为风险评级或预警模块承接</td>
+</tr>
+<tr>
+<td>v1.5</td>
+<td>2026-06-04</td>
+<td>补充基础参数只读维护、目标库存天数实时预览、物流优先级唯一校验，并调整远期库存风险为预警模块边界</td>
+</tr>
+<tr>
+<td>v1.4</td>
+<td>2026-05-29</td>
+<td>补充物流方式计算优先级：多物流方式建议量按优先级依次认领可覆盖日期，覆盖完成后停止后续低优先级方式计算</td>
+</tr>
+<tr>
+<td>v1.3</td>
+<td>2026-05-25</td>
+<td>调整预测销量求和区间：覆盖 N 天时从计算日 D 当天开始计算，积分区间由 D+1 ~ D+N 改为 D ~ D+N-1，并同步发货 / 下单公式与必断货不可挽回区间</td>
+</tr>
+<tr>
+<td>v1.2</td>
+<td>2026-05-25</td>
+<td>删除独立参数计算示例章节，移除临时演示区和临时接口表述，统一为计算结果展示与计算接口</td>
+</tr>
+<tr>
+<td>v1.1</td>
+<td>2026-05-22</td>
+<td>优化计算口径：拆分采购交付提前期与采购周期覆盖天数，新增发货 / 下单最早可用天数，明确必断货扣除量按无法挽回的当日断货损失计算，并补充远期库存风险与阈值提示</td>
+</tr>
+<tr>
+<td>v1.0</td>
+<td>2026-05-20</td>
+<td>初稿：定义全新备货规则配置页面、预测曲线积分、发货/下单双周期、安全天数取最高值、库存扣减、必断货扣除与异常提示</td>
+</tr>
+</tbody></table>
+
+      </article>
+    </main>
+  </div>
+  <script>
+    const tocLinks = Array.from(document.querySelectorAll('.toc-link'));
+    const headings = tocLinks
+      .map((link) => document.getElementById(decodeURIComponent(link.hash.slice(1))))
+      .filter(Boolean);
+
+    const setActiveLink = () => {
+      let activeId = headings[0]?.id;
+      for (const heading of headings) {
+        if (heading.getBoundingClientRect().top <= 120) {
+          activeId = heading.id;
+        } else {
+          break;
+        }
+      }
+      tocLinks.forEach((link) => {
+        link.classList.toggle('active', link.hash === '#' + activeId);
+      });
+    };
+
+    document.addEventListener('scroll', setActiveLink, { passive: true });
+    window.addEventListener('hashchange', setActiveLink);
+    setActiveLink();
+  </script>
+</body>
+</html>
