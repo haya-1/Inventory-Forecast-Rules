@@ -39,6 +39,10 @@
     .page-title { font-size: 18px; font-weight: 600; line-height: 28px; }
     .page-subtitle { margin-top: 3px; color: #909399; font-size: 13px; }
     .actions { display: flex; align-items: center; gap: 10px; }
+    .config-tabs { display: flex; align-items: flex-end; gap: 40px; height: 42px; margin: 0 -24px 18px; padding: 0 24px; border-bottom: 1px solid #ebeef5; }
+    .config-tab { position: relative; height: 42px; display: inline-flex; align-items: center; color: #303133; font-size: 14px; line-height: 1; }
+    .config-tab.active { color: #0052ff; font-weight: 600; }
+    .config-tab.active::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 3px; background: #0052ff; }
     .btn { height: 30px; padding: 0 12px; border: 1px solid #dcdfe6; border-radius: 4px; background: #fff; color: #606266; cursor: pointer; font-size: 13px; }
     .btn:hover { color: #409eff; border-color: #c6e2ff; background: #ecf5ff; }
     .btn-primary { color: #fff; background: #409eff; border-color: #409eff; }
@@ -55,6 +59,7 @@
     .input-name { width: 126px; }
     .method-select { width: 180px; }
     .method-days-display { color: #303133; font-variant-numeric: tabular-nums; }
+    .default-status { text-align: center; }
     .unit { color: #606266; }
     .section { margin-top: 18px; }
     .section-title { font-size: 15px; font-weight: 600; color: #303133; margin-bottom: 14px; }
@@ -117,9 +122,16 @@
           </div>
         </div>
 
+        <div class="config-tabs" aria-label="配置状态">
+          <span class="config-tab">当前配置</span>
+          <span class="config-tab active">待生效配置</span>
+        </div>
+
         <div class="top-form">
           <label class="inline-field">工厂生产时间：<input class="input input-num" id="production-time" type="number" min="0" /><span class="unit">天</span></label>
           <label class="inline-field">大货入仓时间：<input class="input input-num" id="warehouse-time" type="number" min="0" /><span class="unit">天</span></label>
+          <label class="inline-field">采购延期天数_暂停：<input class="input input-num" id="purchase-delay-paused" type="number" min="0" /><span class="unit">天</span></label>
+          <label class="inline-field">采购延期天数_未暂停：<input class="input input-num" id="purchase-delay-unpaused" type="number" min="0" /><span class="unit">天</span></label>
           <label class="inline-field">采购频率：<input class="input input-num" id="purchase-frequency" type="number" min="0" /><span class="unit">天</span></label>
           <label class="inline-field">质检时间：<input class="input input-num" id="quality-inspection" type="number" min="0" /><span class="unit">天</span></label>
           <label class="inline-field">提货准备时间：<input class="input input-num" id="pickup-prep" type="number" min="0" /><span class="unit">天</span></label>
@@ -187,6 +199,8 @@
             purchaseLead: 30,
             warehouseTime: 7,
             purchaseFrequency: 15,
+            purchaseDelayPaused: 10,
+            purchaseDelayUnpaused: 5,
             qualityInspection: 2,
             pickupPrep: 3
           }
@@ -200,7 +214,8 @@
                 key: item.key,
                 name: item.name,
                 days: item.days,
-                leadTimeDays: item.days
+                leadTimeDays: item.days,
+                isDefault: item.key === 'sea_standard'
               };
             })
           };
@@ -219,7 +234,8 @@
           key: option.key || ('method_' + siteKey + '_' + (index + 1)),
           name: option.name,
           days: toInt(option.days, 0),
-          leadTimeDays: toInt(option.days, 0)
+          leadTimeDays: toInt(option.days, 0),
+          isDefault: option.key === 'sea_standard'
         };
       }
 
@@ -237,6 +253,8 @@
             purchaseLead: toInt(p.purchaseLead != null ? p.purchaseLead : p.productionTime, defaults.purchase.purchaseLead),
             warehouseTime: toInt(p.warehouseTime, defaults.purchase.warehouseTime),
             purchaseFrequency: toInt(p.purchaseFrequency, defaults.purchase.purchaseFrequency),
+            purchaseDelayPaused: toInt(p.purchaseDelayPaused, defaults.purchase.purchaseDelayPaused),
+            purchaseDelayUnpaused: toInt(p.purchaseDelayUnpaused, defaults.purchase.purchaseDelayUnpaused),
             qualityInspection: toInt(p.qualityInspection, defaults.purchase.qualityInspection),
             pickupPrep: toInt(p.pickupPrep, defaults.purchase.pickupPrep)
           }
@@ -287,6 +305,8 @@
         setValue('production-time', state.purchase.productionTime);
         setValue('warehouse-time', state.purchase.warehouseTime);
         setValue('purchase-frequency', state.purchase.purchaseFrequency);
+        setValue('purchase-delay-paused', state.purchase.purchaseDelayPaused);
+        setValue('purchase-delay-unpaused', state.purchase.purchaseDelayUnpaused);
         setValue('quality-inspection', state.purchase.qualityInspection);
         setValue('pickup-prep', state.purchase.pickupPrep);
         document.getElementById('shipping-sections').innerHTML = SITE_META.map(renderSiteSection).join('');
@@ -306,12 +326,13 @@
             '<label class="inline-field">发货频率：<input class="input input-num site-frequency" type="number" min="0" value="' + escapeHtml(config.shipFrequency) + '" /><span class="unit">天</span></label>' +
           '</div>' +
           '<table class="param-table">' +
-            '<thead><tr><th>物流方式</th><th>时间（天）</th><th style="width: 140px;">操作</th></tr></thead>' +
+            '<thead><tr><th>物流方式</th><th>时间（天）</th><th class="default-status" style="width: 140px;">是否默认</th><th style="width: 140px;">操作</th></tr></thead>' +
             '<tbody>' + config.logistics.map(function(row, index) {
               var normalized = normalizeMethod(meta.key, row, index, config.logistics[index]);
               return '<tr data-index="' + index + '">' +
                 '<td><select class="input method-select">' + renderMethodOptions(meta.key, normalized.key) + '</select></td>' +
                 '<td><span class="method-days-display" data-days="' + escapeHtml(normalized.days) + '">' + escapeHtml(normalized.days) + '</span><span class="unit"> 天</span></td>' +
+                '<td class="default-status method-default-display">' + (normalized.isDefault ? '是' : '-') + '</td>' +
                 '<td class="table-actions"><button type="button" class="btn-danger method-delete">删除</button></td>' +
               '</tr>';
             }).join('') + '</tbody>' +
@@ -325,6 +346,8 @@
         state.purchase.purchaseLead = state.purchase.productionTime;
         state.purchase.warehouseTime = toInt(document.getElementById('warehouse-time').value, 0);
         state.purchase.purchaseFrequency = toInt(document.getElementById('purchase-frequency').value, 0);
+        state.purchase.purchaseDelayPaused = toInt(document.getElementById('purchase-delay-paused').value, 0);
+        state.purchase.purchaseDelayUnpaused = toInt(document.getElementById('purchase-delay-unpaused').value, 0);
         state.purchase.qualityInspection = toInt(document.getElementById('quality-inspection').value, 0);
         state.purchase.pickupPrep = toInt(document.getElementById('pickup-prep').value, 0);
         document.querySelectorAll('.section[data-site-key]').forEach(function(section) {
@@ -340,7 +363,8 @@
               key: option.key,
               name: option.name,
               days: option.days,
-              leadTimeDays: option.days
+              leadTimeDays: option.days,
+              isDefault: option.isDefault
             };
           });
         });
@@ -412,7 +436,7 @@
           var nextOption = (LOGISTICS_OPTIONS[key] || []).filter(function(option) {
             return !used[option.key] && !used[option.name];
           })[0] || (LOGISTICS_OPTIONS[key] || [])[0] || { key: 'method_' + key + '_' + nextId, name: '', days: 0 };
-          list.push({ id: nextId, key: nextOption.key, name: nextOption.name, days: nextOption.days, leadTimeDays: nextOption.days });
+          list.push({ id: nextId, key: nextOption.key, name: nextOption.name, days: nextOption.days, leadTimeDays: nextOption.days, isDefault: nextOption.key === 'sea_standard' });
           render();
           return;
         }
@@ -435,6 +459,8 @@
           days.textContent = option.days;
           days.setAttribute('data-days', option.days);
         }
+        var defaultDisplay = select.closest('tr').querySelector('.method-default-display');
+        if (defaultDisplay) defaultDisplay.textContent = option.isDefault ? '是' : '-';
       });
 
       initSidebarMenu();
