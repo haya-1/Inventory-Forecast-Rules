@@ -1933,21 +1933,6 @@
       margin-top: 12px;
     }
 
-    .formula-block {
-      border: 1px solid #ebeef5;
-      border-radius: 4px;
-      background: #fafafa;
-      padding: 12px 14px;
-      color: #606266;
-      font-size: 13px;
-      line-height: 1.7;
-      margin-bottom: 10px;
-    }
-
-    .formula-block strong {
-      color: #303133;
-    }
-
     .header-help {
       position: relative;
       display: inline-flex;
@@ -2177,7 +2162,7 @@
                     <th style="width: 96px;">运营负责人</th>
                     <th style="width: 110px;" id="cycle-head">目标库存天数</th>
                     <th style="width: 112px;" class="num" id="qty-head">发货建议量</th>
-                    <th style="width: 108px;" id="risk-head">风险评级</th>
+                    <th style="width: 108px;" id="risk-head">紧急程度</th>
                     <th style="width: 92px;">生成单据</th>
                     <th style="width: 104px;">销量数据源</th>
                     <th style="width: 104px;">生成日期</th>
@@ -2388,17 +2373,36 @@
         return activeSuggestionType === 'order' ? child.orderInventoryDeduction : child.shipInventoryDeduction;
       }
 
+      function localWarehousePreShipment(child) {
+        return child.localPreShipment != null ? child.localPreShipment : 0;
+      }
+
+      function localWarehouseRemaining(child) {
+        if (child.localRemaining != null) return child.localRemaining;
+        return Math.max(0, (child.cnAvailable || 0) - localWarehousePreShipment(child));
+      }
+
+      function localWarehouseTotal(child) {
+        return localWarehousePreShipment(child) + localWarehouseRemaining(child);
+      }
+
+      function localWarehouseBreakdownText(child) {
+        return formatNum(localWarehouseTotal(child)) + '(' +
+          formatNum(localWarehousePreShipment(child)) + '+' +
+          formatNum(localWarehouseRemaining(child)) + ')';
+      }
+
       function inventoryDeductionChips(child) {
         var parts = [
           { label: 'FBA库存', value: child.fbaInventory },
           { label: 'FBA在途', value: child.fbaInbound }
         ];
         if (activeSuggestionType === 'order') {
-          parts.push({ label: 'CN仓可用', value: child.cnAvailable });
+          parts.push({ label: '本地仓', value: child.cnAvailable });
           parts.push({ label: '已下单未入库', value: child.purchaseInbound });
         }
         return parts.map(function(part) {
-          return '<span class="ded-chip">' + part.label + ' ' + formatNum(part.value || 0) + '</span>';
+          return '<span class="ded-chip">' + part.label + ' ' + escapeHtml(part.detail || formatNum(part.value || 0)) + '</span>';
         }).join('');
       }
 
@@ -2485,7 +2489,7 @@
 
       function inventoryDeductionTip() {
         return activeSuggestionType === 'order'
-          ? '库存扣减包括：FBA库存、FBA在途、CN仓可用、已下单未入库'
+          ? '库存扣减包括：FBA库存、FBA在途、本地仓、已下单未入库'
           : '库存扣减包括：FBA库存、FBA在途';
       }
 
@@ -2495,12 +2499,12 @@
       }
 
       function riskLevelTip() {
-        return 'A：必断货 = 最快物流也补不上；B：紧急补货 = 需立即安排最快物流；C：优先补货 = 有缓冲但需优先处理；D：常规可达 = 最慢物流也能补上';
+        return 'A：必断货 = 最快物流也补不上；B1：紧急补货 = 需立即安排最快物流；B2：优先补货 = 有缓冲但需优先处理；C：常规可达 = 最慢物流也能补上';
       }
 
       function riskHeaderHtml(label) {
         var tip = riskLevelTip();
-        return escapeHtml(label || '风险评级') + '<span class="header-help" tabindex="0" title="' + escapeHtml(tip) + '" data-tip="' + escapeHtml(tip) + '">!</span>';
+        return escapeHtml(label || '紧急程度') + '<span class="header-help" tabindex="0" title="' + escapeHtml(tip) + '" data-tip="' + escapeHtml(tip) + '">!</span>';
       }
 
       function sourceKeys() {
@@ -2951,19 +2955,19 @@
           return { level: 4, name: 'A：必断货', className: 'risk-critical', stockoutDay: stockoutDay };
         }
         if (stockoutDay < rescueDay) {
-          return { level: 3, name: 'B：紧急补货', className: 'risk-high', stockoutDay: stockoutDay };
+          return { level: 3, name: 'B1：紧急补货', className: 'risk-high', stockoutDay: stockoutDay };
         }
         if (stockoutDay < range.slowest) {
-          return { level: 2, name: 'C：优先补货', className: 'risk-medium', stockoutDay: stockoutDay };
+          return { level: 2, name: 'B2：优先补货', className: 'risk-medium', stockoutDay: stockoutDay };
         }
-        return { level: 1, name: 'D：常规可达', className: 'risk-low', stockoutDay: stockoutDay };
+        return { level: 1, name: 'C：常规可达', className: 'risk-low', stockoutDay: stockoutDay };
       }
 
       function parentShipRisk(item) {
         var children = (item.childItems || []).filter(function(child) {
           return child.shipSuggestedQty > 0;
         });
-        if (!children.length) return { level: 1, name: 'D：常规可达', className: 'risk-low', stockoutDay: null };
+        if (!children.length) return { level: 1, name: 'C：常规可达', className: 'risk-low', stockoutDay: null };
         return children.map(childShipRisk).sort(function(a, b) {
           return b.level - a.level || toInt(a.stockoutDay, 9999) - toInt(b.stockoutDay, 9999);
         })[0];
@@ -3374,7 +3378,7 @@
         document.getElementById('qty-head').textContent = activeQtyLabel();
         var riskHead = document.getElementById('risk-head');
         if (riskHead) {
-          riskHead.innerHTML = riskHeaderHtml('风险评级');
+          riskHead.innerHTML = riskHeaderHtml('紧急程度');
           riskHead.style.display = activeSuggestionType === 'ship' ? '' : 'none';
         }
       }
@@ -3520,7 +3524,7 @@
         if (!rows.length) return '<div class="contrib-empty">暂无' + typeLabel + '建议量</div>';
         return scrollableTableWrap(
           '<table class="detail-table contrib-table"><thead><tr><th>SKU</th>' +
-          (showRisk ? '<th>' + riskHeaderHtml('SKU风险') + '</th>' : '') +
+          (showRisk ? '<th>' + riskHeaderHtml('SKU紧急程度') + '</th>' : '') +
           '<th class="num">建议总量</th><th class="num">占比</th></tr></thead><tbody>' + body + '</tbody></table>'
         );
       }
@@ -3708,13 +3712,20 @@
         });
 
         // ③ 库存抵扣
-        var seg3Head = '<tr><th>SKU</th><th class="num">平台仓</th><th class="num">物流在途</th><th class="num">本地仓</th><th class="num">采购在途</th><th class="num">总库存</th></tr>';
+        var localWarehouseHeadTip = '本地仓库存 = 本地仓-预发货库存 + 本地仓-剩余库存';
+        var localWarehouseHead = isOrder
+          ? '本地仓'
+          : '本地仓库存(预发货+剩余)<span class="header-help" tabindex="0" title="' +
+            escapeHtml(localWarehouseHeadTip) + '" data-tip="' + escapeHtml(localWarehouseHeadTip) + '">!</span>';
+        var seg3Head = '<tr><th>SKU</th><th class="num">平台仓</th><th class="num">物流在途</th><th class="num">' + localWarehouseHead + '</th><th class="num">采购在途</th><th class="num">总库存</th></tr>';
         var seg3Rows = sorted.map(function(child) {
-          var totalInv = (child.fbaInventory || 0) + (child.fbaInbound || 0) + (child.cnAvailable || 0) + (child.purchaseInbound || 0);
+          var localInventoryValue = isOrder ? (child.cnAvailable || 0) : localWarehouseTotal(child);
+          var localInventoryText = isOrder ? formatNum(child.cnAvailable || 0) : localWarehouseBreakdownText(child);
+          var totalInv = (child.fbaInventory || 0) + (child.fbaInbound || 0) + localInventoryValue + (child.purchaseInbound || 0);
           return skuTd(child) +
             '<td class="num">' + formatNum(child.fbaInventory || 0) + '</td>' +
             '<td class="num">' + formatNum(child.fbaInbound || 0) + '</td>' +
-            '<td class="num">' + formatNum(child.cnAvailable || 0) + '</td>' +
+            '<td class="num">' + localInventoryText + '</td>' +
             '<td class="num">' + formatNum(child.purchaseInbound || 0) + '</td>' +
             '<td class="num strong-num">' + formatNum(totalInv) + '</td>';
         });

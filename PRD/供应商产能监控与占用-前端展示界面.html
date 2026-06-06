@@ -1,0 +1,1004 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>供应商产能监控与占用操作手册</title>
+  <style>
+    :root {
+      --bg: #f5f7f9;
+      --surface: #ffffff;
+      --surface-soft: #f8fafc;
+      --line: #d9e2e7;
+      --line-strong: #b8c7d1;
+      --text: #1d2930;
+      --muted: #63727c;
+      --brand: #0f766e;
+      --brand-soft: #e4f4f1;
+      --accent: #b7791f;
+      --accent-soft: #fff4d6;
+      --danger: #c24135;
+      --danger-soft: #fde8e5;
+      --info: #2563a7;
+      --info-soft: #e5effa;
+      --shadow: 0 18px 42px rgba(31, 42, 50, 0.08);
+      --radius: 8px;
+      --sidebar-width: 318px;
+      font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+    }
+
+    .sidebar {
+      background: #0f1f24;
+      color: #dbe7eb;
+      height: 100vh;
+      position: sticky;
+      top: 0;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid #0a171b;
+    }
+
+    .sidebar-header {
+      padding: 22px 20px 18px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .sidebar-title {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.4;
+      font-weight: 700;
+      letter-spacing: 0;
+      color: #ffffff;
+    }
+
+    .sidebar-subtitle {
+      margin: 10px 0 0;
+      color: #9db2ba;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .tree {
+      list-style: none;
+      padding: 12px 10px 24px;
+      margin: 0;
+      overflow: auto;
+    }
+
+    .tree-item {
+      margin: 2px 0;
+    }
+
+    .tree-button {
+      width: 100%;
+      border: 0;
+      background: transparent;
+      color: #dbe7eb;
+      display: grid;
+      grid-template-columns: 22px minmax(0, 1fr);
+      gap: 8px;
+      align-items: start;
+      text-align: left;
+      padding: 9px 10px;
+      border-radius: var(--radius);
+      cursor: pointer;
+      line-height: 1.35;
+      min-height: 38px;
+    }
+
+    .tree-button:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #ffffff;
+    }
+
+    .tree-button:focus-visible {
+      outline: 2px solid #8bd5c8;
+      outline-offset: 2px;
+    }
+
+    .tree-button.is-active {
+      background: var(--brand);
+      color: #ffffff;
+      box-shadow: inset 3px 0 0 #f6c35f;
+    }
+
+    .tree-button.has-children {
+      font-weight: 650;
+    }
+
+    .tree-button.child {
+      color: #c8d8dd;
+      font-size: 14px;
+      padding-left: 16px;
+    }
+
+    .tree-button.child.is-active {
+      color: #ffffff;
+    }
+
+    .tree-button .chevron {
+      width: 18px;
+      height: 18px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #9db2ba;
+      transition: transform 160ms ease;
+      line-height: 1;
+      margin-top: 1px;
+    }
+
+    .tree-button[aria-expanded="true"] .chevron {
+      transform: rotate(90deg);
+      color: #ffffff;
+    }
+
+    .tree-button.child .chevron {
+      color: #f6c35f;
+      font-size: 10px;
+    }
+
+    .tree-label {
+      overflow-wrap: anywhere;
+    }
+
+    .children {
+      list-style: none;
+      margin: 0;
+      padding: 0 0 4px 22px;
+      display: none;
+    }
+
+    .tree-item.is-open > .children {
+      display: block;
+    }
+
+    .main {
+      min-width: 0;
+      padding: 24px 28px 36px;
+    }
+
+    .content-shell {
+      max-width: 1060px;
+      margin: 0 auto;
+    }
+
+    .topbar {
+      min-height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .breadcrumb {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .breadcrumb strong {
+      color: var(--text);
+      font-weight: 650;
+    }
+
+    .quick-status {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: var(--surface);
+      color: var(--muted);
+      border: 1px solid var(--line);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--brand);
+    }
+
+    .status-dot.warn {
+      background: var(--accent);
+    }
+
+    .status-dot.info {
+      background: var(--info);
+    }
+
+    .article {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .article-head {
+      padding: 26px 30px 20px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    }
+
+    .section-kicker {
+      color: var(--brand);
+      font-size: 13px;
+      font-weight: 700;
+      margin: 0 0 8px;
+    }
+
+    .article-title {
+      margin: 0;
+      font-size: 26px;
+      line-height: 1.3;
+      letter-spacing: 0;
+    }
+
+    .article-body {
+      padding: 26px 30px 32px;
+    }
+
+    .article-body h3 {
+      margin: 24px 0 12px;
+      font-size: 18px;
+      line-height: 1.35;
+    }
+
+    .article-body h3:first-child {
+      margin-top: 0;
+    }
+
+    .article-body p {
+      margin: 0 0 14px;
+      line-height: 1.75;
+      color: #304048;
+    }
+
+    .article-body ol,
+    .article-body ul {
+      margin: 0 0 18px;
+      padding-left: 22px;
+    }
+
+    .article-body li {
+      margin: 8px 0;
+      line-height: 1.7;
+      color: #304048;
+    }
+
+    .note {
+      margin: 18px 0;
+      padding: 14px 16px;
+      background: var(--accent-soft);
+      border: 1px solid #f2d589;
+      border-left: 4px solid var(--accent);
+      border-radius: var(--radius);
+    }
+
+    .note-title {
+      font-weight: 700;
+      margin: 0 0 8px;
+      color: #6f4b12;
+    }
+
+    .notice {
+      margin: 18px 0;
+      padding: 14px 16px;
+      background: var(--brand-soft);
+      border: 1px solid #b9dfd8;
+      border-left: 4px solid var(--brand);
+      border-radius: var(--radius);
+    }
+
+    .notice-title {
+      font-weight: 700;
+      margin: 0 0 8px;
+      color: #0f5e58;
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin: 18px 0 22px;
+    }
+
+    .flow-step {
+      min-height: 88px;
+      background: var(--surface-soft);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .flow-step span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .flow-step strong {
+      color: var(--text);
+      line-height: 1.35;
+    }
+
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin: 18px 0;
+    }
+
+    .status-card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      background: var(--surface-soft);
+      min-height: 86px;
+    }
+
+    .status-card strong {
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .status-card.red {
+      background: var(--danger-soft);
+      border-color: #f4b8b1;
+    }
+
+    .status-card.blue {
+      background: var(--info-soft);
+      border-color: #b9d0ee;
+    }
+
+    .status-card.gray {
+      background: #eef2f4;
+      border-color: #cfd9df;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0 22px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+      display: table;
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid var(--line);
+      padding: 12px 14px;
+      text-align: left;
+      vertical-align: top;
+      line-height: 1.55;
+    }
+
+    th {
+      background: #edf4f3;
+      color: #173c3a;
+      font-weight: 700;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    code {
+      background: #eef2f4;
+      border: 1px solid #d4dde2;
+      border-radius: 4px;
+      padding: 2px 5px;
+      font-family: Consolas, "SFMono-Regular", monospace;
+      color: #17242a;
+    }
+
+    .empty-hint {
+      color: var(--muted);
+      background: var(--surface-soft);
+      border: 1px dashed var(--line-strong);
+      border-radius: var(--radius);
+      padding: 18px;
+      line-height: 1.7;
+    }
+
+    @media (max-width: 860px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        height: auto;
+        position: relative;
+        max-height: 48vh;
+      }
+
+      .main {
+        padding: 18px 14px 28px;
+      }
+
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .quick-status {
+        justify-content: flex-start;
+      }
+
+      .article-head,
+      .article-body {
+        padding-left: 18px;
+        padding-right: 18px;
+      }
+
+      .flow,
+      .status-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" aria-label="操作手册目录">
+      <div class="sidebar-header">
+        <h1 class="sidebar-title">供应商产能监控与占用</h1>
+        <p class="sidebar-subtitle">操作手册目录</p>
+      </div>
+      <ul class="tree" id="tree"></ul>
+    </aside>
+
+    <main class="main">
+      <div class="content-shell">
+        <div class="topbar">
+          <div class="breadcrumb" id="breadcrumb">操作手册 / <strong>1. 适用范围</strong></div>
+          <div class="quick-status" aria-label="关键规则">
+            <span class="status-pill"><span class="status-dot"></span>申请单仅校验</span>
+            <span class="status-pill"><span class="status-dot warn"></span>确认即扣减</span>
+            <span class="status-pill"><span class="status-dot info"></span>作废即释放</span>
+          </div>
+        </div>
+
+        <article class="article" id="article" aria-live="polite">
+          <div class="article-head">
+            <p class="section-kicker" id="kicker">操作手册</p>
+            <h2 class="article-title" id="title">1. 适用范围</h2>
+          </div>
+          <div class="article-body" id="content"></div>
+        </article>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const sections = [
+      {
+        id: "scope",
+        title: "1. 适用范围",
+        content: `
+          <p>本文用于指导业务用户完成供应商产能维护、产能查看、采购申请单产能校验，以及成品采购单产能扣减、占用和释放。</p>
+          <div class="flow">
+            <div class="flow-step"><span>操作一</span><strong>维护供应商日均产能和产能空缺日</strong></div>
+            <div class="flow-step"><span>操作二</span><strong>查看供应商产能日历和每日占用明细</strong></div>
+            <div class="flow-step"><span>操作三</span><strong>在采购申请单中校验并调整需求交期</strong></div>
+            <div class="flow-step"><span>操作四</span><strong>在成品采购单中完成扣减、占用和释放</strong></div>
+          </div>
+          <div class="notice">
+            <div class="notice-title">使用口径</div>
+            <p>采购申请单只做产能校验；成品采购单发起确认时实际扣减产能，审批拒绝后退回，审批通过后转为最终占用。</p>
+          </div>
+        `
+      },
+      {
+        id: "maintain",
+        title: "2. 维护供应商产能",
+        children: [
+          {
+            id: "maintain-entry",
+            title: "2.1 进入供应商产能信息",
+            content: `
+              <h3>操作步骤</h3>
+              <ol>
+                <li>进入“成品供应商”模块。</li>
+                <li>打开需要维护的供应商档案。</li>
+                <li>找到“产能信息”区域。</li>
+              </ol>
+            `
+          },
+          {
+            id: "daily-capacity",
+            title: "2.2 维护日均产能",
+            content: `
+              <h3>操作步骤</h3>
+              <ol>
+                <li>在“日均产能”字段中填写该供应商每天可承接的产能数量。</li>
+                <li>确认数量无误后点击保存。</li>
+                <li>保存后，系统会按最新日均产能重新计算当前日期之后的产能日历。</li>
+              </ol>
+              <div class="note">
+                <div class="note-title">注意事项</div>
+                <ol>
+                  <li>当前日期之前的历史产能数据不会重新计算。</li>
+                  <li>如果保存后部分日期剩余产能变为负数，系统允许保存。</li>
+                  <li>剩余产能为负数的日期会在产能日历中以红色状态展示。</li>
+                </ol>
+              </div>
+            `
+          },
+          {
+            id: "blank-days",
+            title: "2.3 维护产能空缺日",
+            content: `
+              <h3>操作步骤</h3>
+              <ol>
+                <li>在供应商“产能信息”区域进入“产能空缺日”维护入口。</li>
+                <li>新增供应商不可生产或不可分配产能的日期。</li>
+                <li>保存产能空缺日。</li>
+                <li>保存后，空缺日当天最大产能按 0 计算。</li>
+              </ol>
+              <div class="note">
+                <div class="note-title">注意事项</div>
+                <ol>
+                  <li>系统会自动清理早于当前日期的产能空缺日。</li>
+                  <li>如果某个空缺日已经存在采购单占用，保存后该日期可能出现负数剩余产能，系统允许保存。</li>
+                  <li>后续采购单占用产能时，系统会跳过产能空缺日。</li>
+                </ol>
+              </div>
+            `
+          },
+          {
+            id: "new-supplier-calendar",
+            title: "2.4 新增供应商后的产能日历",
+            content: `
+              <p>新增供应商保存后，系统会自动生成该供应商后续周期内的产能日历。</p>
+              <div class="notice">
+                <div class="notice-title">业务用户只需要处理两件事</div>
+                <ol>
+                  <li>维护日均产能。</li>
+                  <li>维护产能空缺日。</li>
+                </ol>
+              </div>
+              <p>产能日历初始化由系统自动完成，无需手工创建日期数据。</p>
+            `
+          }
+        ]
+      },
+      {
+        id: "view",
+        title: "3. 查看供应商产能",
+        children: [
+          {
+            id: "view-supplier",
+            title: "3.1 在供应商档案中查看",
+            content: `
+              <h3>操作步骤</h3>
+              <ol>
+                <li>进入“成品供应商”模块。</li>
+                <li>打开供应商档案。</li>
+                <li>在“产能信息”区域点击查看产能日历。</li>
+                <li>在日历中查看每天的占用产能、剩余产能和状态。</li>
+              </ol>
+            `
+          },
+          {
+            id: "view-requisition",
+            title: "3.2 在采购申请单中查看",
+            content: `
+              <h3>操作步骤</h3>
+              <ol>
+                <li>打开采购申请单。</li>
+                <li>在分配供应商后，进入“调整需求交期”节点或相关处理页面。</li>
+                <li>点击产能日历入口。</li>
+                <li>查看所选供应商在目标交期附近的剩余产能。</li>
+              </ol>
+            `
+          },
+          {
+            id: "view-po",
+            title: "3.3 在成品采购单中查看",
+            content: `
+              <h3>操作步骤</h3>
+              <ol>
+                <li>打开成品采购单创建页或详情页。</li>
+                <li>选择供应商。</li>
+                <li>点击供应商选项右侧的产能日历入口。</li>
+                <li>查看该供应商产能日历。</li>
+              </ol>
+              <div class="note">
+                <div class="note-title">注意事项</div>
+                <ol>
+                  <li>未选择供应商时，产能日历入口置灰，不可查看。</li>
+                  <li>发起确认、提交确认、确认货期等弹窗中也可以查看产能日历。</li>
+                </ol>
+              </div>
+            `
+          },
+          {
+            id: "date-card",
+            title: "3.4 查看日期卡片",
+            content: `
+              <p>产能日历中的日期卡片主要展示日期、占用产能、剩余产能和状态标签。</p>
+              <div class="status-grid">
+                <div class="status-card red"><strong>红色</strong><p>剩余产能小于 0。</p></div>
+                <div class="status-card blue"><strong>蓝色</strong><p>当前日期。</p></div>
+                <div class="status-card gray"><strong>灰色</strong><p>剩余产能等于 0。</p></div>
+              </div>
+            `
+          },
+          {
+            id: "usage-detail",
+            title: "3.5 查看占用明细",
+            content: `
+              <h3>操作步骤</h3>
+              <ol>
+                <li>将鼠标移动到某个日期卡片上。</li>
+                <li>系统展示当天产能占用明细。</li>
+                <li>占用明细展示采购单号、SPU、占用数量。</li>
+              </ol>
+            `
+          }
+        ]
+      },
+      {
+        id: "requisition",
+        title: "4. 采购申请单中校验产能",
+        children: [
+          {
+            id: "create-requisition",
+            title: "4.1 创建采购申请单",
+            content: `
+              <h3>操作步骤</h3>
+              <ol>
+                <li>正常创建采购申请单。</li>
+                <li>填写需求期望时间。</li>
+                <li>创建时系统不限制需求期望时间。</li>
+              </ol>
+            `
+          },
+          {
+            id: "assign-supplier-check",
+            title: "4.2 分配供应商后校验",
+            content: `
+              <h3>操作步骤</h3>
+              <ol>
+                <li>完成供应商分配。</li>
+                <li>系统根据供应商、采购量、需求期望时间和 SPU 生产周期自动校验产能。</li>
+                <li>如果产能充足，系统自动跳过“调整需求交期”节点，进入“待下单”。</li>
+                <li>如果产能不足，系统进入“调整需求交期”节点。</li>
+              </ol>
+            `
+          },
+          {
+            id: "adjust-demand-date",
+            title: "4.3 调整需求交期",
+            content: `
+              <h3>操作步骤</h3>
+              <ol>
+                <li>进入“调整需求交期”节点。</li>
+                <li>打开产能日历，查看供应商剩余产能。</li>
+                <li>将需求期望时间调整到产能充足的日期。</li>
+                <li>提交调整。</li>
+              </ol>
+              <h3>提交结果</h3>
+              <ol>
+                <li>如果调整后的交期产能充足，可以提交。</li>
+                <li>如果产能不足，系统不允许提交，并提示供应商剩余产能不足。</li>
+              </ol>
+              <div class="notice">
+                <div class="notice-title">关键口径</div>
+                <ol>
+                  <li>采购申请单只做产能校验，不扣减、不锁定、不占用供应商产能。</li>
+                  <li>实际产能扣减发生在成品采购单确认流程中。</li>
+                </ol>
+              </div>
+            `
+          }
+        ]
+      },
+      {
+        id: "purchase-order",
+        title: "5. 成品采购单中占用产能",
+        children: [
+          {
+            id: "po-view-capacity",
+            title: "5.1 创建或查看采购单时查看产能",
+            content: `
+              <h3>操作步骤</h3>
+              <ol>
+                <li>进入成品采购单创建页或详情页。</li>
+                <li>选择供应商。</li>
+                <li>点击供应商右侧产能日历入口。</li>
+                <li>根据预计交货时间查看供应商剩余产能。</li>
+              </ol>
+            `
+          },
+          {
+            id: "start-confirm",
+            title: "5.2 发起确认时扣减产能",
+            content: `
+              <h3>操作步骤</h3>
+              <ol>
+                <li>在成品采购单中点击发起确认。</li>
+                <li>系统根据供应商、采购总数、预计交货时间和 SPU 生产周期校验产能。</li>
+                <li>如果产能不足，系统阻止发起确认，并提示：<code>该供应商剩余产能不足，请检查货期和数量后重试</code>。</li>
+                <li>如果产能充足，系统发起确认并立即扣减供应商产能。</li>
+              </ol>
+              <h3>审批结果</h3>
+              <ol>
+                <li>审批通过后，本次扣减转为最终占用。</li>
+                <li>审批拒绝后，系统退回本次扣减的产能。</li>
+              </ol>
+            `
+          },
+          {
+            id: "submit-confirm",
+            title: "5.3 提交确认时扣减产能",
+            content: `
+              <h3>操作步骤</h3>
+              <ol>
+                <li>在提交确认弹窗中确认即将提交的成品采购单。</li>
+                <li>系统逐单校验供应商产能。</li>
+                <li>产能充足的采购单正常提交并扣减产能。</li>
+                <li>产能不足的采购单不提报，系统提示对应采购单产能不足。</li>
+              </ol>
+              <h3>审批结果</h3>
+              <ol>
+                <li>审批通过后，已扣减产能转为最终占用。</li>
+                <li>审批拒绝后，系统退回已扣减产能。</li>
+              </ol>
+            `
+          },
+          {
+            id: "confirm-date",
+            title: "5.4 确认货期时调整占用",
+            content: `
+              <h3>操作步骤</h3>
+              <ol>
+                <li>在成品采购单中执行确认货期。</li>
+                <li>如果货期未变化，系统不重新计算产能。</li>
+                <li>如果货期发生变化，系统重新校验产能。</li>
+                <li>产能充足时，系统按新货期调整产能扣减。</li>
+                <li>产能不足时，系统阻止确认，并提示：<code>该供应商剩余产能不足，请检查货期和数量后重试</code>。</li>
+              </ol>
+              <h3>审批结果</h3>
+              <ol>
+                <li>审批通过后，本次调整转为最终占用。</li>
+                <li>审批拒绝后，系统回退本次产能调整。</li>
+              </ol>
+            `
+          },
+          {
+            id: "change-date-qty",
+            title: "5.5 修改货期或数量时重新占用",
+            content: `
+              <h3>会触发重新校验的操作</h3>
+              <ol>
+                <li>列表页执行货期变更。</li>
+                <li>详情页编辑基础信息中的预计交货时间。</li>
+                <li>详情页编辑货品详情。</li>
+                <li>调整货品数量或采购总数。</li>
+              </ol>
+              <h3>操作方式</h3>
+              <ol>
+                <li>修改货期或数量。</li>
+                <li>点击保存或提交。</li>
+                <li>系统释放原占用产能，并按新货期、新数量重新校验和占用。</li>
+                <li>如果新结果产能充足，操作成功。</li>
+                <li>如果新结果产能不足，操作失败，并提示供应商剩余产能不足。</li>
+              </ol>
+              <div class="note">
+                <div class="note-title">注意事项</div>
+                <ol>
+                  <li>如果交期和采购总数都没有变化，系统不重新计算产能。</li>
+                  <li>如果操作失败，原产能占用保持不变。</li>
+                </ol>
+              </div>
+            `
+          },
+          {
+            id: "void-po",
+            title: "5.6 作废采购单时释放产能",
+            content: `
+              <h3>操作步骤</h3>
+              <ol>
+                <li>在成品采购单中执行作废操作。</li>
+                <li>作废成功后，系统立即释放该采购单已占用的产能。</li>
+                <li>释放后，对应日期的占用产能减少，剩余产能增加。</li>
+              </ol>
+            `
+          }
+        ]
+      },
+      {
+        id: "rules",
+        title: "6. 产能占用规则说明",
+        content: `
+          <p>系统占用产能时，按以下方式处理：</p>
+          <ol>
+            <li>以预计交货时间作为目标交期。</li>
+            <li>按 SPU 生产周期计算最早可占用日期。</li>
+            <li>如果目标交期早于“当前日期 + 生产周期”，系统直接判定产能超限。</li>
+            <li>如果目标交期可用，系统从目标交期当天开始倒序占用产能。</li>
+            <li>目标交期当天产能不足时，继续向前一天占用。</li>
+            <li>一直倒推到最早可占用日期。</li>
+            <li>如果这段日期内仍然没有足够产能，系统判定产能超限。</li>
+            <li>产能空缺日不会被用于新采购单占用。</li>
+          </ol>
+        `
+      },
+      {
+        id: "tips",
+        title: "7. 常见提示与处理方式",
+        content: `
+          <table>
+            <thead>
+              <tr><th>提示或现象</th><th>处理方式</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>未选择供应商，产能日历入口置灰</td><td>先选择供应商，再查看产能日历。</td></tr>
+              <tr><td><code>该供应商剩余产能不足，请检查货期和数量后重试</code></td><td>调整预计交货时间、需求期望时间或数量后重试。</td></tr>
+              <tr><td>采购申请单进入“调整需求交期”节点</td><td>打开产能日历，选择供应商产能充足的日期后提交。</td></tr>
+              <tr><td>产能日历某天显示红色</td><td>该日期剩余产能小于 0，可悬停查看占用明细。</td></tr>
+              <tr><td>批量提交时部分采购单不提报</td><td>根据提示中的采购单号，分别调整货期或数量后重试。</td></tr>
+              <tr><td>审批拒绝后产能恢复</td><td>系统已退回本次确认扣减，无需手动处理。</td></tr>
+              <tr><td>作废采购单后产能变化</td><td>系统已立即释放该采购单占用的产能。</td></tr>
+            </tbody>
+          </table>
+        `
+      },
+      {
+        id: "suggestions",
+        title: "8. 操作建议",
+        content: `
+          <ol>
+            <li>下采购申请单前，优先查看供应商产能日历，选择剩余产能充足的交期。</li>
+            <li>供应商产能发生变化时，及时维护日均产能和产能空缺日。</li>
+            <li>成品采购单发起确认前，确认预计交货时间和采购总数准确。</li>
+            <li>需要修改已确认采购单的货期或数量时，先查看目标日期附近产能，避免保存失败。</li>
+            <li>发现红色负产能日期时，优先查看悬停明细，确认是哪张采购单占用了产能。</li>
+          </ol>
+        `
+      }
+    ];
+
+    const tree = document.getElementById("tree");
+    const title = document.getElementById("title");
+    const kicker = document.getElementById("kicker");
+    const content = document.getElementById("content");
+    const breadcrumb = document.getElementById("breadcrumb");
+    const sectionById = new Map();
+    const parentByChildId = new Map();
+
+    sections.forEach((section) => {
+      sectionById.set(section.id, section);
+      if (section.children) {
+        section.children.forEach((child) => {
+          sectionById.set(child.id, child);
+          parentByChildId.set(child.id, section);
+        });
+      }
+    });
+
+    function renderTree() {
+      tree.innerHTML = "";
+      sections.forEach((section) => {
+        const item = document.createElement("li");
+        item.className = "tree-item";
+        item.dataset.sectionId = section.id;
+
+        const hasChildren = Boolean(section.children && section.children.length);
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = hasChildren ? "tree-button has-children" : "tree-button";
+        button.dataset.sectionId = section.id;
+        button.setAttribute("aria-expanded", hasChildren ? "false" : "false");
+        button.innerHTML = `<span class="chevron">${hasChildren ? "›" : "•"}</span><span class="tree-label">${section.title}</span>`;
+        button.addEventListener("click", () => {
+          if (hasChildren) {
+            const isOpen = item.classList.toggle("is-open");
+            button.setAttribute("aria-expanded", String(isOpen));
+            return;
+          }
+          selectSection(section.id);
+        });
+        item.appendChild(button);
+
+        if (hasChildren) {
+          const childList = document.createElement("ul");
+          childList.className = "children";
+          section.children.forEach((child) => {
+            const childItem = document.createElement("li");
+            childItem.className = "tree-item";
+            childItem.dataset.sectionId = child.id;
+
+            const childButton = document.createElement("button");
+            childButton.type = "button";
+            childButton.className = "tree-button child";
+            childButton.dataset.sectionId = child.id;
+            childButton.innerHTML = `<span class="chevron">•</span><span class="tree-label">${child.title}</span>`;
+            childButton.addEventListener("click", () => selectSection(child.id));
+            childItem.appendChild(childButton);
+            childList.appendChild(childItem);
+          });
+          item.appendChild(childList);
+        }
+
+        tree.appendChild(item);
+      });
+    }
+
+    function selectSection(id) {
+      const section = sectionById.get(id);
+      if (!section || section.children) return;
+
+      title.textContent = section.title;
+      content.innerHTML = section.content || `<div class="empty-hint">该章节暂无内容。</div>`;
+
+      const parent = parentByChildId.get(id);
+      kicker.textContent = parent ? parent.title : "操作手册";
+      breadcrumb.innerHTML = parent
+        ? `操作手册 / ${parent.title} / <strong>${section.title}</strong>`
+        : `操作手册 / <strong>${section.title}</strong>`;
+
+      document.querySelectorAll(".tree-button").forEach((button) => {
+        button.classList.toggle("is-active", button.dataset.sectionId === id);
+      });
+
+      if (parent) {
+        const parentItem = document.querySelector(`.tree-item[data-section-id="${parent.id}"]`);
+        const parentButton = document.querySelector(`.tree-button[data-section-id="${parent.id}"]`);
+        if (parentItem && parentButton) {
+          parentItem.classList.add("is-open");
+          parentButton.setAttribute("aria-expanded", "true");
+        }
+      }
+
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    renderTree();
+    selectSection("scope");
+  </script>
+</body>
+</html>

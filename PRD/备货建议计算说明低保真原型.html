@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>备货建议计算说明低保真原型</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #f5f7fa;
+      color: #303133;
+      font-family: Arial, "Microsoft YaHei", sans-serif;
+      font-size: 14px;
+    }
+    .page {
+      padding: 24px;
+    }
+    .title {
+      margin: 0 0 6px;
+      font-size: 22px;
+      font-weight: 700;
+    }
+    .note {
+      margin: 0 0 20px;
+      color: #909399;
+      font-size: 13px;
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: 420px minmax(760px, 1fr);
+      gap: 16px;
+      align-items: start;
+    }
+    .panel,
+    .drawer {
+      background: #fff;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+    }
+    .panel-head,
+    .drawer-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 52px;
+      padding: 0 16px;
+      border-bottom: 1px solid #ebeef5;
+    }
+    .panel-title,
+    .drawer-title {
+      font-size: 16px;
+      font-weight: 700;
+    }
+    .panel-body,
+    .drawer-body {
+      padding: 16px;
+    }
+    .filter-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .input,
+    .select {
+      height: 32px;
+      border: 1px solid #dcdfe6;
+      border-radius: 3px;
+      padding: 0 10px;
+      background: #fff;
+      color: #606266;
+    }
+    .input { flex: 1; }
+    .btn {
+      height: 32px;
+      border: 1px solid #dcdfe6;
+      border-radius: 3px;
+      padding: 0 12px;
+      background: #fff;
+      color: #606266;
+      cursor: default;
+    }
+    .btn-primary {
+      border-color: #409eff;
+      background: #409eff;
+      color: #fff;
+    }
+    .tabs {
+      display: inline-flex;
+      padding: 2px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      background: #f5f7fa;
+    }
+    .tab {
+      min-width: 86px;
+      height: 28px;
+      border: 0;
+      border-radius: 3px;
+      background: transparent;
+      color: #606266;
+    }
+    .tab.active {
+      background: #409eff;
+      color: #fff;
+      font-weight: 700;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+    th,
+    td {
+      height: 40px;
+      border: 1px solid #ebeef5;
+      padding: 8px 10px;
+      text-align: left;
+      vertical-align: middle;
+    }
+    th {
+      background: #f5f7fa;
+      color: #606266;
+      font-weight: 700;
+    }
+    .num { text-align: right; font-variant-numeric: tabular-nums; }
+    .link { color: #409eff; font-weight: 700; }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      height: 22px;
+      padding: 0 8px;
+      border-radius: 3px;
+      background: #ecf5ff;
+      color: #409eff;
+      font-size: 12px;
+    }
+    .tag-gray {
+      background: #f4f4f5;
+      color: #606266;
+    }
+    .muted {
+      color: #909399;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    .section {
+      margin-top: 18px;
+    }
+    .section:first-child {
+      margin-top: 0;
+    }
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .section-title {
+      position: relative;
+      padding-left: 10px;
+      font-weight: 700;
+    }
+    .section-title::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 3px;
+      width: 3px;
+      height: 14px;
+      border-radius: 2px;
+      background: #409eff;
+    }
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .summary-card {
+      min-height: 76px;
+      border: 1px solid #ebeef5;
+      border-radius: 4px;
+      padding: 12px;
+      background: #fafafa;
+    }
+    .summary-card span {
+      display: block;
+      color: #909399;
+      font-size: 12px;
+    }
+    .summary-card strong {
+      display: block;
+      margin-top: 8px;
+      font-size: 20px;
+    }
+    .formula {
+      border: 1px dashed #c0c4cc;
+      border-radius: 4px;
+      padding: 12px;
+      background: #fafafa;
+      color: #606266;
+      line-height: 1.8;
+    }
+    .explain-row {
+      background: #fcfcfc;
+    }
+    .explain-box {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      padding: 4px 0;
+    }
+    .explain-item {
+      border: 1px solid #ebeef5;
+      border-radius: 4px;
+      padding: 10px;
+      background: #fff;
+    }
+    .explain-item strong {
+      display: block;
+      margin-bottom: 6px;
+    }
+    .timeline {
+      display: grid;
+      grid-template-columns: 120px 1fr 110px;
+      gap: 8px;
+      align-items: center;
+      margin-top: 8px;
+      color: #606266;
+      font-size: 12px;
+    }
+    .line {
+      height: 8px;
+      border-radius: 8px;
+      background: #d9ecff;
+    }
+    .line.dark {
+      background: #409eff;
+    }
+    .footer-total td {
+      background: #f5f7fa;
+      font-weight: 700;
+    }
+    @media (max-width: 1180px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1 class="title">备货建议计算说明低保真原型</h1>
+    <p class="note">目标：让运营能看懂父体建议量从哪些子体合计而来，以及每个子体的建议量如何一步步计算。</p>
+
+    <div class="layout">
+      <section class="panel">
+        <div class="panel-head">
+          <div class="panel-title">备货建议列表</div>
+          <button class="btn btn-primary">批量生成</button>
+        </div>
+        <div class="panel-body">
+          <div class="filter-row">
+            <input class="input" value="LFT00000784" />
+            <select class="select">
+              <option>年规目标</option>
+              <option>预测日销量</option>
+              <option>全部来源</option>
+            </select>
+          </div>
+          <div class="tabs" aria-label="建议类型">
+            <button class="tab active">发货建议</button>
+            <button class="tab">下单建议</button>
+          </div>
+          <table style="margin-top: 12px;">
+            <thead>
+              <tr>
+                <th style="width: 110px;">父体编号</th>
+                <th>站点</th>
+                <th>计算来源</th>
+                <th class="num">建议量</th>
+                <th style="width: 72px;">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="link">LFT00000784</span></td>
+                <td>英国</td>
+                <td><span class="tag">年规目标</span></td>
+                <td class="num">3,182</td>
+                <td><span class="link">详情</span></td>
+              </tr>
+              <tr>
+                <td><span class="link">LFT00002261</span></td>
+                <td>美国</td>
+                <td><span class="tag">年规目标</span></td>
+                <td class="num">3,218</td>
+                <td><span class="link">详情</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="drawer">
+        <div class="drawer-head">
+          <div>
+            <div class="drawer-title">父体 LFT00000784 发货详情</div>
+            <div class="muted">欧洲站稳态备货规则 / 年规目标 / 运营负责人 黄利萍 / 计算时间 2026-06-01 09:30</div>
+          </div>
+          <button class="btn">关闭</button>
+        </div>
+
+        <div class="drawer-body">
+          <section class="section">
+            <div class="section-head">
+              <div class="section-title">汇总说明</div>
+            </div>
+            <div class="summary-grid">
+              <div class="summary-card">
+                <span>父体发货建议量</span>
+                <strong>3,182</strong>
+              </div>
+              <div class="summary-card">
+                <span>参与计算子体</span>
+                <strong>4 个</strong>
+              </div>
+              <div class="summary-card">
+                <span>有建议量子体</span>
+                <strong>3 个</strong>
+              </div>
+              <div class="summary-card">
+                <span>物流方式</span>
+                <strong>普船 / 空运</strong>
+              </div>
+            </div>
+            <div class="formula" style="margin-top: 10px;">
+              父体发货建议量 = Σ 子体发货最终建议量<br />
+              3,182 = 1,240 + 860 + 1,082 + 0
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="section-head">
+              <div class="section-title">子体计算明细</div>
+              <span class="muted">默认展示最终公式，点击“展开”查看库存扣减和物流覆盖过程</span>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 145px;">子体 / SKU</th>
+                  <th style="width: 120px;">命中规则</th>
+                  <th style="width: 105px;">物流方式</th>
+                  <th style="width: 130px;">覆盖周期</th>
+                  <th class="num">预测销量</th>
+                  <th class="num">库存扣减</th>
+                  <th class="num">断货风险</th>
+                  <th class="num">最终建议</th>
+                  <th style="width: 64px;">说明</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>HK1839-SKU01</strong><br /><span class="muted">B07NV7QK701</span></td>
+                  <td>A - 爆款 / 主色</td>
+                  <td>普船 / 空运</td>
+                  <td>覆盖 97 天<br /><span class="muted">06-01 ~ 09-05</span></td>
+                  <td class="num">1,980</td>
+                  <td class="num">620</td>
+                  <td class="num">短期断货</td>
+                  <td class="num"><strong>1,360</strong></td>
+                  <td><span class="link">展开</span></td>
+                </tr>
+                <tr class="explain-row">
+                  <td colspan="9">
+                    <div class="explain-box">
+                      <div class="explain-item">
+                        <strong>1. 最终公式</strong>
+                        <div class="muted">下单最终建议量 = max(0, 向上取整(预测销量 - 库存扣减))；断货风险只用于解释库存走势，不参与扣减</div>
+                        <div>1,360 = 1,980 - 620</div>
+                      </div>
+                      <div class="explain-item">
+                        <strong>2. 库存扣减</strong>
+                        <div class="muted">FBA可用 380 + 覆盖周期内 FBA在途 240</div>
+                        <div class="muted">覆盖周期外 ETA 不参与本次扣减</div>
+                      </div>
+                      <div class="explain-item">
+                        <strong>3. 库存投影断货风险</strong>
+                        <div class="muted">按库存投影识别短期断货区间；该风险不改变建议量</div>
+                        <div>06-01 ~ 06-15：预计断货风险 120 件</div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>HK1839-SKU02</strong><br /><span class="muted">B07NV7QK702</span></td>
+                  <td>B - 旺款</td>
+                  <td>普船 / 空运</td>
+                  <td>覆盖 97 天<br /><span class="muted">06-01 ~ 09-05</span></td>
+                  <td class="num">1,420</td>
+                  <td class="num">510</td>
+                  <td class="num">短期断货</td>
+                  <td class="num"><strong>910</strong></td>
+                  <td><span class="link">展开</span></td>
+                </tr>
+                <tr>
+                  <td><strong>HK1839-SKU03</strong><br /><span class="muted">B07NV7QK703</span></td>
+                  <td>C - 利润款</td>
+                  <td>普船</td>
+                  <td>覆盖 97 天<br /><span class="muted">06-01 ~ 09-05</span></td>
+                  <td class="num">1,320</td>
+                  <td class="num">238</td>
+                  <td class="num">无</td>
+                  <td class="num"><strong>1,082</strong></td>
+                  <td><span class="link">展开</span></td>
+                </tr>
+                <tr>
+                  <td><strong>HK1839-SKU04</strong><br /><span class="muted">B07NV7QK704</span></td>
+                  <td>老品 / 辅色</td>
+                  <td>普船</td>
+                  <td>覆盖 97 天<br /><span class="muted">06-01 ~ 09-05</span></td>
+                  <td class="num">680</td>
+                  <td class="num">820</td>
+                  <td class="num">库存覆盖</td>
+                  <td class="num"><strong>0</strong></td>
+                  <td><span class="link">展开</span></td>
+                </tr>
+                <tr class="footer-total">
+                  <td colspan="7">父体合计</td>
+                  <td class="num">3,352</td>
+                  <td></td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="section">
+            <div class="section-head">
+              <div class="section-title">物流覆盖明细</div>
+              <span class="muted">仅多物流方式时展示；用于解释建议量为什么拆到不同物流方式</span>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 120px;">物流方式</th>
+                  <th style="width: 90px;">优先级</th>
+                  <th style="width: 120px;">最早可用日</th>
+                  <th>覆盖日期段</th>
+                  <th class="num">该段预测销量</th>
+                  <th class="num">该段建议量</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>普船</td>
+                  <td><span class="tag">1</span></td>
+                  <td>2026-07-16</td>
+                  <td>
+                    <div class="timeline">
+                      <span>07-16 ~ 09-05</span>
+                      <span class="line dark"></span>
+                      <span>52 天</span>
+                    </div>
+                  </td>
+                  <td class="num">1,120</td>
+                  <td class="num">710</td>
+                </tr>
+                <tr>
+                  <td>空运</td>
+                  <td><span class="tag tag-gray">2</span></td>
+                  <td>2026-06-16</td>
+                  <td>
+                    <div class="timeline">
+                      <span>06-16 ~ 07-15</span>
+                      <span class="line"></span>
+                      <span>30 天</span>
+                    </div>
+                  </td>
+                  <td class="num">860</td>
+                  <td class="num">530</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="formula" style="margin-top: 10px;">
+              说明：系统按物流优先级依次分配覆盖日期。高优先级物流先覆盖其可到货后的日期，剩余未覆盖日期再由下一优先级物流覆盖；若完整周期已被覆盖，后续物流方式建议量为 0。
+            </div>
+          </section>
+        </div>
+      </section>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,1127 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>STQ仓库每日品检登记表</title>
+  <style>
+    :root {
+      --bg: #f3f6fb;
+      --panel: #ffffff;
+      --line: #dbe3ee;
+      --text: #1d2838;
+      --muted: #66758b;
+      --accent: #1677ff;
+      --accent-soft: #eaf3ff;
+      --ratio-bg: #fff6c7;
+      --warn: #e34a4a;
+      --shadow: 0 10px 35px rgba(24, 51, 89, 0.08);
+      --radius: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 8% -15%, #d9e8ff 0%, transparent 45%),
+        radial-gradient(circle at 96% 18%, #e7f2ff 0%, transparent 35%),
+        var(--bg);
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    .app {
+      max-width: 1240px;
+      margin: 0 auto;
+      display: grid;
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(8px);
+      animation: rise 0.45s ease forwards;
+    }
+
+    .delay-1 { animation-delay: 0.06s; }
+    .delay-2 { animation-delay: 0.12s; }
+    .delay-3 { animation-delay: 0.18s; }
+    .delay-4 { animation-delay: 0.24s; }
+    .delay-5 { animation-delay: 0.3s; }
+
+    @keyframes rise {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .head {
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(100deg, #f9fbff 0%, #f2f7ff 100%);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 30px;
+      letter-spacing: 0.4px;
+      font-weight: 700;
+    }
+
+    .subline {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .section {
+      padding: 16px 18px 18px;
+    }
+
+    .section-title {
+      margin: 0 0 12px;
+      font-size: 16px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-title::before {
+      content: "";
+      width: 6px;
+      height: 18px;
+      border-radius: 4px;
+      background: var(--accent);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(120px, 1fr));
+      gap: 12px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .field label {
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .field input,
+    .field textarea,
+    .field select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px 11px;
+      font-size: 14px;
+      color: var(--text);
+      background: #fff;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .field textarea {
+      resize: vertical;
+      min-height: 42px;
+    }
+
+    .field input:focus,
+    .field textarea:focus,
+    .field select:focus {
+      outline: none;
+      border-color: #91bbff;
+      box-shadow: 0 0 0 4px rgba(22, 119, 255, 0.12);
+    }
+
+    .field input[readonly] {
+      background: #f6f8fc;
+      color: #425266;
+      border-color: #d8e1ed;
+      cursor: not-allowed;
+    }
+
+    .staff-select {
+      position: relative;
+    }
+
+    .staff-select-trigger {
+      width: 100%;
+      min-height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px 11px;
+      font-size: 14px;
+      color: var(--muted);
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      cursor: pointer;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .staff-select-trigger:focus {
+      outline: none;
+      border-color: #91bbff;
+      box-shadow: 0 0 0 4px rgba(22, 119, 255, 0.12);
+    }
+
+    .staff-select-label {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .staff-select-label.filled {
+      color: var(--text);
+    }
+
+    .staff-select-arrow {
+      font-size: 12px;
+      color: #7c8da5;
+      transition: transform 0.15s ease;
+    }
+
+    .staff-select.open .staff-select-arrow {
+      transform: rotate(180deg);
+    }
+
+    .staff-select-dropdown {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: calc(100% + 6px);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: 0 14px 28px rgba(20, 44, 77, 0.18);
+      z-index: 25;
+      overflow: hidden;
+      display: none;
+    }
+
+    .staff-select.open .staff-select-dropdown {
+      display: block;
+    }
+
+    .staff-select-search-wrap {
+      padding: 8px;
+      border-bottom: 1px solid var(--line);
+      background: #f9fbff;
+    }
+
+    .staff-select-search {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      padding: 8px 9px;
+      font-size: 13px;
+      color: var(--text);
+      background: #fff;
+    }
+
+    .staff-select-search:focus {
+      outline: none;
+      border-color: #91bbff;
+      box-shadow: 0 0 0 3px rgba(22, 119, 255, 0.12);
+    }
+
+    .staff-select-options {
+      max-height: 188px;
+      overflow: auto;
+      padding: 6px;
+    }
+
+    .staff-option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      color: #304153;
+      font-size: 14px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .staff-option:hover {
+      background: #f4f8ff;
+    }
+
+    .staff-option input {
+      width: 16px;
+      height: 16px;
+      margin: 0;
+      accent-color: var(--accent);
+    }
+
+    .staff-empty {
+      color: var(--muted);
+      font-size: 13px;
+      text-align: center;
+      padding: 13px 8px;
+    }
+
+    .staff-select-tags {
+      margin-top: 8px;
+      min-height: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .staff-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: #edf4ff;
+      color: #1f4e90;
+      border: 1px solid #d6e6ff;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .staff-tag button {
+      border: none;
+      background: transparent;
+      color: #4f6f9a;
+      font-size: 13px;
+      line-height: 1;
+      padding: 0;
+      cursor: pointer;
+    }
+
+    .summary-cards {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: repeat(5, minmax(140px, 1fr));
+      gap: 10px;
+    }
+
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fcfdff;
+      padding: 12px;
+    }
+
+    .metric .name {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    .metric .value {
+      font-size: 24px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .metric .unit {
+      font-size: 12px;
+      color: var(--muted);
+      margin-left: 6px;
+      font-weight: 600;
+    }
+
+    .metric.warn {
+      background: #fff4f4;
+      border-color: #ffdada;
+    }
+
+    .process-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .process-row {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .process-row .label {
+      font-weight: 600;
+      color: #364152;
+      font-size: 14px;
+    }
+
+    .process-card {
+      overflow: visible;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 760px;
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid var(--line);
+      border-right: 1px solid var(--line);
+      padding: 9px 10px;
+      font-size: 14px;
+      background: #fff;
+      vertical-align: middle;
+    }
+
+    th:last-child,
+    td:last-child {
+      border-right: none;
+    }
+
+    thead th {
+      background: #f8fbff;
+      color: #384656;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    tbody tr:hover td {
+      background: #fbfdff;
+    }
+
+    .issue-cell {
+      width: 220px;
+      font-weight: 600;
+    }
+
+    .issue-cell.warn-text {
+      color: var(--warn);
+    }
+
+    .ratio-cell {
+      width: 120px;
+      background: var(--ratio-bg);
+      text-align: center;
+      font-weight: 700;
+      color: #2b3d54;
+    }
+
+    .table-input {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      width: 100%;
+      padding: 7px 8px;
+      font-size: 14px;
+      background: #fff;
+      min-width: 84px;
+    }
+
+    .table-input:focus {
+      outline: none;
+      border-color: #91bbff;
+      box-shadow: 0 0 0 3px rgba(22, 119, 255, 0.1);
+    }
+
+    .table-actions {
+      margin-top: 10px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .btn {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: #324255;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 8px 12px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn:hover {
+      border-color: #b8c6d9;
+      background: #f8fbff;
+    }
+
+    .btn.primary {
+      border-color: #c7dcff;
+      background: var(--accent-soft);
+      color: #105bc5;
+    }
+
+    .btn-row-delete {
+      border: 1px solid #f2ced0;
+      color: #b42f3b;
+      background: #fff6f7;
+      border-radius: 8px;
+      padding: 6px 8px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .hint {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    @media (max-width: 1120px) {
+      .form-grid {
+        grid-template-columns: repeat(3, minmax(140px, 1fr));
+      }
+
+      .summary-cards {
+        grid-template-columns: repeat(2, minmax(140px, 1fr));
+      }
+    }
+
+    @media (max-width: 760px) {
+      body {
+        padding: 14px;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .process-row {
+        grid-template-columns: 1fr;
+      }
+
+      .section {
+        padding: 14px;
+      }
+
+      .summary-cards {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .reveal,
+      .delay-1,
+      .delay-2,
+      .delay-3,
+      .delay-4,
+      .delay-5 {
+        animation: none;
+        opacity: 1;
+        transform: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="card reveal">
+      <div class="head">
+        <h1>STQ仓库每日品检登记表</h1>
+        <div class="subline">在线填写原型（前端版） | 先用于确认版式与字段结构</div>
+      </div>
+
+      <div class="section">
+        <h2 class="section-title">基础信息</h2>
+        <div class="form-grid">
+          <div class="field">
+            <label for="inspectionDate">品检日期</label>
+            <input id="inspectionDate" type="date" />
+          </div>
+          <div class="field">
+            <label for="orderNo">订单号</label>
+            <input id="orderNo" type="text" value="ST20260305004" readonly />
+          </div>
+          <div class="field">
+            <label for="skuNo">货号</label>
+            <input id="skuNo" type="text" value="ST210808" readonly />
+          </div>
+          <div class="field">
+            <label for="todayInspectionQty">当日品检数量（双）</label>
+            <input id="todayInspectionQty" type="number" min="0" step="1" value="2772" readonly />
+          </div>
+          <div class="field">
+            <label for="defectTotalInput">品检不良总数（双）</label>
+            <input id="defectTotalInput" type="number" min="0" step="1" value="0" readonly />
+          </div>
+          <div class="field">
+            <label for="defectRateInput">品检不良比例</label>
+            <input id="defectRateInput" type="text" value="0.00%" readonly />
+          </div>
+          <div class="field">
+            <label for="qcOwner">品检组负责人</label>
+            <select id="qcOwner">
+              <option value="">请选择人员</option>
+              <option value="张伟">张伟</option>
+              <option value="李娜">李娜</option>
+              <option value="王磊">王磊</option>
+              <option value="陈晨">陈晨</option>
+              <option value="刘洋">刘洋</option>
+              <option value="赵敏">赵敏</option>
+              <option value="周婷">周婷</option>
+              <option value="黄杰">黄杰</option>
+              <option value="吴昊">吴昊</option>
+              <option value="孙丽">孙丽</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="inboundOwner">入库数据负责人</label>
+            <select id="inboundOwner">
+              <option value="">请选择人员</option>
+              <option value="张伟">张伟</option>
+              <option value="李娜">李娜</option>
+              <option value="王磊">王磊</option>
+              <option value="陈晨">陈晨</option>
+              <option value="刘洋">刘洋</option>
+              <option value="赵敏">赵敏</option>
+              <option value="周婷">周婷</option>
+              <option value="黄杰">黄杰</option>
+              <option value="吴昊">吴昊</option>
+              <option value="孙丽">孙丽</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="qcSealBoxCount">QC验货封条箱数（箱）</label>
+            <input id="qcSealBoxCount" type="number" min="0" step="1" placeholder="请输入箱数" />
+          </div>
+          <div class="field">
+            <label for="actualReturnQty">实际退货量（双）</label>
+            <input id="actualReturnQty" type="number" min="0" step="1" placeholder="请输入退货量" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card reveal delay-1 process-card">
+      <div class="section">
+        <h2 class="section-title">品检分工</h2>
+        <div class="process-grid">
+          <div class="process-row">
+            <div class="label">拆箱核对码数</div>
+            <div class="field">
+              <div class="staff-select" data-field="processUserUnbox">
+                <input id="processUserUnbox" type="hidden" />
+                <button class="staff-select-trigger" type="button" aria-expanded="false">
+                  <span class="staff-select-label">请选择人员</span>
+                  <span class="staff-select-arrow">▾</span>
+                </button>
+                <div class="staff-select-dropdown">
+                  <div class="staff-select-search-wrap">
+                    <input class="staff-select-search" type="text" placeholder="搜索人员" />
+                  </div>
+                  <div class="staff-select-options"></div>
+                </div>
+                <div class="staff-select-tags"></div>
+              </div>
+            </div>
+          </div>
+          <div class="process-row">
+            <div class="label">核对内外标</div>
+            <div class="field">
+              <div class="staff-select" data-field="processUserLabelCheck">
+                <input id="processUserLabelCheck" type="hidden" />
+                <button class="staff-select-trigger" type="button" aria-expanded="false">
+                  <span class="staff-select-label">请选择人员</span>
+                  <span class="staff-select-arrow">▾</span>
+                </button>
+                <div class="staff-select-dropdown">
+                  <div class="staff-select-search-wrap">
+                    <input class="staff-select-search" type="text" placeholder="搜索人员" />
+                  </div>
+                  <div class="staff-select-options"></div>
+                </div>
+                <div class="staff-select-tags"></div>
+              </div>
+            </div>
+          </div>
+          <div class="process-row">
+            <div class="label">小包装</div>
+            <div class="field">
+              <div class="staff-select" data-field="processUserSmallPack">
+                <input id="processUserSmallPack" type="hidden" />
+                <button class="staff-select-trigger" type="button" aria-expanded="false">
+                  <span class="staff-select-label">请选择人员</span>
+                  <span class="staff-select-arrow">▾</span>
+                </button>
+                <div class="staff-select-dropdown">
+                  <div class="staff-select-search-wrap">
+                    <input class="staff-select-search" type="text" placeholder="搜索人员" />
+                  </div>
+                  <div class="staff-select-options"></div>
+                </div>
+                <div class="staff-select-tags"></div>
+              </div>
+            </div>
+          </div>
+          <div class="process-row">
+            <div class="label">开胶整体外形检查</div>
+            <div class="field">
+              <div class="staff-select" data-field="processUserShapeCheck">
+                <input id="processUserShapeCheck" type="hidden" />
+                <button class="staff-select-trigger" type="button" aria-expanded="false">
+                  <span class="staff-select-label">请选择人员</span>
+                  <span class="staff-select-arrow">▾</span>
+                </button>
+                <div class="staff-select-dropdown">
+                  <div class="staff-select-search-wrap">
+                    <input class="staff-select-search" type="text" placeholder="搜索人员" />
+                  </div>
+                  <div class="staff-select-options"></div>
+                </div>
+                <div class="staff-select-tags"></div>
+              </div>
+            </div>
+          </div>
+          <div class="process-row">
+            <div class="label">大包装</div>
+            <div class="field">
+              <div class="staff-select" data-field="processUserLargePack">
+                <input id="processUserLargePack" type="hidden" />
+                <button class="staff-select-trigger" type="button" aria-expanded="false">
+                  <span class="staff-select-label">请选择人员</span>
+                  <span class="staff-select-arrow">▾</span>
+                </button>
+                <div class="staff-select-dropdown">
+                  <div class="staff-select-search-wrap">
+                    <input class="staff-select-search" type="text" placeholder="搜索人员" />
+                  </div>
+                  <div class="staff-select-options"></div>
+                </div>
+                <div class="staff-select-tags"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="hint">人员支持搜索、多选勾选与标签展示；点击标签上的 × 可快速移除。</div>
+      </div>
+    </section>
+
+    <section class="card reveal delay-2">
+      <div class="section">
+        <h2 class="section-title">品检问题汇总</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 26%">问题项</th>
+                <th style="width: 12%">不良数</th>
+                <th style="width: 14%">不良比率</th>
+                <th>问题备注</th>
+              </tr>
+            </thead>
+            <tbody id="defectTableBody"></tbody>
+          </table>
+        </div>
+        <div class="hint">不良比率 = 单项不良数 / 当日品检数量，输入数量后自动计算。</div>
+      </div>
+    </section>
+
+    <section class="card reveal delay-3">
+      <div class="section">
+        <h2 class="section-title">混码明细汇总</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 28%">混码明细外箱号码</th>
+                <th style="width: 14%">混码数量</th>
+                <th style="width: 14%">混码比例</th>
+                <th style="width: 20%">混入号码</th>
+                <th style="width: 20%">备注</th>
+                <th style="width: 70px">操作</th>
+              </tr>
+            </thead>
+            <tbody id="mixedCodeBody"></tbody>
+          </table>
+        </div>
+        <div class="table-actions">
+          <button class="btn primary" id="addMixedRow" type="button">+ 新增明细行</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="card reveal delay-4">
+      <div class="section">
+        <h2 class="section-title">贴错标签明细汇总</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 28%">明细项</th>
+                <th style="width: 14%">贴错标签数量</th>
+                <th style="width: 14%">贴错标签比例</th>
+                <th style="width: 20%">实际号码</th>
+                <th style="width: 20%">备注</th>
+                <th style="width: 70px">操作</th>
+              </tr>
+            </thead>
+            <tbody id="wrongLabelBody"></tbody>
+          </table>
+        </div>
+        <div class="table-actions">
+          <button class="btn primary" id="addWrongLabelRow" type="button">+ 新增明细行</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="card reveal delay-5">
+      <div class="section">
+        <h2 class="section-title">短装明细</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 32%">短装明细</th>
+                <th style="width: 18%">短装数量</th>
+                <th style="width: 18%">短装比例</th>
+                <th>备注</th>
+              </tr>
+            </thead>
+            <tbody id="shortShipmentBody"></tbody>
+          </table>
+        </div>
+        <div class="hint">短装比例 = 短装数量 / 当日品检数量；短装不参与不良品总数计算。</div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const defectItems = [
+      "脱胶", "溢胶", "清洁度", "未贴标签", "装错外箱", "尺码错误", "贴错标签", "改码", "大小码",
+      "装错色/鞋", "款式错误", "针、钉金属异物", "代码", "头衬问题", "内里问题", "油渍问题", "帮面问题",
+      "松紧带断", "背带同边", "面衬问题", "同脚", "色差", "鞋子变形/歪斜", "大底问题", "大小双", "线头多",
+      "热熔胶问题", "吐霜", "鞋带过长", "鸡眼扣问题", "鞋带过短", "背带规格错", "魔术贴问题", "包装问题",
+      "海绵下掉", "洗水标问题", "鞋舌未车到位", "鞋舌歪", "脱线", "起皱", "花脚"
+    ];
+
+    const alertIssues = new Set([
+      "未贴标签", "装错外箱", "尺码错误", "贴错标签", "改码", "大小码", "装错色/鞋", "款式错误", "针、钉金属异物", "代码"
+    ]);
+
+    const staffMembers = ["张伟", "李娜", "王磊", "陈晨", "刘洋", "赵敏", "周婷", "黄杰", "吴昊", "孙丽"];
+
+    const defectBody = document.getElementById("defectTableBody");
+    const mixedCodeBody = document.getElementById("mixedCodeBody");
+    const wrongLabelBody = document.getElementById("wrongLabelBody");
+    const shortShipmentBody = document.getElementById("shortShipmentBody");
+
+    function parseNum(value) {
+      const n = Number(value);
+      return Number.isFinite(n) && n > 0 ? n : 0;
+    }
+
+    function pct(count, base) {
+      if (!base) return "0.00%";
+      return `${((count / base) * 100).toFixed(2)}%`;
+    }
+
+    function renderDefectRows() {
+      defectBody.innerHTML = defectItems
+        .map((item) => {
+          const warnCls = alertIssues.has(item) ? "warn-text" : "";
+          return `
+            <tr>
+              <td class="issue-cell ${warnCls}">${item}</td>
+              <td><input class="table-input defect-count" type="number" min="0" step="1" value="0" /></td>
+              <td class="ratio-cell defect-ratio">0.00%</td>
+              <td><input class="table-input" type="text" placeholder="可填写问题备注" /></td>
+            </tr>
+          `;
+        })
+        .join("");
+    }
+
+    function mixedRowTemplate(data = {}) {
+      return `
+        <tr>
+          <td><input class="table-input" type="text" value="${data.boxNo || ""}" placeholder="例如：全黑6码" /></td>
+          <td><input class="table-input mixed-count" type="number" min="0" step="1" value="${data.qty || 0}" /></td>
+          <td class="ratio-cell mixed-ratio">0.00%</td>
+          <td><input class="table-input" type="text" value="${data.mixInNo || ""}" placeholder="填写混入号码" /></td>
+          <td><input class="table-input" type="text" value="${data.remark || ""}" placeholder="填写备注" /></td>
+          <td style="text-align:center"><button class="btn-row-delete" type="button">删除</button></td>
+        </tr>
+      `;
+    }
+
+    function wrongLabelRowTemplate(data = {}) {
+      return `
+        <tr>
+          <td><input class="table-input" type="text" value="${data.item || ""}" placeholder="例如：错贴外箱码" /></td>
+          <td><input class="table-input wrong-label-count" type="number" min="0" step="1" value="${data.qty || 0}" /></td>
+          <td class="ratio-cell wrong-label-ratio">0.00%</td>
+          <td><input class="table-input" type="text" value="${data.actualNo || ""}" placeholder="填写实际号码" /></td>
+          <td><input class="table-input" type="text" value="${data.remark || ""}" placeholder="填写备注" /></td>
+          <td style="text-align:center"><button class="btn-row-delete" type="button">删除</button></td>
+        </tr>
+      `;
+    }
+
+    function shortShipmentRowTemplate(data = {}) {
+      return `
+        <tr>
+          <td><input class="table-input" type="text" value="${data.item || ""}" placeholder="填写短装明细" /></td>
+          <td><input class="table-input short-shipment-count" type="number" min="0" step="1" value="${data.qty || 0}" /></td>
+          <td class="ratio-cell short-shipment-ratio">0.00%</td>
+          <td><input class="table-input" type="text" value="${data.remark || ""}" placeholder="填写备注" /></td>
+        </tr>
+      `;
+    }
+
+    function closeAllStaffSelects(except = null) {
+      document.querySelectorAll(".staff-select.open").forEach((component) => {
+        if (component === except) return;
+        component.classList.remove("open");
+        const trigger = component.querySelector(".staff-select-trigger");
+        if (trigger) {
+          trigger.setAttribute("aria-expanded", "false");
+        }
+      });
+    }
+
+    function renderStaffOptions(component, keyword = "") {
+      const optionsWrap = component.querySelector(".staff-select-options");
+      const selectedSet = component._selectedNames;
+      const text = keyword.trim();
+      const filtered = staffMembers.filter((name) => !text || name.includes(text));
+
+      if (!filtered.length) {
+        optionsWrap.innerHTML = "<div class=\"staff-empty\">未找到匹配人员</div>";
+        return;
+      }
+
+      optionsWrap.innerHTML = filtered
+        .map((name) => {
+          const checked = selectedSet.has(name) ? "checked" : "";
+          return `<label class="staff-option"><input type="checkbox" value="${name}" ${checked} /><span>${name}</span></label>`;
+        })
+        .join("");
+    }
+
+    function syncStaffSelect(component) {
+      const selectedNames = [...component._selectedNames];
+      const label = component.querySelector(".staff-select-label");
+      const hiddenInput = component.querySelector("input[type='hidden']");
+      const tagsWrap = component.querySelector(".staff-select-tags");
+
+      if (!selectedNames.length) {
+        label.textContent = "请选择人员";
+        label.classList.remove("filled");
+      } else if (selectedNames.length <= 2) {
+        label.textContent = selectedNames.join("、");
+        label.classList.add("filled");
+      } else {
+        label.textContent = `已选 ${selectedNames.length} 人`;
+        label.classList.add("filled");
+      }
+
+      hiddenInput.value = selectedNames.join(",");
+
+      tagsWrap.innerHTML = selectedNames
+        .map((name) => `<span class="staff-tag">${name}<button type="button" data-remove="${name}" aria-label="移除${name}">×</button></span>`)
+        .join("");
+
+      component.querySelectorAll(".staff-option input[type='checkbox']").forEach((checkbox) => {
+        checkbox.checked = component._selectedNames.has(checkbox.value);
+      });
+    }
+
+    function initStaffSelects() {
+      document.querySelectorAll(".staff-select").forEach((component) => {
+        const trigger = component.querySelector(".staff-select-trigger");
+        const searchInput = component.querySelector(".staff-select-search");
+        const optionsWrap = component.querySelector(".staff-select-options");
+        const tagsWrap = component.querySelector(".staff-select-tags");
+
+        component._selectedNames = new Set();
+        renderStaffOptions(component);
+        syncStaffSelect(component);
+
+        trigger.addEventListener("click", (event) => {
+          event.stopPropagation();
+          if (component.classList.contains("open")) {
+            closeAllStaffSelects();
+            return;
+          }
+          closeAllStaffSelects(component);
+          component.classList.add("open");
+          trigger.setAttribute("aria-expanded", "true");
+          searchInput.focus();
+        });
+
+        searchInput.addEventListener("input", () => {
+          renderStaffOptions(component, searchInput.value);
+        });
+
+        optionsWrap.addEventListener("change", (event) => {
+          const target = event.target;
+          if (!target.matches("input[type='checkbox']")) return;
+
+          if (target.checked) {
+            component._selectedNames.add(target.value);
+          } else {
+            component._selectedNames.delete(target.value);
+          }
+          syncStaffSelect(component);
+        });
+
+        tagsWrap.addEventListener("click", (event) => {
+          const removeBtn = event.target.closest("button[data-remove]");
+          if (!removeBtn) return;
+          component._selectedNames.delete(removeBtn.dataset.remove);
+          syncStaffSelect(component);
+        });
+      });
+
+      document.addEventListener("click", (event) => {
+        if (!event.target.closest(".staff-select")) {
+          closeAllStaffSelects();
+        }
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          closeAllStaffSelects();
+        }
+      });
+    }
+
+    function updateAllRates() {
+      const inspectedQty = parseNum(document.getElementById("todayInspectionQty").value);
+
+      let defectIssueTotal = 0;
+      let mixedCodeTotal = 0;
+      let wrongLabelTotal = 0;
+      defectBody.querySelectorAll("tr").forEach((row) => {
+        const countInput = row.querySelector(".defect-count");
+        const ratioCell = row.querySelector(".defect-ratio");
+        const count = parseNum(countInput.value);
+        defectIssueTotal += count;
+        ratioCell.textContent = pct(count, inspectedQty);
+      });
+
+      mixedCodeBody.querySelectorAll("tr").forEach((row) => {
+        const count = parseNum(row.querySelector(".mixed-count").value);
+        mixedCodeTotal += count;
+        row.querySelector(".mixed-ratio").textContent = pct(count, inspectedQty);
+      });
+
+      wrongLabelBody.querySelectorAll("tr").forEach((row) => {
+        const count = parseNum(row.querySelector(".wrong-label-count").value);
+        wrongLabelTotal += count;
+        row.querySelector(".wrong-label-ratio").textContent = pct(count, inspectedQty);
+      });
+
+      shortShipmentBody.querySelectorAll("tr").forEach((row) => {
+        const count = parseNum(row.querySelector(".short-shipment-count").value);
+        row.querySelector(".short-shipment-ratio").textContent = pct(count, inspectedQty);
+      });
+
+      const totalDefects = defectIssueTotal + mixedCodeTotal + wrongLabelTotal;
+      const defectRate = pct(totalDefects, inspectedQty);
+      const metricInspected = document.getElementById("metricInspected");
+      const metricDefectTotal = document.getElementById("metricDefectTotal");
+      const metricDefectRate = document.getElementById("metricDefectRate");
+      const metricQcBoxes = document.getElementById("metricQcBoxes");
+      const metricReturnQty = document.getElementById("metricReturnQty");
+      const defectTotalInput = document.getElementById("defectTotalInput");
+      const defectRateInput = document.getElementById("defectRateInput");
+
+      if (metricInspected) metricInspected.textContent = String(inspectedQty);
+      if (metricDefectTotal) metricDefectTotal.textContent = String(totalDefects);
+      if (metricDefectRate) metricDefectRate.textContent = defectRate;
+      if (metricQcBoxes) metricQcBoxes.textContent = String(parseNum(document.getElementById("qcSealBoxCount").value));
+      if (metricReturnQty) metricReturnQty.textContent = String(parseNum(document.getElementById("actualReturnQty").value));
+      if (defectTotalInput) defectTotalInput.value = String(totalDefects);
+      if (defectRateInput) defectRateInput.value = defectRate;
+    }
+
+    function bindDynamicDelete(tbody) {
+      tbody.addEventListener("click", (event) => {
+        const target = event.target;
+        if (!target.classList.contains("btn-row-delete")) return;
+        const rows = tbody.querySelectorAll("tr");
+        if (rows.length <= 1) return;
+        target.closest("tr").remove();
+        updateAllRates();
+      });
+    }
+
+    function setup() {
+      renderDefectRows();
+
+      mixedCodeBody.insertAdjacentHTML("beforeend", mixedRowTemplate({ boxNo: "全黑6码", qty: 1, mixInNo: "" }));
+      wrongLabelBody.insertAdjacentHTML("beforeend", wrongLabelRowTemplate({ item: "", qty: 0, actualNo: "" }));
+
+      document.getElementById("addMixedRow").addEventListener("click", () => {
+        mixedCodeBody.insertAdjacentHTML("beforeend", mixedRowTemplate());
+      });
+
+      document.getElementById("addWrongLabelRow").addEventListener("click", () => {
+        wrongLabelBody.insertAdjacentHTML("beforeend", wrongLabelRowTemplate());
+      });
+
+      for (let i = 0; i < 4; i += 1) {
+        shortShipmentBody.insertAdjacentHTML("beforeend", shortShipmentRowTemplate());
+      }
+
+      initStaffSelects();
+
+      defectBody.addEventListener("input", updateAllRates);
+      defectBody.addEventListener("change", updateAllRates);
+      mixedCodeBody.addEventListener("input", updateAllRates);
+      mixedCodeBody.addEventListener("change", updateAllRates);
+      wrongLabelBody.addEventListener("input", updateAllRates);
+      wrongLabelBody.addEventListener("change", updateAllRates);
+      shortShipmentBody.addEventListener("input", updateAllRates);
+      shortShipmentBody.addEventListener("change", updateAllRates);
+      document.getElementById("qcSealBoxCount").addEventListener("input", updateAllRates);
+      document.getElementById("qcSealBoxCount").addEventListener("change", updateAllRates);
+      document.getElementById("actualReturnQty").addEventListener("input", updateAllRates);
+      document.getElementById("actualReturnQty").addEventListener("change", updateAllRates);
+
+      bindDynamicDelete(mixedCodeBody);
+      bindDynamicDelete(wrongLabelBody);
+
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, "0");
+      const dd = String(today.getDate()).padStart(2, "0");
+      document.getElementById("inspectionDate").value = `${yyyy}-${mm}-${dd}`;
+
+      updateAllRates();
+    }
+
+    setup();
+  </script>
+</body>
+</html>
