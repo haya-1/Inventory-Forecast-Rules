@@ -2549,7 +2549,7 @@
                 { key: 'northAmerica', name: '北美站', enabled: true, shipFrequencyDays: 7, methods: [{ key: 'mason_regular', name: '美森正班', priority: 1, leadTimeDays: 37 }, { key: 'sea_standard', name: '普船', priority: 2, leadTimeDays: 57 }] },
                 { key: 'europe', name: '欧洲站', enabled: true, shipFrequencyDays: 7, methods: [{ key: 'sea_standard', name: '普船', priority: 1, leadTimeDays: 45 }, { key: 'air', name: '空运', priority: 2, leadTimeDays: 15 }] }
               ],
-              calculation: { deductOrderStockoutSales: true }
+              calculation: {}
             }
           },
           {
@@ -2564,7 +2564,7 @@
                 { key: 'northAmerica', name: '北美站', enabled: true, shipFrequencyDays: 7, methods: [{ key: 'mason_regular', name: '美森正班', priority: 1, leadTimeDays: 37 }, { key: 'sea_standard', name: '普船', priority: 2, leadTimeDays: 57 }] },
                 { key: 'europe', name: '欧洲站', enabled: true, shipFrequencyDays: 7, methods: [{ key: 'sea_standard', name: '普船', priority: 1, leadTimeDays: 45 }, { key: 'air', name: '空运', priority: 2, leadTimeDays: 15 }] }
               ],
-              calculation: { deductOrderStockoutSales: true }
+              calculation: {}
             }
           }
         ];
@@ -2617,16 +2617,8 @@
           },
           fbaSafetyDays: toInt(form.fbaSafetyDays, 28),
           logisticsSites: logisticsSites.length ? logisticsSites : defaultRules()[0].form.logisticsSites,
-          calculation: form.calculation || { deductOrderStockoutSales: true }
+          calculation: form.calculation || {}
         };
-      }
-
-      function orderStockoutDeductionEnabled(rule) {
-        var calculation = rule && rule.calculation ? rule.calculation : {};
-        if (calculation.deductOrderStockoutSales != null) {
-          return calculation.deductOrderStockoutSales !== false;
-        }
-        return calculation.deductStockoutSales !== false;
       }
 
       function siteGroup(site) {
@@ -2914,29 +2906,6 @@
         });
       }
 
-      function makeProjection(base, fbaInventory, inboundDay, inboundQty, horizon) {
-        var rows = [];
-        var stock = fbaInventory;
-        for (var day = 0; day < horizon; day += 1) {
-          var inbound = day === inboundDay ? inboundQty : 0;
-          var start = Math.max(0, stock) + inbound;
-          var forecast = forecastAt(base, day);
-          var loss = forecast - Math.min(start, forecast);
-          var end = Math.max(0, start - forecast);
-          rows.push({ day: day, forecastSales: forecast, stockoutLoss: Math.round(loss) });
-          stock = end;
-        }
-        return rows;
-      }
-
-      function stockoutDeduction(projection, earliestAvailableDays) {
-        return projection.filter(function(row) {
-          return row.day < earliestAvailableDays;
-        }).reduce(function(sum, row) {
-          return sum + row.stockoutLoss;
-        }, 0);
-      }
-
       function shipRiskLeadRange(child) {
         var leads = [];
         var splits = child && child.methodSplits && Array.isArray(child.methodSplits.ship) ? child.methodSplits.ship : [];
@@ -3005,18 +2974,16 @@
         return '<span class="risk-tag ' + escapeHtml(risk.className || 'risk-low') + '">' + escapeHtml(risk.name || '-') + '</span>';
       }
 
-      function makeSourceResult(shipForecastSum, orderForecastSum, shipInventoryDeduction, orderInventoryDeduction, orderDeduction, factor) {
+      function makeSourceResult(shipForecastSum, orderForecastSum, shipInventoryDeduction, orderInventoryDeduction, factor) {
         var sourceShipForecast = Math.round(shipForecastSum * factor);
         var sourceOrderForecast = Math.round(orderForecastSum * factor);
-        var sourceOrderDeduction = Math.round(orderDeduction * factor);
         return {
           shipSuggestedQty: Math.max(0, Math.ceil(sourceShipForecast - shipInventoryDeduction)),
-          orderSuggestedQty: Math.max(0, Math.ceil(sourceOrderForecast - orderInventoryDeduction - sourceOrderDeduction)),
+          orderSuggestedQty: Math.max(0, Math.ceil(sourceOrderForecast - orderInventoryDeduction)),
           shipForecastSum: sourceShipForecast,
           orderForecastSum: sourceOrderForecast,
           shipInventoryDeduction: shipInventoryDeduction,
-          orderInventoryDeduction: orderInventoryDeduction,
-          orderDeduction: sourceOrderDeduction
+          orderInventoryDeduction: orderInventoryDeduction
         };
       }
 
@@ -3064,20 +3031,17 @@
         var shipFrequencyDays = toInt(logistics.shipFrequencyDays, 7);
         var shipCoverageDays = longestLeadTimeDays + safetyDays + shipFrequencyDays;
         var orderCoverageDays = procurementCycle + longestLeadTimeDays + safetyDays + shipFrequencyDays;
-        var orderEarliestAvailableDays = procurementDelivery + shortestLeadTimeDays;
         var methodSplits = logisticsMethodSplits(methodOptions, shipCoverageDays, orderCoverageDays, procurementDelivery);
         var baseSales = [17, 12, 9, 15, 10, 7, 13, 10][sequence % 8];
         var fbaInventory = [50, 650, 90, 120, 820, 20, 340, 180][sequence % 8];
         var fbaInbound = [110, 520, 30, 260, 700, 0, 220, 90][sequence % 8];
         var cnAvailable = [260, 180, 120, 300, 80, 40, 160, 210][sequence % 8];
         var purchaseInbound = [170, 120, 60, 280, 540, 30, 110, 190][sequence % 8];
-        var inboundDay = [36, 68, 12, 45, 88, 30, 52, 24][sequence % 8];
         if (sequence % 8 === 4) {
           fbaInventory = forecastSum(baseSales, orderCoverageDays) + 500;
           fbaInbound = 0;
           cnAvailable = 600;
           purchaseInbound = 800;
-          inboundDay = 0;
         }
         var riskBand = parentIndex % 4;
         var rescueDay = shortestLeadTimeDays + shipFrequencyDays;
@@ -3094,23 +3058,19 @@
         var stockForRiskBand = Math.round(forecastSum(baseSales, desiredStockoutDay + 1) * 1.08);
         fbaInventory = Math.max(0, Math.round(stockForRiskBand * 0.58));
         fbaInbound = Math.max(0, stockForRiskBand - fbaInventory);
-        var projection = makeProjection(baseSales, fbaInventory, inboundDay, fbaInbound, Math.min(orderCoverageDays, 150));
         var shipForecastSum = forecastSum(baseSales, shipCoverageDays);
         var orderForecastSum = forecastSum(baseSales, orderCoverageDays);
-        var orderDeductEnabled = orderStockoutDeductionEnabled(rule);
-        var orderDeduction = orderDeductEnabled ? stockoutDeduction(projection, orderEarliestAvailableDays) : 0;
         var shipInventoryDeduction = fbaInventory + fbaInbound;
         var orderInventoryDeduction = fbaInventory + fbaInbound + cnAvailable + purchaseInbound;
         var shipSuggested = Math.max(0, Math.ceil(shipForecastSum - shipInventoryDeduction));
-        var orderSuggested = Math.max(0, Math.ceil(orderForecastSum - orderInventoryDeduction - orderDeduction));
+        var orderSuggested = Math.max(0, Math.ceil(orderForecastSum - orderInventoryDeduction));
         var forecastResult = {
           shipSuggestedQty: shipSuggested,
           orderSuggestedQty: orderSuggested,
           shipForecastSum: shipForecastSum,
           orderForecastSum: orderForecastSum,
           shipInventoryDeduction: shipInventoryDeduction,
-          orderInventoryDeduction: orderInventoryDeduction,
-          orderDeduction: orderDeduction
+          orderInventoryDeduction: orderInventoryDeduction
         };
         var annualFactor = [0.92, 1.06, 0.95, 1.1, 0.9, 1.04, 0.98, 1.08][sequence % 8];
         var annualResult = makeSourceResult(
@@ -3118,7 +3078,6 @@
           orderForecastSum,
           shipInventoryDeduction,
           orderInventoryDeduction,
-          orderDeduction,
           annualFactor
         );
         return {
@@ -3164,7 +3123,6 @@
           orderForecastSum: annualResult.orderForecastSum,
           shipInventoryDeduction: annualResult.shipInventoryDeduction,
           orderInventoryDeduction: annualResult.orderInventoryDeduction,
-          orderDeduction: annualResult.orderDeduction,
           fbaInventory: fbaInventory,
           fbaInbound: fbaInbound,
           cnAvailable: cnAvailable,
