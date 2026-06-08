@@ -2499,7 +2499,7 @@
       }
 
       function riskLevelTip() {
-        return 'A：必断货 = 最快物流也补不上；B1：紧急补货 = 需立即安排最快物流；B2：优先补货 = 有缓冲但需优先处理；C：常规可达 = 最慢物流也能补上';
+        return 'A：必断货 = 最快物流也补不上；B1：紧急补货 = 需立即安排最快物流；B2：优先补货 = 有缓冲但需优先处理；C：常规补货 = 最慢物流也能补上';
       }
 
       function riskHeaderHtml(label) {
@@ -2960,14 +2960,14 @@
         if (stockoutDay < range.slowest) {
           return { level: 2, name: 'B2：优先补货', className: 'risk-medium', stockoutDay: stockoutDay };
         }
-        return { level: 1, name: 'C：常规可达', className: 'risk-low', stockoutDay: stockoutDay };
+        return { level: 1, name: 'C：常规补货', className: 'risk-low', stockoutDay: stockoutDay };
       }
 
       function parentShipRisk(item) {
         var children = (item.childItems || []).filter(function(child) {
           return child.shipSuggestedQty > 0;
         });
-        if (!children.length) return { level: 1, name: 'C：常规可达', className: 'risk-low', stockoutDay: null };
+        if (!children.length) return { level: 1, name: 'C：常规补货', className: 'risk-low', stockoutDay: null };
         return children.map(childShipRisk).sort(function(a, b) {
           return b.level - a.level || toInt(a.stockoutDay, 9999) - toInt(b.stockoutDay, 9999);
         })[0];
