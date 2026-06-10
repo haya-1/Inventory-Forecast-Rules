@@ -2162,7 +2162,7 @@
                     <th style="width: 96px;">运营负责人</th>
                     <th style="width: 110px;" id="cycle-head">目标库存天数</th>
                     <th style="width: 112px;" class="num" id="qty-head">发货建议量</th>
-                    <th style="width: 108px;" id="risk-head">紧急程度</th>
+                    <th style="width: 108px;" id="risk-head">发货窗口</th>
                     <th style="width: 92px;">生成单据</th>
                     <th style="width: 104px;">销量数据源</th>
                     <th style="width: 104px;">生成日期</th>
@@ -2499,12 +2499,12 @@
       }
 
       function riskLevelTip() {
-        return 'A：必断货 = 最快物流也补不上；B1：紧急补货 = 需立即安排最快物流；B2：优先补货 = 有缓冲但需优先处理；C：常规补货 = 最慢物流也能补上';
+        return '发货窗口 = 断货点之前还能让货赶到 FBA 的发货时间窗。A：窗口已过 = 已赶不上，最快物流到货前就会断货，立即发货以缩短断货期；B1：末班窗口 = 仅剩末班，错过本期发货即无法避免断货；B2：窗口收紧 = 快线可赶，慢速物流已赶不上，需安排较快物流；C：窗口充足 = 全都可赶，最慢物流也能在断货前到货';
       }
 
       function riskHeaderHtml(label) {
         var tip = riskLevelTip();
-        return escapeHtml(label || '紧急程度') + '<span class="header-help" tabindex="0" title="' + escapeHtml(tip) + '" data-tip="' + escapeHtml(tip) + '">!</span>';
+        return escapeHtml(label || '发货窗口') + '<span class="header-help" tabindex="0" title="' + escapeHtml(tip) + '" data-tip="' + escapeHtml(tip) + '">!</span>';
       }
 
       function sourceKeys() {
@@ -2952,22 +2952,22 @@
         var stockoutDay = childShipStockoutDay(child);
         var rescueDay = range.fastest + Math.max(0, toInt(child.shipFrequencyDays, 0));
         if (stockoutDay < range.fastest) {
-          return { level: 4, name: 'A：必断货', className: 'risk-critical', stockoutDay: stockoutDay };
+          return { level: 4, name: 'A：窗口已过', hint: '已赶不上：最快物流到货前就会断货，立即发货以缩短断货期', className: 'risk-critical', stockoutDay: stockoutDay };
         }
         if (stockoutDay < rescueDay) {
-          return { level: 3, name: 'B1：紧急补货', className: 'risk-high', stockoutDay: stockoutDay };
+          return { level: 3, name: 'B1：末班窗口', hint: '仅剩末班：错过本期发货即无法避免断货', className: 'risk-high', stockoutDay: stockoutDay };
         }
         if (stockoutDay < range.slowest) {
-          return { level: 2, name: 'B2：优先补货', className: 'risk-medium', stockoutDay: stockoutDay };
+          return { level: 2, name: 'B2：窗口收紧', hint: '快线可赶：慢速物流已赶不上，需安排较快物流', className: 'risk-medium', stockoutDay: stockoutDay };
         }
-        return { level: 1, name: 'C：常规补货', className: 'risk-low', stockoutDay: stockoutDay };
+        return { level: 1, name: 'C：窗口充足', hint: '全都可赶：最慢物流也能在断货前到货', className: 'risk-low', stockoutDay: stockoutDay };
       }
 
       function parentShipRisk(item) {
         var children = (item.childItems || []).filter(function(child) {
           return child.shipSuggestedQty > 0;
         });
-        if (!children.length) return { level: 1, name: 'C：常规补货', className: 'risk-low', stockoutDay: null };
+        if (!children.length) return { level: 1, name: 'C：窗口充足', hint: '全都可赶：最慢物流也能在断货前到货', className: 'risk-low', stockoutDay: null };
         return children.map(childShipRisk).sort(function(a, b) {
           return b.level - a.level || toInt(a.stockoutDay, 9999) - toInt(b.stockoutDay, 9999);
         })[0];
@@ -2975,7 +2975,8 @@
 
       function riskTagHtml(risk) {
         risk = risk || { name: '-', className: 'risk-low' };
-        return '<span class="risk-tag ' + escapeHtml(risk.className || 'risk-low') + '">' + escapeHtml(risk.name || '-') + '</span>';
+        var hintAttr = risk.hint ? ' title="' + escapeHtml(risk.hint) + '"' : '';
+        return '<span class="risk-tag ' + escapeHtml(risk.className || 'risk-low') + '"' + hintAttr + '>' + escapeHtml(risk.name || '-') + '</span>';
       }
 
       function makeSourceResult(shipForecastSum, orderForecastSum, shipInventoryDeduction, orderInventoryDeduction, factor) {
@@ -3378,7 +3379,7 @@
         document.getElementById('qty-head').textContent = activeQtyLabel();
         var riskHead = document.getElementById('risk-head');
         if (riskHead) {
-          riskHead.innerHTML = riskHeaderHtml('紧急程度');
+          riskHead.innerHTML = riskHeaderHtml('发货窗口');
           riskHead.style.display = activeSuggestionType === 'ship' ? '' : 'none';
         }
       }
@@ -3524,7 +3525,7 @@
         if (!rows.length) return '<div class="contrib-empty">暂无' + typeLabel + '建议量</div>';
         return scrollableTableWrap(
           '<table class="detail-table contrib-table"><thead><tr><th>SKU</th>' +
-          (showRisk ? '<th>' + riskHeaderHtml('SKU紧急程度') + '</th>' : '') +
+          (showRisk ? '<th>' + riskHeaderHtml('SKU发货窗口') + '</th>' : '') +
           '<th class="num">建议总量</th><th class="num">占比</th></tr></thead><tbody>' + body + '</tbody></table>'
         );
       }

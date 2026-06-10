@@ -1373,9 +1373,6 @@
                     <th style="width: 190px;">规则名称</th>
                     <th style="width: 90px;">是否启用</th>
                     <th style="width: 220px;">适用父体</th>
-                    <th style="width: 110px;">采购时效</th>
-                    <th style="width: 130px;">默认安全天数</th>
-                    <th style="width: 130px;">站点</th>
                     <th style="width: 90px;">创建人</th>
                     <th style="width: 160px;">创建时间</th>
                     <th style="width: 90px;">更新人</th>
@@ -2389,7 +2386,7 @@
         tbody.innerHTML = '';
         if (!rules.length) {
           var empty = document.createElement('tr');
-          empty.innerHTML = '<td class="empty-row" colspan="12">暂无数据</td>';
+          empty.innerHTML = '<td class="empty-row" colspan="9">暂无数据</td>';
           tbody.appendChild(empty);
         } else {
           rules.forEach(function(rule) {
@@ -2402,9 +2399,6 @@
               '<td>' + escapeHtml(rule.name) + '</td>' +
               '<td><span class="tag ' + (rule.enabled === false ? 'tag-danger' : 'tag-success') + '">' + (rule.enabled === false ? '停用' : '启用') + '</span></td>' +
               '<td>' + parentCellHtml(form.parentCodes) + '</td>' +
-              '<td>' + procurement + ' 天</td>' +
-              '<td>' + toInt(form.fbaSafetyDays, 0) + ' 天</td>' +
-              '<td>' + escapeHtml(siteNames) + '</td>' +
               '<td>' + escapeHtml(rule.createdBy || '-') + '</td>' +
               '<td>' + escapeHtml(rule.createdTime || rule.createdAt || '-') + '</td>' +
               '<td>' + escapeHtml(rule.updatedBy || '-') + '</td>' +
