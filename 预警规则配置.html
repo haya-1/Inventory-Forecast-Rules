@@ -1624,6 +1624,108 @@
     #proto-submenu {
       display: none !important;
     }
+
+    /* ===== 向「备货规则配置」页对齐：列表区设计语言 ===== */
+    /* 筛选栏：带文字标签 + 底部分隔线，控件统一 32px */
+    .filter-bar {
+      gap: 12px 18px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #ebeef5;
+      margin-bottom: 16px;
+    }
+    .filter-item { gap: 8px; }
+    .filter-label {
+      font-size: 14px;
+      color: #606266;
+      white-space: nowrap;
+    }
+    .filter-item select,
+    .filter-item input[type="text"],
+    .filter-item input[type="date"] { height: 32px; }
+    .filter-btn { height: 32px; }
+
+    /* 操作栏新增按钮对齐备货按钮尺寸 */
+    .action-bar .btn-primary { height: 32px; padding: 0 14px; font-size: 14px; }
+
+    /* 数据表格：左对齐 + 表头字重 600 + 紧凑内边距 + 横向滚动 */
+    .data-table { min-width: 1480px; table-layout: fixed; color: #606266; }
+    .data-table th,
+    .data-table td {
+      text-align: left;
+      padding: 9px 10px;
+      vertical-align: middle;
+      line-height: 1.45;
+      word-break: break-word;
+    }
+    .data-table th { font-weight: 600; color: #606266; }
+    .data-table tbody tr:hover { background: transparent; }
+    .data-table tbody tr:hover td { background: #fafcff; }
+
+    /* 标签：语义化、带边框（对齐备货 tag 体系） */
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      height: 24px;
+      padding: 0 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      border: 1px solid transparent;
+      white-space: nowrap;
+    }
+    .tag-success { color:#67c23a; background:#f0f9eb; border-color:#e1f3d8; }
+    .tag-info    { color:#909399; background:#f4f4f5; border-color:#e9e9eb; }
+    .tag-danger  { color:#f56c6c; background:#fef0f0; border-color:#fde2e2; }
+    .tag-blue    { color:#409eff; background:#ecf5ff; border-color:#d9ecff; }
+    .tag-warning { color:#e6a23c; background:#fdf6ec; border-color:#faecd8; }
+
+    /* 规则编号：等宽字体 + 链接 */
+    .mono-cell { font-family:"SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size:13px; color:#303133; }
+    .rule-id-link { color:#409eff; cursor:pointer; background:none; border:none; padding:0; }
+    .rule-id-link:hover { color:#66b1ff; text-decoration:underline; }
+
+    /* 适用父体单元格 + 悬浮弹层（对齐备货） */
+    .parent-codes-wrap { display:inline-flex; align-items:center; gap:6px; max-width:100%; vertical-align:middle; }
+    .parent-codes-text { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .parent-more { height:20px; padding:0 6px; flex-shrink:0; cursor:default; }
+    .parent-popover {
+      display:none; position:fixed; z-index:3000; min-width:220px; max-width:360px;
+      padding:10px 12px; color:#606266; background:#fff; border:1px solid #dcdfe6;
+      border-radius:4px; box-shadow:0 6px 18px rgba(0,0,0,0.12); line-height:1.7;
+      white-space:normal; word-break:break-all; pointer-events:none;
+    }
+    .parent-popover.show { display:block; }
+    .parent-popover::before {
+      content:""; position:absolute; left:18px; top:-6px; width:10px; height:10px;
+      background:#fff; border-left:1px solid #dcdfe6; border-top:1px solid #dcdfe6; transform:rotate(45deg);
+    }
+
+    /* 操作列：文本按钮（对齐备货 btn-text，去掉竖线分隔） */
+    .table-actions { display:inline-flex; align-items:center; gap:12px; white-space:nowrap; }
+
+    /* 抽屉「适用父体」：只读展示框 + 选择按钮（对齐备货 drawer-input--readonly + btn） */
+    .cfg-parent-display {
+      flex: 1;
+      width: auto;
+      min-width: 0;
+      background: #f5f7fa;
+      color: #606266;
+      cursor: default;
+      text-overflow: ellipsis;
+    }
+    .btn-pick {
+      height: 34px;
+      padding: 0 16px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      background: #fff;
+      color: #606266;
+      cursor: pointer;
+      font-size: 14px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+    .btn-pick:hover { color:#409eff; border-color:#c6e2ff; background:#ecf5ff; }
   </style>
 </head>
 <body>
@@ -1642,9 +1744,9 @@
           <a class="primary-item" href="#"><span class="item-icon">⚙️</span><span class="item-label">数据决策</span></a>
           <a class="primary-item" href="#"><span class="item-icon">⚙️</span><span class="item-label">运营工具</span></a>
           <a class="primary-item" href="#"><span class="item-icon">⚙️</span><span class="item-label">目标</span></a>
-          <a class="primary-item" href="#" data-submenu="replenish"><span class="item-icon">⚙️</span><span class="item-label">补货</span></a>
+          <a class="primary-item active" href="#" data-submenu="replenish" data-primary-current="true"><span class="item-icon">⚙️</span><span class="item-label">补货</span></a>
           <a class="primary-item" href="#" data-submenu="system"><span class="item-icon">⚙️</span><span class="item-label">系统配置</span></a>
-          <a class="primary-item active" href="#" data-submenu="proto" data-primary-current="true"><span class="item-icon">⚙️</span><span class="item-label">初始原型</span></a>
+          <a class="primary-item" href="#" data-submenu="proto"><span class="item-icon">⚙️</span><span class="item-label">初始原型</span></a>
         </nav>
       </div>
       <div class="sidebar-submenu-panel" id="replenish-submenu">
@@ -1654,6 +1756,7 @@
         <a class="submenu-item" href="./基础参数配置.html">基础参数配置</a>
         <a class="submenu-item" href="./销量预测规则.html">销量预测规则</a>
         <a class="submenu-item" href="./备货规则配置.html">备货规则</a>
+        <a class="submenu-item active" href="./预警规则配置.html">预警规则配置</a>
       </div>
       <div class="sidebar-submenu-panel" id="system-submenu">
         <div class="submenu-title">系统配置</div>
@@ -1670,7 +1773,7 @@
     <!-- 主内容区 -->
     <div class="main-content">
       <!-- 顶部页签 -->
-      <div class="page-tabs">
+      <div class="page-tabs" style="display: none;">
         <a class="page-tab active" onclick="switchPageTab('rules', this)">规则管理</a>
         <a class="page-tab" onclick="switchPageTab('alerts', this)">预警模版</a>
       </div>
@@ -1682,11 +1785,17 @@
           <!-- 过滤条件栏 -->
           <div class="filter-bar">
             <div class="filter-item">
-              <input type="text" placeholder="规则名称" />
+              <span class="filter-label">规则编号</span>
+              <input type="text" id="filter-code" placeholder="请输入规则编号" />
             </div>
             <div class="filter-item">
-              <select>
-                <option value="">预警模型 </option>
+              <span class="filter-label">规则名称</span>
+              <input type="text" id="filter-name" placeholder="请输入规则名称" />
+            </div>
+            <div class="filter-item">
+              <span class="filter-label">预警模型</span>
+              <select id="filter-model">
+                <option value="">全部</option>
                 <option>亚马逊库龄预警</option>
                 <option>本地库龄预警</option>
                 <option>FBA长期仓储费预警</option>
@@ -1702,8 +1811,9 @@
               </select>
             </div>
             <div class="filter-item">
-              <select>
-                <option value="">预警分类 </option>
+              <span class="filter-label">预警分类</span>
+              <select id="filter-category">
+                <option value="">全部</option>
                 <option>库龄预警</option>
                 <option>仓储费预警</option>
                 <option>下单预警</option>
@@ -1716,24 +1826,26 @@
               </select>
             </div>
             <div class="filter-item">
-              <select>
-                <option value="">创建人 </option>
-                <option>更新人</option>
+              <span class="filter-label">适用父体</span>
+              <input type="text" id="filter-parent" placeholder="请输入父体编号" />
+            </div>
+            <div class="filter-item">
+              <span class="filter-label">状态</span>
+              <select id="filter-status">
+                <option value="">全部</option>
+                <option value="enabled">启用</option>
+                <option value="disabled">停用</option>
               </select>
             </div>
             <div class="filter-item">
-              <input type="text" placeholder="人员" />
+              <span class="filter-label">创建人</span>
+              <input type="text" id="filter-creator" placeholder="请输入创建人" />
             </div>
             <div class="filter-item">
-              <select>
-                <option value="">创建时间 ▾</option>
-                <option>更新时间</option>
-              </select>
-            </div>
-            <div class="filter-item">
-              <input type="date" placeholder="开始日期" />
+              <span class="filter-label">创建时间</span>
+              <input type="date" id="filter-date-start" />
               <span class="filter-date-sep">至</span>
-              <input type="date" placeholder="结束日期" />
+              <input type="date" id="filter-date-end" />
             </div>
             <button class="filter-btn filter-btn-search" onclick="doSearch()">🔍 搜索</button>
             <button class="filter-btn filter-btn-reset" onclick="doReset()">重置</button>
@@ -1753,24 +1865,26 @@
             <table class="data-table" id="rule-table">
               <thead>
                 <tr>
-                  <th style="width: 50px;">
-                    <input type="checkbox" onclick="toggleSelectAll(this)" />
-                  </th>
-                  <th>规则名称</th>
-                  <th>预警模型</th>
-                  <th>预警分类</th>
-                  <th>状态</th>
-                  <th>创建时间</th>
-                  <th>创建人</th>
-                  <th>更新时间</th>                  
-                  <th>更新人</th>
-                  <th style="width: 120px;">操作</th>
+                  <th style="width: 150px;">规则编号</th>
+                  <th style="width: 160px;">规则名称</th>
+                  <th style="width: 150px;">预警模型</th>
+                  <th style="width: 120px;">预警分类</th>
+                  <th style="width: 240px;">适用父体</th>
+                  <th style="width: 90px;">状态</th>
+                  <th style="width: 90px;">创建人</th>
+                  <th style="width: 150px;">创建时间</th>
+                  <th style="width: 90px;">更新人</th>
+                  <th style="width: 150px;">更新时间</th>
+                  <th style="width: 110px;">操作</th>
                 </tr>
               </thead>
               <tbody id="rule-tbody">
               </tbody>
             </table>
           </div>
+
+          <!-- 适用父体悬浮弹层 -->
+          <div class="parent-popover" id="parent-popover" aria-hidden="true"></div>
 
           <!-- 空数据占位 -->
           <div class="table-empty" id="table-empty">
@@ -1788,17 +1902,7 @@
         </div>
       </div>
 
-      <!-- 预警模板（待扩展） -->
-      <div class="panel" id="panel-alerts" style="display: none;">
-        <div class="panel-body">
-          <div class="table-empty">
-            <div class="table-empty-icon">🔔</div>
-            <div>预警模板内容待后续补充</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+
 
   <!-- 新建规则弹窗 -->
   <div class="modal-mask" id="modal-create-rule" onclick="closeModalOnMask(event)">
@@ -1950,33 +2054,18 @@
         </div>
       </div>
 
-      <!-- 父体范围 -->
+      <!-- 适用父体 -->
       <div class="form-section">
         <div class="form-section-header">
-          <div class="form-section-title">父体范围</div>
-          <button class="btn btn-primary" style="padding: 6px 16px; font-size: 13px;" onclick="openParentModal()">+ 添加父体</button>
+          <div class="form-section-title">适用父体</div>
         </div>
-        <div class="table-container">
-          <table class="parent-table" id="selected-parent-table">
-            <thead>
-              <tr>
-                <th style="width:40px;">序号</th>
-                <th>父体编号</th>
-                <th>父ASIN</th>
-                <th>平台</th>
-                <th>站点</th>
-                <th>店铺</th>
-                <th>SPU</th>
-                <th>运营负责人</th>
-                <th>库存可售天数</th>
-                <th style="width:60px;">操作</th>
-              </tr>
-            </thead>
-            <tbody id="selected-parent-tbody">
-            </tbody>
-          </table>
+        <div class="cfg-row" style="align-items:center;">
+          <label class="cfg-label required">适用父体</label>
+          <div class="cfg-field" style="display:flex; align-items:center; gap:10px;">
+            <input type="text" class="cfg-input cfg-parent-display" id="cfg-parent-display" readonly placeholder="未选择父体" />
+            <button type="button" class="btn-pick" onclick="openParentModal()">选择父体</button>
+          </div>
         </div>
-        <div class="parent-empty" id="parent-empty-tip">暂未添加父体，请点击上方【添加父体】按钮</div>
       </div>
 
       <!-- 规则设置 -->
@@ -2236,50 +2325,122 @@
       return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
     }
 
+    function getFilteredRules() {
+      var val = function(id) { var el = document.getElementById(id); return el ? (el.value || '') : ''; };
+      var code = val('filter-code').trim().toLowerCase();
+      var name = val('filter-name').trim().toLowerCase();
+      var model = val('filter-model');
+      var category = val('filter-category');
+      var parent = val('filter-parent').trim().toLowerCase();
+      var status = val('filter-status');
+      var creator = val('filter-creator').trim().toLowerCase();
+      var dStart = val('filter-date-start');
+      var dEnd = val('filter-date-end');
+      return savedRules.filter(function(r) {
+        if (code && (r.code || '').toLowerCase().indexOf(code) === -1) return false;
+        if (name && (r.name || '').toLowerCase().indexOf(name) === -1) return false;
+        if (model && r.model !== model) return false;
+        if (category && r.category !== category) return false;
+        if (parent && !parentCodesOf(r).some(function(c) { return c.toLowerCase().indexOf(parent) !== -1; })) return false;
+        if (status === 'enabled' && !r.status) return false;
+        if (status === 'disabled' && r.status) return false;
+        if (creator && (r.creator || '').toLowerCase().indexOf(creator) === -1) return false;
+        if (dStart || dEnd) {
+          var d = (r.createTime || '').slice(0, 10);
+          if (dStart && d && d < dStart) return false;
+          if (dEnd && d && d > dEnd) return false;
+        }
+        return true;
+      });
+    }
+
+    function parentCodesOf(r) {
+      return (r.parents || []).map(function(p) { return p.code; }).filter(Boolean);
+    }
+
+    function parentCellHtml(codes) {
+      codes = Array.isArray(codes) ? codes : [];
+      if (!codes.length) return '<span style="color:#c0c4cc;">未选择父体</span>';
+      if (codes.length <= 4) return codes.join('、');
+      return '<span class="parent-codes-wrap" tabindex="0" data-parent-codes="' + codes.join('&#10;') + '">' +
+        '<span class="parent-codes-text">' + codes.slice(0, 4).join('、') + '</span>' +
+        '<span class="tag tag-info parent-more">+' + (codes.length - 4) + '</span>' +
+      '</span>';
+    }
+
     function renderRuleTable() {
       var tbody = document.getElementById('rule-tbody');
       var empty = document.getElementById('table-empty');
       var pagi = document.getElementById('pagination');
       tbody.innerHTML = '';
 
-      if (savedRules.length === 0) {
+      var rules = getFilteredRules();
+      if (rules.length === 0) {
         empty.style.display = '';
         pagi.style.display = 'none';
         return;
       }
       empty.style.display = 'none';
       pagi.style.display = 'flex';
-      document.querySelector('.page-info strong').textContent = savedRules.length;
+      document.querySelector('.page-info strong').textContent = rules.length;
 
-      savedRules.forEach(function(r) {
-        var statusText = r.status ? '启用' : '停用';
+      rules.forEach(function(r) {
         var tr = document.createElement('tr');
         tr.innerHTML =
-          '<td><input type="checkbox" /></td>' +
-          '<td style="color:#409eff; cursor:pointer;" onclick="editRule(' + r.id + ')">' + r.name + '</td>' +
+          '<td><button type="button" class="rule-id-link mono-cell" onclick="editRule(' + r.id + ')">' + (r.code || '-') + '</button></td>' +
+          '<td>' + r.name + '</td>' +
           '<td>' + r.model + '</td>' +
           '<td>' + r.category + '</td>' +
-          '<td>' +
-            '<label class="pill-toggle" title="' + statusText + '">' +
-              '<input type="checkbox" ' + (r.status ? 'checked' : '') + ' onchange="onTableStatusToggle(' + r.id + ', this.checked)" />' +
-              '<span class="pill-switch-ui">' +
-                '<span class="pill-switch-knob"></span>' +
-                '<span class="pill-switch-label pill-switch-label--on">启用</span>' +
-                '<span class="pill-switch-label pill-switch-label--off">停用</span>' +
-              '</span>' +
-            '</label>' +
-          '</td>' +
-          '<td>' + r.createTime + '</td>' +
+          '<td>' + parentCellHtml(parentCodesOf(r)) + '</td>' +
+          '<td><span class="tag ' + (r.status ? 'tag-success' : 'tag-danger') + '">' + (r.status ? '启用' : '停用') + '</span></td>' +
           '<td>' + r.creator + '</td>' +
-          '<td>' + r.updateTime + '</td>' +
+          '<td>' + r.createTime + '</td>' +
           '<td>' + r.updater + '</td>' +
-          '<td>' +
-            '<button class="op-link" onclick="editRule(' + r.id + ')">编辑</button>' +
-            '<span class="op-sep">|</span>' +
+          '<td>' + r.updateTime + '</td>' +
+          '<td><div class="table-actions">' +
             '<button class="op-link op-link-danger" onclick="deleteRule(' + r.id + ')">删除</button>' +
-          '</td>';
+          '</div></td>';
         tbody.appendChild(tr);
       });
+    }
+
+    /* 适用父体悬浮弹层 */
+    function showParentPopover(anchor) {
+      var pop = document.getElementById('parent-popover');
+      if (!pop || !anchor) return;
+      var text = anchor.getAttribute('data-parent-codes') || '';
+      if (!text) return;
+      pop.innerHTML = text.split('\n').join('<br>');
+      pop.classList.add('show');
+      var rect = anchor.getBoundingClientRect();
+      var popRect = pop.getBoundingClientRect();
+      var left = Math.min(rect.left, window.innerWidth - popRect.width - 12);
+      var top = rect.bottom + 8;
+      if (top + popRect.height > window.innerHeight - 12) {
+        top = Math.max(12, rect.top - popRect.height - 8);
+      }
+      pop.style.left = Math.max(12, left) + 'px';
+      pop.style.top = top + 'px';
+    }
+
+    function hideParentPopover() {
+      var pop = document.getElementById('parent-popover');
+      if (pop) pop.classList.remove('show');
+    }
+
+    /* 规则编号生成：YJ + YYYYMMDD + 3 位流水（同备货编号规则） */
+    function generateRuleCode() {
+      var d = new Date();
+      var pad = function(n) { return n < 10 ? '0' + n : String(n); };
+      var prefix = 'YJ' + d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate());
+      var max = 0;
+      savedRules.forEach(function(r) {
+        if (r.code && r.code.indexOf(prefix) === 0) {
+          var n = parseInt(r.code.slice(prefix.length), 10) || 0;
+          if (n > max) max = n;
+        }
+      });
+      return prefix + String(max + 1).padStart(3, '0');
     }
 
     function onTableStatusToggle(id, checked) {
@@ -2357,14 +2518,15 @@
       el.classList.add('active');
     }
 
-    function doSearch() { alert('搜索功能待实现'); }
+    function doSearch() { renderRuleTable(); }
 
     function doReset() {
       document.querySelectorAll('.filter-item select').forEach(s => s.selectedIndex = 0);
       document.querySelectorAll('.filter-item input').forEach(i => i.value = '');
+      renderRuleTable();
     }
 
-    function refreshTable() { alert('刷新功能待实现'); }
+    function refreshTable() { renderRuleTable(); }
 
     function toggleSelectAll(masterCb) {
       document.querySelectorAll('#rule-tbody input[type="checkbox"]').forEach(cb => cb.checked = masterCb.checked);
@@ -2736,6 +2898,7 @@
       } else {
         savedRules.push({
           id: ruleIdCounter++,
+          code: generateRuleCode(),
           name: name,
           model: currentModel,
           category: MODEL_CATEGORY_MAP[currentModel] || '',
@@ -2758,31 +2921,19 @@
       closeDrawer();
     }
 
-    /* ===== 已选父体表格渲染 ===== */
+    /* ===== 已选父体：只读展示框（对齐备货） ===== */
     function renderSelectedParents() {
-      var tbody = document.getElementById('selected-parent-tbody');
-      var tip = document.getElementById('parent-empty-tip');
-      tbody.innerHTML = '';
+      var input = document.getElementById('cfg-parent-display');
+      if (!input) return;
       if (selectedParents.length === 0) {
-        tip.style.display = '';
+        input.value = '';
+        input.placeholder = '未选择父体';
+        input.removeAttribute('title');
         return;
       }
-      tip.style.display = 'none';
-      selectedParents.forEach(function(p, i) {
-        var tr = document.createElement('tr');
-        tr.innerHTML =
-          '<td>' + (i + 1) + '</td>' +
-          '<td>' + p.code + '</td>' +
-          '<td>' + p.asin + '</td>' +
-          '<td>' + p.platform + '</td>' +
-          '<td>' + p.site + '</td>' +
-          '<td>' + p.store + '</td>' +
-          '<td>' + p.spu + '</td>' +
-          '<td>' + p.owner + '</td>' +
-          '<td>' + p.days + '</td>' +
-          '<td><button class="parent-remove" onclick="removeParent(' + i + ')">移除</button></td>';
-        tbody.appendChild(tr);
-      });
+      var codes = selectedParents.map(function(p) { return p.code; });
+      input.value = codes.join('、');
+      input.title = codes.join('、');
     }
 
     function removeParent(idx) {
@@ -2992,8 +3143,72 @@
       closeNotifyUserMenu();
     });
 
+    /* 适用父体弹层：表格事件委托 */
+    (function bindParentPopover() {
+      var tbody = document.getElementById('rule-tbody');
+      if (!tbody) return;
+      tbody.addEventListener('mouseover', function(e) {
+        var t = e.target.closest('.parent-codes-wrap');
+        if (t) showParentPopover(t);
+      });
+      tbody.addEventListener('mouseout', function(e) {
+        var t = e.target.closest('.parent-codes-wrap');
+        if (t && !t.contains(e.relatedTarget)) hideParentPopover();
+      });
+      tbody.addEventListener('focusin', function(e) {
+        var t = e.target.closest('.parent-codes-wrap');
+        if (t) showParentPopover(t);
+      });
+      tbody.addEventListener('focusout', hideParentPopover);
+      var container = document.querySelector('.table-container');
+      if (container) container.addEventListener('scroll', hideParentPopover);
+      window.addEventListener('resize', hideParentPopover);
+    })();
+
+    /* 模拟数据：首次进入（无本地数据）时注入几条示例规则 */
+    function seedMockRules() {
+      if (savedRules.length > 0) return;
+      var byCodes = function(codes) {
+        return codes.map(function(c) {
+          return MOCK_PARENTS.filter(function(p) { return p.code === c; })[0] || { code: c };
+        });
+      };
+      var notify = { notifySpecifyUser: false, notifyUserIds: [], notifyChannels: { system: true, dingtalk: false } };
+      var defs = [
+        { code:'YJ20260618001', name:'美国站亚马逊库龄预警', model:'亚马逊库龄预警', status:true,
+          parents:['LFT00002261','LFT00002260','LFT00002259','LFT00000785','LFT00000784','LFT00000783'],
+          creator:'陈柏宏', createTime:'2026-06-18 10:22:15', updater:'陈柏宏', updateTime:'2026-06-18 10:22:15' },
+        { code:'YJ20260618002', name:'本地仓高库龄预警', model:'本地库龄预警', status:true,
+          parents:['LFT00000778','LFT00000777'],
+          creator:'黄国阳', createTime:'2026-06-18 09:05:41', updater:'黄国阳', updateTime:'2026-06-18 09:05:41' },
+        { code:'YJ20260617001', name:'FBA长期仓储费预警', model:'FBA长期仓储费预警', status:false,
+          parents:['LFT00000784','LFT00000783','LFT00000782'],
+          creator:'余滢', createTime:'2026-06-17 16:48:30', updater:'黄利萍', updateTime:'2026-06-18 08:12:09' },
+        { code:'YJ20260615001', name:'大促订单加急预警', model:'订单加急预警', status:true,
+          parents:['LFT00000755'],
+          creator:'黄利萍', createTime:'2026-06-15 14:30:00', updater:'黄利萍', updateTime:'2026-06-16 11:02:55' },
+        { code:'YJ20260521001', name:'核心SKU必断预警', model:'断货预警（必断）', status:true,
+          parents:['LFT00000776','LFT00000775','LFT00000774','LFT00000773','LFT00000755'],
+          creator:'黄利萍', createTime:'2026-05-21 11:18:20', updater:'余滢', updateTime:'2026-06-10 17:40:12' },
+        { code:'YJ20260521002', name:'呆滞料冗余库存预警', model:'冗余库存（呆滞料）预警', status:false,
+          parents:['LFT00000780','LFT00000779','LFT00000778','LFT00000777'],
+          creator:'黄利萍', createTime:'2026-05-21 11:25:03', updater:'黄利萍', updateTime:'2026-05-21 11:25:03' }
+      ];
+      savedRules = defs.map(function(d, i) {
+        return Object.assign({
+          id: i + 1,
+          category: MODEL_CATEGORY_MAP[d.model] || '',
+          ageConditions: null,
+          threshold: null
+        }, notify, d, { parents: byCodes(d.parents) });
+      });
+      ruleIdCounter = savedRules.length + 1;
+      persistRules();
+    }
+
     initSidebarMenu();
     renderNotifyUserTrigger();
+    seedMockRules();
     renderRuleTable();
   </script>
 </body>
