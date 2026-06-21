@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>预警钉钉通知设计</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Microsoft YaHei", sans-serif; }
+    body { background: #f0f2f5; color: #303133; }
+
+    .app-layout { display: flex; min-height: 100vh; }
+
+    /* ===== 侧边栏 ===== */
+    .sidebar { width: 88px; position: fixed; top: 0; left: 0; bottom: 0; display: flex; flex-direction: row; overflow: visible; z-index: 1200; }
+    .sidebar-primary { width: 88px; background: linear-gradient(180deg, #2f47a6 0%, #1f2a78 100%); color: #fff; display: flex; flex-direction: column; align-items: center; padding: 10px 0; }
+    .sidebar-brand { padding: 6px 0 14px; width: 100%; text-align: center; }
+    .sidebar-brand h2 { color: #fff; font-size: 17px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .sidebar-brand .brand-icon { width: 24px; height: 24px; background: rgba(255,255,255,0.2); border-radius: 6px; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; }
+    .sidebar-nav { width: 100%; padding: 4px 0; }
+    .primary-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; height: 58px; margin: 6px 10px; border-radius: 10px; color: rgba(255,255,255,0.8); text-decoration: none; font-size: 12px; }
+    .primary-item:hover, .primary-item.active { background: #0d5bff; color: #fff; }
+    .primary-item .item-icon { font-size: 16px; }
+    .primary-item .item-label { line-height: 1; }
+    .sidebar-submenu-panel { position: fixed; left: 88px; top: 0; bottom: 0; width: 184px; background: #fff; border-right: 1px solid #e5e7eb; padding: 18px 14px; transform: translateX(-100%); opacity: 0; pointer-events: none; transition: transform 0.24s ease, opacity 0.2s ease; z-index: 1202; box-shadow: 4px 0 18px rgba(0,0,0,0.07); }
+    .sidebar-submenu-panel.open { transform: translateX(0); opacity: 1; pointer-events: auto; }
+    .submenu-title { font-size: 24px; color: #111827; margin-bottom: 14px; }
+    .submenu-group-title { color: #909399; font-size: 14px; padding: 8px 10px 6px; margin-top: 6px; }
+    .submenu-item { display: block; color: #374151; text-decoration: none; padding: 10px 10px; margin-bottom: 6px; border-radius: 8px; font-size: 14px; }
+    .submenu-item:hover { background: #f3f4f6; }
+    .submenu-item.active { background: #eef2ff; color: #2563eb; font-weight: 600; }
+    .sidebar-backdrop { position: fixed; inset: 0; background: rgba(17,24,39,0.32); opacity: 0; pointer-events: none; transition: opacity 0.2s ease; z-index: 1190; }
+    .app-layout.submenu-open .sidebar-backdrop { opacity: 1; pointer-events: auto; }
+
+    /* ===== 主内容 ===== */
+    .main-content { flex: 1; margin-left: 88px; }
+    .page-header { background: #fff; padding: 20px 28px; border-bottom: 1px solid #e5e7eb; }
+    .page-header h1 { font-size: 20px; font-weight: 600; color: #111827; margin-bottom: 6px; }
+    .page-header p { font-size: 14px; color: #6b7280; line-height: 1.6; }
+    .content-body { padding: 24px 28px; }
+
+    /* ===== 区块 ===== */
+    .section { margin-bottom: 36px; }
+    .section-title { font-size: 17px; font-weight: 600; color: #111827; padding-left: 12px; border-left: 3px solid #409eff; margin-bottom: 8px; }
+    .section-desc { font-size: 14px; color: #6b7280; margin-bottom: 20px; line-height: 1.6; }
+
+    /* ===== 说明框 ===== */
+    .info-box { background: #f6f8fa; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px 20px; margin-bottom: 20px; font-size: 13px; color: #4b5563; line-height: 1.7; }
+    .info-box strong { color: #111827; }
+    .info-box code { background: #e5e7eb; padding: 1px 6px; border-radius: 3px; font-size: 12px; font-family: "SFMono-Regular", Consolas, monospace; }
+
+    /* ===== 标签切换 ===== */
+    .card-selector { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+    .card-tab { padding: 8px 18px; border: 1px solid #dcdfe6; border-radius: 6px; background: #fff; color: #606266; font-size: 13px; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+    .card-tab:hover { border-color: #409eff; color: #409eff; }
+    .card-tab.active { background: #409eff; color: #fff; border-color: #409eff; }
+
+    .card-panel { display: none; }
+    .card-panel.active { display: block; }
+
+    /* ===== 双栏布局：卡片预览 + JSON ===== */
+    .preview-row { display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap; }
+    .preview-col-card { flex: 0 0 420px; max-width: 420px; }
+    .preview-col-json { flex: 1; min-width: 320px; }
+
+    /* ===== 钉钉 ActionCard 模拟 ===== */
+    .dt-wrap { background: #ededed; border-radius: 12px; padding: 16px; }
+    .dt-time { text-align: center; font-size: 11px; color: #999; margin-bottom: 12px; }
+    .dt-row { display: flex; gap: 10px; align-items: flex-start; }
+    .dt-avatar { width: 36px; height: 36px; border-radius: 6px; background: linear-gradient(135deg, #3370ff 0%, #5b8def 100%); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; font-weight: 700; flex-shrink: 0; line-height: 1; }
+    .dt-avatar-sub { font-size: 8px; font-weight: 400; display: block; text-align: center; margin-top: 1px; letter-spacing: 0.5px; }
+
+    /* ActionCard 卡片本体 */
+    .ac-card { flex: 1; background: #fff; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); overflow: hidden; max-width: 360px; }
+    .ac-body { padding: 14px 16px 10px; }
+    .ac-title { font-size: 15px; font-weight: 600; color: #1a1a1a; line-height: 1.4; margin-bottom: 12px; }
+    .ac-md { font-size: 13px; color: #4a4a4a; line-height: 1.75; }
+    .ac-md .ac-line { display: flex; padding: 2px 0; }
+    .ac-md .ac-lbl { color: #8c8c8c; flex-shrink: 0; width: 78px; text-align: right; padding-right: 8px; }
+    .ac-md .ac-val { color: #262626; flex: 1; word-break: break-all; }
+    .ac-md .ac-val.is-bold { font-weight: 600; color: #1a1a1a; }
+    .ac-btns { padding: 8px 16px 14px; display: flex; gap: 8px; flex-wrap: wrap; border-top: 1px solid #f0f0f0; }
+    .ac-btn { padding: 6px 0; flex: 1; text-align: center; border-radius: 4px; font-size: 13px; cursor: pointer; border: none; transition: all 0.15s; min-width: 80px; }
+    .ac-btn-gray { background: #f0f0f0; color: #606266; }
+    .ac-btn-gray:hover { background: #e5e5e5; }
+
+    /* ===== JSON 代码块 ===== */
+    .json-block { background: #1e1e2e; border-radius: 8px; overflow: hidden; }
+    .json-header { background: #2a2a3e; padding: 8px 16px; display: flex; justify-content: space-between; align-items: center; }
+    .json-header span { font-size: 12px; color: #a0a0b8; }
+    .json-copy { background: none; border: 1px solid #444; color: #a0a0b8; padding: 3px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; }
+    .json-copy:hover { color: #fff; border-color: #666; }
+    .json-body { padding: 14px 16px; overflow-x: auto; max-height: 420px; overflow-y: auto; }
+    .json-body pre { margin: 0; font-size: 12px; line-height: 1.55; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; color: #cdd6f4; white-space: pre-wrap; word-break: break-all; }
+    .json-body .jk { color: #89b4fa; }
+    .json-body .js { color: #a6e3a1; }
+    .json-body .jn { color: #fab387; }
+
+    /* ===== 规格表 ===== */
+    .spec-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13px; }
+    .spec-table th, .spec-table td { border: 1px solid #ebeef5; padding: 10px 12px; text-align: left; vertical-align: top; }
+    .spec-table th { background: #f5f7fa; font-weight: 600; color: #303133; white-space: nowrap; }
+    .spec-table td { color: #606266; line-height: 1.6; }
+    .spec-table tbody tr:hover { background: #fafcff; }
+    .tag { display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 3px; font-size: 12px; white-space: nowrap; }
+    .tag-blue { color: #409eff; background: #ecf5ff; }
+  </style>
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar-primary">
+        <div class="sidebar-brand"><h2><span class="brand-icon">📦</span><span>OMS</span></h2></div>
+        <nav class="sidebar-nav">
+          <a class="primary-item" href="./index.html"><span class="item-icon">🏠</span><span class="item-label">首页</span></a>
+          <a class="primary-item" href="#"><span class="item-icon">⚙️</span><span class="item-label">数据决策</span></a>
+          <a class="primary-item" href="#"><span class="item-icon">⚙️</span><span class="item-label">运营工具</span></a>
+          <a class="primary-item" href="#"><span class="item-icon">⚙️</span><span class="item-label">目标</span></a>
+          <a class="primary-item active" href="#" data-submenu="replenish" data-primary-current="true"><span class="item-icon">⚙️</span><span class="item-label">补货</span></a>
+        </nav>
+      </div>
+      <div class="sidebar-submenu-panel" id="replenish-submenu">
+        <a class="submenu-item" href="./补货列表.html">补货列表</a>
+        <a class="submenu-item" href="./备货建议.html">备货建议</a>
+        <div class="submenu-group-title">补货规则配置</div>
+        <a class="submenu-item" href="./基础参数配置.html">基础参数配置</a>
+        <a class="submenu-item" href="./销量预测规则.html">销量预测规则</a>
+        <a class="submenu-item" href="./备货规则配置.html">备货规则</a>
+        <a class="submenu-item" href="./预警规则配置.html">预警规则配置</a>
+      </div>
+    </aside>
+    <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+    <div class="main-content">
+      <div class="page-header">
+        <h1>预警模块 · 钉钉机器人通知设计（ActionCard 版）</h1>
+        <p>基于钉钉自定义机器人 ActionCard 消息类型的实际渲染能力设计，所见即所得。每张卡片下方附 JSON 报文，可直接用于开发对接。</p>
+      </div>
+
+      <div class="content-body">
+
+        <!-- ===== 设计说明 ===== -->
+        <div class="section">
+          <h2 class="section-title">ActionCard 能力与约束</h2>
+          <div class="info-box">
+            <strong>消息类型：</strong>钉钉自定义机器人 → <code>ActionCard</code>（独立跳转按钮模式）<br><br>
+            <strong>能做到的：</strong><br>
+            · 标题区：支持个性化文案，简短展示在钉钉消息列表中<br>
+            · 内容区：支持 Markdown 子集 —— 加粗（<code>**text**</code>）、链接（<code>[text](url)</code>）、有序/无序列表<br>
+            · 按钮区：支持 1~5 个独立跳转按钮，水平排列<br><br>
+            <strong>做不到的（已在本设计中规避）：</strong><br>
+            · 不支持彩色文字 → 改用加粗标识异常值<br>
+            · 不支持表格 → 改用「标签：值」逐行排列<br>
+            · 不支持分割线 → 改用空行分段<br>
+            · 不支持顶部色带
+          </div>
+
+          <table class="spec-table">
+            <thead>
+              <tr>
+                <th>预警模型</th>
+                <th>预警分类</th>
+                <th>标题模板</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>本地库龄预警</td>
+                <td>库龄预警</td>
+                <td>本地库龄预警 | {SKU}库龄≥{N}天超阈值</td>
+              </tr>
+              <tr>
+                <td>FBA库龄预警</td>
+                <td>库龄预警</td>
+                <td>FBA库龄预警 | {ASIN}库龄≥{N}天超阈值</td>
+              </tr>
+              <tr>
+                <td>FBA长期仓储费预警</td>
+                <td>仓储费预警</td>
+                <td>FBA长期仓储费预警 | {ASIN}距收费日{D}天</td>
+              </tr>
+              <tr>
+                <td>销售偏差预警</td>
+                <td>销售偏差预警</td>
+                <td>销售偏差预警 | {SPU}预测偏差{±X}%</td>
+              </tr>
+              <tr>
+                <td>供应商生产延期预警</td>
+                <td>生产预警</td>
+                <td>供应商生产延期预警 | {SPU}交期延后{D}天</td>
+              </tr>
+              <tr>
+                <td>达成偏差预警</td>
+                <td>库存预警</td>
+                <td>达成偏差预警 | {SPU}达成率{R}%</td>
+              </tr>
+              <tr>
+                <td>SKC销售偏差预警</td>
+                <td>库存预警</td>
+                <td>SKC销售偏差预警 | {SKC}占比差{Z}%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- ===== 逐卡片预览 ===== -->
+        <div class="section">
+          <h2 class="section-title">卡片预览 & JSON 报文</h2>
+          <div class="section-desc">点击标签切换 7 种预警类型。左侧为钉钉内实际渲染效果，右侧为可直接使用的 ActionCard JSON 报文。</div>
+
+          <div class="card-selector" id="card-selector">
+            <button class="card-tab active" data-card="1">本地库龄预警</button>
+            <button class="card-tab" data-card="2">FBA库龄预警</button>
+            <button class="card-tab" data-card="3">FBA长期仓储费预警</button>
+            <button class="card-tab" data-card="4">销售偏差预警</button>
+            <button class="card-tab" data-card="5">供应商生产延期预警</button>
+            <button class="card-tab" data-card="6">达成偏差预警</button>
+            <button class="card-tab" data-card="7">SKC销售偏差预警</button>
+          </div>
+
+          <!-- ===== 卡片 1：本地库龄预警 ===== -->
+          <div class="card-panel active" data-panel="1">
+            <div class="preview-row">
+              <div class="preview-col-card">
+                <div class="dt-wrap">
+                  <div class="dt-time">14:13</div>
+                  <div class="dt-row">
+                    <div class="dt-avatar">OMS<span class="dt-avatar-sub">预警</span></div>
+                    <div class="ac-card">
+                      <div class="ac-body">
+                        <div class="ac-title">本地库龄预警 | ST18106DENIMBLUE095库龄≥90天超阈值</div>
+                        <div class="ac-md">
+                          <div class="ac-line"><span class="ac-lbl">预警规则</span><span class="ac-val">本地仓高库龄预警</span></div>
+                          <div class="ac-line"><span class="ac-lbl">父体</span><span class="ac-val">LFT00002261</span></div>
+                          <div class="ac-line"><span class="ac-lbl">SPU</span><span class="ac-val">ST18106</span></div>
+                          <div class="ac-line"><span class="ac-lbl">SKU</span><span class="ac-val is-bold">ST18106DENIMBLUE095</span></div>
+                          <div class="ac-line"><span class="ac-lbl">库龄阶段</span><span class="ac-val is-bold">≥90 天</span></div>
+                          <div class="ac-line"><span class="ac-lbl">当前库存</span><span class="ac-val is-bold">146 件（超阈值 26 件）</span></div>
+                          <div class="ac-line"><span class="ac-lbl">阈值</span><span class="ac-val">120 件</span></div>
+                          <div class="ac-line"><span class="ac-lbl">触发时间</span><span class="ac-val">2026-06-18 14:10</span></div>
+                        </div>
+                      </div>
+                      <div class="ac-btns">
+                        <button class="ac-btn ac-btn-gray">查看详情</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="preview-col-json">
+                <div class="json-block">
+                  <div class="json-header"><span>ActionCard JSON</span><button class="json-copy" onclick="copyJson(this)">复制</button></div>
+                  <div class="json-body"><pre>{
+  <span class="jk">"msgtype"</span>: <span class="js">"actionCard"</span>,
+  <span class="jk">"actionCard"</span>: {
+    <span class="jk">"title"</span>: <span class="js">"本地库龄预警 | ST18106DENIMBLUE095库龄≥90天超阈值"</span>,
+    <span class="jk">"text"</span>: <span class="js">"### 本地库龄预警 | ST18106DENIMBLUE095库龄≥90天超阈值\n\n- **预警规则：** 本地仓高库龄预警\n- **父体：** LFT00002261\n- **SPU：** ST18106\n- **SKU：** ST18106DENIMBLUE095\n- **库龄阶段：** ≥90 天\n- **当前库存：** **146 件（超阈值 26 件）**\n- **阈值：** 120 件\n- **触发时间：** 2026-06-18 14:10"</span>,
+    <span class="jk">"btnOrientation"</span>: <span class="js">"1"</span>,
+    <span class="jk">"btns"</span>: [
+      {
+        <span class="jk">"title"</span>: <span class="js">"查看详情"</span>,
+        <span class="jk">"actionURL"</span>: <span class="js">"https://oms.example.com/alert/detail?id=10001"</span>
+      }
+    ]
+  }
+}</pre></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== 卡片 2：FBA库龄预警 ===== -->
+          <div class="card-panel" data-panel="2">
+            <div class="preview-row">
+              <div class="preview-col-card">
+                <div class="dt-wrap">
+                  <div class="dt-time">10:22</div>
+                  <div class="dt-row">
+                    <div class="dt-avatar">OMS<span class="dt-avatar-sub">预警</span></div>
+                    <div class="ac-card">
+                      <div class="ac-body">
+                        <div class="ac-title">FBA库龄预警 | B083J69DSQ库龄≥365天超阈值</div>
+                        <div class="ac-md">
+                          <div class="ac-line"><span class="ac-lbl">预警规则</span><span class="ac-val">美国站FBA库龄预警</span></div>
+                          <div class="ac-line"><span class="ac-lbl">父体</span><span class="ac-val">LFT00002261</span></div>
+                          <div class="ac-line"><span class="ac-lbl">ASIN</span><span class="ac-val is-bold">B083J69DSQ</span></div>
+                          <div class="ac-line"><span class="ac-lbl">站点</span><span class="ac-val">美国</span></div>
+                          <div class="ac-line"><span class="ac-lbl">店铺</span><span class="ac-val">noorkie Inc-US</span></div>
+                          <div class="ac-line"><span class="ac-lbl">库龄阶段</span><span class="ac-val is-bold">≥365 天</span></div>
+                          <div class="ac-line"><span class="ac-lbl">当前库存</span><span class="ac-val is-bold">238 件（超阈值 138 件）</span></div>
+                          <div class="ac-line"><span class="ac-lbl">阈值</span><span class="ac-val">100 件</span></div>
+                          <div class="ac-line"><span class="ac-lbl">触发时间</span><span class="ac-val">2026-06-18 10:20</span></div>
+                        </div>
+                      </div>
+                      <div class="ac-btns">
+                        <button class="ac-btn ac-btn-gray">查看详情</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="preview-col-json">
+                <div class="json-block">
+                  <div class="json-header"><span>ActionCard JSON</span><button class="json-copy" onclick="copyJson(this)">复制</button></div>
+                  <div class="json-body"><pre>{
+  <span class="jk">"msgtype"</span>: <span class="js">"actionCard"</span>,
+  <span class="jk">"actionCard"</span>: {
+    <span class="jk">"title"</span>: <span class="js">"FBA库龄预警 | B083J69DSQ库龄≥365天超阈值"</span>,
+    <span class="jk">"text"</span>: <span class="js">"### FBA库龄预警 | B083J69DSQ库龄≥365天超阈值\n\n- **预警规则：** 美国站FBA库龄预警\n- **父体：** LFT00002261\n- **ASIN：** B083J69DSQ\n- **站点：** 美国\n- **店铺：** noorkie Inc-US\n- **库龄阶段：** ≥365 天\n- **当前库存：** **238 件（超阈值 138 件）**\n- **阈值：** 100 件\n- **触发时间：** 2026-06-18 10:20"</span>,
+    <span class="jk">"btnOrientation"</span>: <span class="js">"1"</span>,
+    <span class="jk">"btns"</span>: [
+      {
+        <span class="jk">"title"</span>: <span class="js">"查看详情"</span>,
+        <span class="jk">"actionURL"</span>: <span class="js">"https://oms.example.com/alert/detail?id=10002"</span>
+      }
+    ]
+  }
+}</pre></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== 卡片 3：FBA长期仓储费预警 ===== -->
+          <div class="card-panel" data-panel="3">
+            <div class="preview-row">
+              <div class="preview-col-card">
+                <div class="dt-wrap">
+                  <div class="dt-time">09:05</div>
+                  <div class="dt-row">
+                    <div class="dt-avatar">OMS<span class="dt-avatar-sub">预警</span></div>
+                    <div class="ac-card">
+                      <div class="ac-body">
+                        <div class="ac-title">FBA长期仓储费预警 | B07NV7QK7H距收费日12天</div>
+                        <div class="ac-md">
+                          <div class="ac-line"><span class="ac-lbl">预警规则</span><span class="ac-val">FBA长期仓储费预警</span></div>
+                          <div class="ac-line"><span class="ac-lbl">父体</span><span class="ac-val">LFT00000784</span></div>
+                          <div class="ac-line"><span class="ac-lbl">ASIN</span><span class="ac-val is-bold">B07NV7QK7H</span></div>
+                          <div class="ac-line"><span class="ac-lbl">站点</span><span class="ac-val">英国</span></div>
+                          <div class="ac-line"><span class="ac-lbl">收费日</span><span class="ac-val is-bold">2026-06-30</span></div>
+                          <div class="ac-line"><span class="ac-lbl">剩余天数</span><span class="ac-val is-bold">12 天</span></div>
+                          <div class="ac-line"><span class="ac-lbl">受影响库存</span><span class="ac-val is-bold">356 件</span></div>
+                          <div class="ac-line"><span class="ac-lbl">库龄要求</span><span class="ac-val">≥365 天</span></div>
+                          <div class="ac-line"><span class="ac-lbl">触发时间</span><span class="ac-val">2026-06-18 09:00</span></div>
+                        </div>
+                      </div>
+                      <div class="ac-btns">
+                        <button class="ac-btn ac-btn-gray">查看详情</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="preview-col-json">
+                <div class="json-block">
+                  <div class="json-header"><span>ActionCard JSON</span><button class="json-copy" onclick="copyJson(this)">复制</button></div>
+                  <div class="json-body"><pre>{
+  <span class="jk">"msgtype"</span>: <span class="js">"actionCard"</span>,
+  <span class="jk">"actionCard"</span>: {
+    <span class="jk">"title"</span>: <span class="js">"FBA长期仓储费预警 | B07NV7QK7H距收费日12天"</span>,
+    <span class="jk">"text"</span>: <span class="js">"### FBA长期仓储费预警 | B07NV7QK7H距收费日12天\n\n- **预警规则：** FBA长期仓储费预警\n- **父体：** LFT00000784\n- **ASIN：** B07NV7QK7H\n- **站点：** 英国\n- **收费日：** 2026-06-30\n- **剩余天数：** **12 天**\n- **受影响库存：** **356 件**\n- **库龄要求：** ≥365 天\n- **触发时间：** 2026-06-18 09:00"</span>,
+    <span class="jk">"btnOrientation"</span>: <span class="js">"1"</span>,
+    <span class="jk">"btns"</span>: [
+      {
+        <span class="jk">"title"</span>: <span class="js">"查看详情"</span>,
+        <span class="jk">"actionURL"</span>: <span class="js">"https://oms.example.com/alert/detail?id=10003"</span>
+      }
+    ]
+  }
+}</pre></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== 卡片 4：销售偏差预警 ===== -->
+          <div class="card-panel" data-panel="4">
+            <div class="preview-row">
+              <div class="preview-col-card">
+                <div class="dt-wrap">
+                  <div class="dt-time">14:30</div>
+                  <div class="dt-row">
+                    <div class="dt-avatar">OMS<span class="dt-avatar-sub">预警</span></div>
+                    <div class="ac-card">
+                      <div class="ac-body">
+                        <div class="ac-title">销售偏差预警 | WT82527258预测偏差+22.5%</div>
+                        <div class="ac-md">
+                          <div class="ac-line"><span class="ac-lbl">预警规则</span><span class="ac-val">周度销售偏差预警</span></div>
+                          <div class="ac-line"><span class="ac-lbl">父体</span><span class="ac-val">LFT00000755</span></div>
+                          <div class="ac-line"><span class="ac-lbl">SPU</span><span class="ac-val">WT82527258</span></div>
+                          <div class="ac-line"><span class="ac-lbl">统计周期</span><span class="ac-val">月度（2026-06）</span></div>
+                          <div class="ac-line"><span class="ac-lbl">预测值</span><span class="ac-val is-bold">1,840 件</span></div>
+                          <div class="ac-line"><span class="ac-lbl">年规目标</span><span class="ac-val">1,502 件</span></div>
+                          <div class="ac-line"><span class="ac-lbl">偏差幅度</span><span class="ac-val is-bold">+22.5%（偏高）</span></div>
+                          <div class="ac-line"><span class="ac-lbl">触发时间</span><span class="ac-val">2026-06-16 14:30</span></div>
+                        </div>
+                      </div>
+                      <div class="ac-btns">
+                        <button class="ac-btn ac-btn-gray">查看详情</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="preview-col-json">
+                <div class="json-block">
+                  <div class="json-header"><span>ActionCard JSON</span><button class="json-copy" onclick="copyJson(this)">复制</button></div>
+                  <div class="json-body"><pre>{
+  <span class="jk">"msgtype"</span>: <span class="js">"actionCard"</span>,
+  <span class="jk">"actionCard"</span>: {
+    <span class="jk">"title"</span>: <span class="js">"销售偏差预警 | WT82527258预测偏差+22.5%"</span>,
+    <span class="jk">"text"</span>: <span class="js">"### 销售偏差预警 | WT82527258预测偏差+22.5%\n\n- **预警规则：** 周度销售偏差预警\n- **父体：** LFT00000755\n- **SPU：** WT82527258\n- **统计周期：** 月度（2026-06）\n- **预测值：** **1,840 件**\n- **年规目标：** 1,502 件\n- **偏差幅度：** **+22.5%（偏高）**\n- **触发时间：** 2026-06-16 14:30"</span>,
+    <span class="jk">"btnOrientation"</span>: <span class="js">"1"</span>,
+    <span class="jk">"btns"</span>: [
+      {
+        <span class="jk">"title"</span>: <span class="js">"查看详情"</span>,
+        <span class="jk">"actionURL"</span>: <span class="js">"https://oms.example.com/alert/detail?id=10004"</span>
+      }
+    ]
+  }
+}</pre></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== 卡片 5：供应商生产延期预警 ===== -->
+          <div class="card-panel" data-panel="5">
+            <div class="preview-row">
+              <div class="preview-col-card">
+                <div class="dt-wrap">
+                  <div class="dt-time">11:18</div>
+                  <div class="dt-row">
+                    <div class="dt-avatar">OMS<span class="dt-avatar-sub">预警</span></div>
+                    <div class="ac-card">
+                      <div class="ac-body">
+                        <div class="ac-title">供应商生产延期预警 | ST223501交期延后12天</div>
+                        <div class="ac-md">
+                          <div class="ac-line"><span class="ac-lbl">预警规则</span><span class="ac-val">核心SKU供应商交期延期预警</span></div>
+                          <div class="ac-line"><span class="ac-lbl">采购单号</span><span class="ac-val is-bold">SQ20260605003</span></div>
+                          <div class="ac-line"><span class="ac-lbl">供应商</span><span class="ac-val">东莞鞋业有限公司</span></div>
+                          <div class="ac-line"><span class="ac-lbl">SPU</span><span class="ac-val">ST223501</span></div>
+                          <div class="ac-line"><span class="ac-lbl">原定交期</span><span class="ac-val">2026-06-20</span></div>
+                          <div class="ac-line"><span class="ac-lbl">确认交期</span><span class="ac-val is-bold">2026-07-02（延后 12 天）</span></div>
+                          <div class="ac-line"><span class="ac-lbl">触发时间</span><span class="ac-val">2026-06-18 11:15</span></div>
+                        </div>
+                      </div>
+                      <div class="ac-btns">
+                        <button class="ac-btn ac-btn-gray">查看详情</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="preview-col-json">
+                <div class="json-block">
+                  <div class="json-header"><span>ActionCard JSON</span><button class="json-copy" onclick="copyJson(this)">复制</button></div>
+                  <div class="json-body"><pre>{
+  <span class="jk">"msgtype"</span>: <span class="js">"actionCard"</span>,
+  <span class="jk">"actionCard"</span>: {
+    <span class="jk">"title"</span>: <span class="js">"供应商生产延期预警 | ST223501交期延后12天"</span>,
+    <span class="jk">"text"</span>: <span class="js">"### 供应商生产延期预警 | ST223501交期延后12天\n\n- **预警规则：** 核心SKU供应商交期延期预警\n- **采购单号：** SQ20260605003\n- **供应商：** 东莞鞋业有限公司\n- **SPU：** ST223501\n- **原定交期：** 2026-06-20\n- **确认交期：** **2026-07-02（延后 12 天）**\n- **触发时间：** 2026-06-18 11:15"</span>,
+    <span class="jk">"btnOrientation"</span>: <span class="js">"1"</span>,
+    <span class="jk">"btns"</span>: [
+      {
+        <span class="jk">"title"</span>: <span class="js">"查看详情"</span>,
+        <span class="jk">"actionURL"</span>: <span class="js">"https://oms.example.com/alert/detail?id=10005"</span>
+      }
+    ]
+  }
+}</pre></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== 卡片 6：达成偏差预警 ===== -->
+          <div class="card-panel" data-panel="6">
+            <div class="preview-row">
+              <div class="preview-col-card">
+                <div class="dt-wrap">
+                  <div class="dt-time">09:30</div>
+                  <div class="dt-row">
+                    <div class="dt-avatar">OMS<span class="dt-avatar-sub">预警</span></div>
+                    <div class="ac-card">
+                      <div class="ac-body">
+                        <div class="ac-title">达成偏差预警 | HKA19达成率82.3%</div>
+                        <div class="ac-md">
+                          <div class="ac-line"><span class="ac-lbl">预警规则</span><span class="ac-val">年规达成偏差预警</span></div>
+                          <div class="ac-line"><span class="ac-lbl">父体</span><span class="ac-val">LFT00000780</span></div>
+                          <div class="ac-line"><span class="ac-lbl">SPU</span><span class="ac-val">HKA19</span></div>
+                          <div class="ac-line"><span class="ac-lbl">统计周期</span><span class="ac-val">2026 年 Q2</span></div>
+                          <div class="ac-line"><span class="ac-lbl">实际销量</span><span class="ac-val">1,235 件</span></div>
+                          <div class="ac-line"><span class="ac-lbl">年规目标</span><span class="ac-val">1,500 件</span></div>
+                          <div class="ac-line"><span class="ac-lbl">达成率</span><span class="ac-val is-bold">82.3%</span></div>
+                          <div class="ac-line"><span class="ac-lbl">偏差幅度</span><span class="ac-val is-bold">-17.7%（偏慢）</span></div>
+                          <div class="ac-line"><span class="ac-lbl">触发时间</span><span class="ac-val">2026-06-18 09:30</span></div>
+                        </div>
+                      </div>
+                      <div class="ac-btns">
+                        <button class="ac-btn ac-btn-gray">查看详情</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="preview-col-json">
+                <div class="json-block">
+                  <div class="json-header"><span>ActionCard JSON</span><button class="json-copy" onclick="copyJson(this)">复制</button></div>
+                  <div class="json-body"><pre>{
+  <span class="jk">"msgtype"</span>: <span class="js">"actionCard"</span>,
+  <span class="jk">"actionCard"</span>: {
+    <span class="jk">"title"</span>: <span class="js">"达成偏差预警 | HKA19达成率82.3%"</span>,
+    <span class="jk">"text"</span>: <span class="js">"### 达成偏差预警 | HKA19达成率82.3%\n\n- **预警规则：** 年规达成偏差预警\n- **父体：** LFT00000780\n- **SPU：** HKA19\n- **统计周期：** 2026 年 Q2\n- **实际销量：** 1,235 件\n- **年规目标：** 1,500 件\n- **达成率：** **82.3%**\n- **偏差幅度：** **-17.7%（偏慢）**\n- **触发时间：** 2026-06-18 09:30"</span>,
+    <span class="jk">"btnOrientation"</span>: <span class="js">"1"</span>,
+    <span class="jk">"btns"</span>: [
+      {
+        <span class="jk">"title"</span>: <span class="js">"查看详情"</span>,
+        <span class="jk">"actionURL"</span>: <span class="js">"https://oms.example.com/alert/detail?id=10006"</span>
+      }
+    ]
+  }
+}</pre></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== 卡片 7：SKC销售偏差预警 ===== -->
+          <div class="card-panel" data-panel="7">
+            <div class="preview-row">
+              <div class="preview-col-card">
+                <div class="dt-wrap">
+                  <div class="dt-time">15:10</div>
+                  <div class="dt-row">
+                    <div class="dt-avatar">OMS<span class="dt-avatar-sub">预警</span></div>
+                    <div class="ac-card">
+                      <div class="ac-body">
+                        <div class="ac-title">SKC销售偏差预警 | HK1839-BLK占比差22.5%</div>
+                        <div class="ac-md">
+                          <div class="ac-line"><span class="ac-lbl">预警规则</span><span class="ac-val">SKC颜色销售偏差预警</span></div>
+                          <div class="ac-line"><span class="ac-lbl">父体</span><span class="ac-val">LFT00000784</span></div>
+                          <div class="ac-line"><span class="ac-lbl">SPU</span><span class="ac-val">HK1839</span></div>
+                          <div class="ac-line"><span class="ac-lbl">SKC</span><span class="ac-val is-bold">HK1839-BLK（黑色）</span></div>
+                          <div class="ac-line"><span class="ac-lbl">销量占比</span><span class="ac-val">38.2%</span></div>
+                          <div class="ac-line"><span class="ac-lbl">库存占比</span><span class="ac-val">15.7%</span></div>
+                          <div class="ac-line"><span class="ac-lbl">占比差</span><span class="ac-val is-bold">22.5%（缺货风险）</span></div>
+                          <div class="ac-line"><span class="ac-lbl">触发时间</span><span class="ac-val">2026-06-18 15:10</span></div>
+                        </div>
+                      </div>
+                      <div class="ac-btns">
+                        <button class="ac-btn ac-btn-gray">查看详情</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="preview-col-json">
+                <div class="json-block">
+                  <div class="json-header"><span>ActionCard JSON</span><button class="json-copy" onclick="copyJson(this)">复制</button></div>
+                  <div class="json-body"><pre>{
+  <span class="jk">"msgtype"</span>: <span class="js">"actionCard"</span>,
+  <span class="jk">"actionCard"</span>: {
+    <span class="jk">"title"</span>: <span class="js">"SKC销售偏差预警 | HK1839-BLK占比差22.5%"</span>,
+    <span class="jk">"text"</span>: <span class="js">"### SKC销售偏差预警 | HK1839-BLK占比差22.5%\n\n- **预警规则：** SKC颜色销售偏差预警\n- **父体：** LFT00000784\n- **SPU：** HK1839\n- **SKC：** HK1839-BLK（黑色）\n- **销量占比：** 38.2%\n- **库存占比：** 15.7%\n- **占比差：** **22.5%（缺货风险）**\n- **触发时间：** 2026-06-18 15:10"</span>,
+    <span class="jk">"btnOrientation"</span>: <span class="js">"1"</span>,
+    <span class="jk">"btns"</span>: [
+      {
+        <span class="jk">"title"</span>: <span class="js">"查看详情"</span>,
+        <span class="jk">"actionURL"</span>: <span class="js">"https://oms.example.com/alert/detail?id=10007"</span>
+      }
+    ]
+  }
+}</pre></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ===== Markdown text 字段模板汇总 ===== -->
+        <div class="section">
+          <h2 class="section-title">Markdown 文案模板汇总</h2>
+          <div class="section-desc">每种预警 ActionCard 的 <code>text</code> 字段 Markdown 原文模板。<code>{变量}</code> 处由系统运行时填入实际值。</div>
+
+          <table class="spec-table">
+            <thead>
+              <tr>
+                <th style="width:120px;">预警模型</th>
+                <th>Markdown text 模板</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>本地库龄预警</strong></td>
+                <td style="font-family:Consolas,monospace; font-size:12px; line-height:1.7; white-space:pre-wrap;">### 本地库龄预警 | {SKU}库龄≥{N}天超阈值
+
+- **预警规则：** {规则名称}
+- **父体：** {父体编号}
+- **SPU：** {SPU}
+- **SKU：** {SKU}
+- **库龄阶段：** ≥{N} 天
+- **当前库存：** **{X} 件（超阈值 {Z} 件）**
+- **阈值：** {Y} 件
+- **触发时间：** {时间}</td>
+              </tr>
+              <tr>
+                <td><strong>FBA库龄预警</strong></td>
+                <td style="font-family:Consolas,monospace; font-size:12px; line-height:1.7; white-space:pre-wrap;">### FBA库龄预警 | {ASIN}库龄≥{N}天超阈值
+
+- **预警规则：** {规则名称}
+- **父体：** {父体编号}
+- **ASIN：** {ASIN}
+- **站点：** {站点}
+- **店铺：** {店铺}
+- **库龄阶段：** ≥{N} 天
+- **当前库存：** **{X} 件（超阈值 {Z} 件）**
+- **阈值：** {Y} 件
+- **触发时间：** {时间}</td>
+              </tr>
+              <tr>
+                <td><strong>FBA长期仓储费预警</strong></td>
+                <td style="font-family:Consolas,monospace; font-size:12px; line-height:1.7; white-space:pre-wrap;">### FBA长期仓储费预警 | {ASIN}距收费日{D}天
+
+- **预警规则：** {规则名称}
+- **父体：** {父体编号}
+- **ASIN：** {ASIN}
+- **站点：** {站点}
+- **收费日：** {收费日期}
+- **剩余天数：** **{D} 天**
+- **受影响库存：** **{X} 件**
+- **库龄要求：** ≥{M} 天
+- **触发时间：** {时间}</td>
+              </tr>
+              <tr>
+                <td><strong>销售偏差预警</strong></td>
+                <td style="font-family:Consolas,monospace; font-size:12px; line-height:1.7; white-space:pre-wrap;">### 销售偏差预警 | {SPU}预测偏差{±X}%
+
+- **预警规则：** {规则名称}
+- **父体：** {父体编号}
+- **SPU：** {SPU}
+- **统计周期：** {周期}
+- **预测值：** **{预测值} 件**
+- **年规目标：** {目标值} 件
+- **偏差幅度：** **{±X}%（{偏高/偏低}）**
+- **触发时间：** {时间}</td>
+              </tr>
+              <tr>
+                <td><strong>供应商生产延期预警</strong></td>
+                <td style="font-family:Consolas,monospace; font-size:12px; line-height:1.7; white-space:pre-wrap;">### 供应商生产延期预警 | {SPU}交期延后{D}天
+
+- **预警规则：** {规则名称}
+- **采购单号：** {PO}
+- **供应商：** {供应商名称}
+- **SPU：** {SPU}
+- **原定交期：** {原定日期}
+- **确认交期：** **{确认日期}（延后 {D} 天）**
+- **触发时间：** {时间}</td>
+              </tr>
+              <tr>
+                <td><strong>达成偏差预警</strong></td>
+                <td style="font-family:Consolas,monospace; font-size:12px; line-height:1.7; white-space:pre-wrap;">### 达成偏差预警 | {SPU}达成率{R}%
+
+- **预警规则：** {规则名称}
+- **父体：** {父体编号}
+- **SPU：** {SPU}
+- **统计周期：** {周期}
+- **实际销量：** {实际值} 件
+- **年规目标：** {目标值} 件
+- **达成率：** **{R}%**
+- **偏差幅度：** **{±X}%（{偏快/偏慢}）**
+- **触发时间：** {时间}</td>
+              </tr>
+              <tr>
+                <td><strong>SKC销售偏差预警</strong></td>
+                <td style="font-family:Consolas,monospace; font-size:12px; line-height:1.7; white-space:pre-wrap;">### SKC销售偏差预警 | {SKC}占比差{Z}%
+
+- **预警规则：** {规则名称}
+- **父体：** {父体编号}
+- **SPU：** {SPU}
+- **SKC：** {SKC}（{颜色名}）
+- **销量占比：** {X}%
+- **库存占比：** {Y}%
+- **占比差：** **{Z}%（缺货风险）**
+- **触发时间：** {时间}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* 标签切换 */
+    document.getElementById('card-selector').addEventListener('click', function(e) {
+      var btn = e.target.closest('.card-tab');
+      if (!btn) return;
+      var id = btn.getAttribute('data-card');
+      this.querySelectorAll('.card-tab').forEach(function(t) { t.classList.remove('active'); });
+      btn.classList.add('active');
+      document.querySelectorAll('.card-panel').forEach(function(p) { p.classList.remove('active'); });
+      var target = document.querySelector('.card-panel[data-panel="' + id + '"]');
+      if (target) target.classList.add('active');
+    });
+
+    /* 复制 JSON */
+    function copyJson(btn) {
+      var pre = btn.closest('.json-block').querySelector('pre');
+      var text = pre.textContent || pre.innerText;
+      navigator.clipboard.writeText(text).then(function() {
+        btn.textContent = '已复制';
+        setTimeout(function() { btn.textContent = '复制'; }, 1500);
+      });
+    }
+
+    /* 侧边栏 */
+    (function() {
+      var appLayout = document.querySelector('.app-layout');
+      var backdrop = document.getElementById('sidebar-backdrop');
+      var trigger = document.querySelector('.primary-item[data-submenu="replenish"]');
+      var panel = document.getElementById('replenish-submenu');
+      if (!appLayout || !backdrop || !trigger || !panel) return;
+      trigger.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (panel.classList.contains('open')) {
+          appLayout.classList.remove('submenu-open');
+          panel.classList.remove('open');
+          trigger.classList.remove('active');
+        } else {
+          appLayout.classList.add('submenu-open');
+          panel.classList.add('open');
+          trigger.classList.add('active');
+        }
+      });
+      backdrop.addEventListener('click', function() {
+        appLayout.classList.remove('submenu-open');
+        panel.classList.remove('open');
+        trigger.classList.remove('active');
+      });
+      document.querySelectorAll('.sidebar-submenu-panel a.submenu-item').forEach(function(a) {
+        a.addEventListener('click', function() {
+          appLayout.classList.remove('submenu-open');
+          panel.classList.remove('open');
+          trigger.classList.remove('active');
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
