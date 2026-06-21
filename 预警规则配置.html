@@ -1968,7 +1968,7 @@
             <tr data-category="销售预警">
               <td class="col-name">销售偏差预警</td>
               <td class="col-type"><span class="tag tag-deviation">销售预警</span></td>
-              <td class="col-desc">当销售预测值与年规对应目标偏差较大时进行预警，提前降低销售与库存偏差概率。</td>
+              <td class="col-desc">当实际销量与年规对应目标偏差较大时进行预警，提前降低销售与库存偏差概率。</td>
               <td class="col-action"><button class="modal-add-link" onclick="addRule('销售偏差预警')">添加</button></td>
             </tr>
             <tr data-category="生产预警">
@@ -2184,7 +2184,7 @@
         formulaType: 'sales_deviation',
         defaultWindowDays: 30,
         defaultThreshold: 30,
-        formulaDesc: '|窗口内销量预测值 − 年规对应窗口目标| / 年规目标 × 100% > Y%',
+        formulaDesc: '|窗口内实际销量 − 年规对应窗口目标| / 年规目标 × 100% > Y%',
         unit: '%'
       },
       '供应商生产延期预警': {
