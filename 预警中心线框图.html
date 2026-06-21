@@ -1,0 +1,1517 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>预警中心线框图</title>
+  <style>
+    :root {
+      --bg: #f4f5f7;
+      --surface: #ffffff;
+      --surface-soft: #fafafa;
+      --line: #d9dde5;
+      --line-strong: #aeb5c0;
+      --text: #20242c;
+      --muted: #68707d;
+      --subtle: #9299a5;
+      --primary: #2f6fed;
+      --primary-soft: #edf3ff;
+      --ongoing: #d4380d;
+      --ongoing-soft: #fff2e8;
+      --recovered: #237804;
+      --recovered-soft: #f1f8ec;
+      --sidebar: #202b3c;
+      --sidebar-sub: #ffffff;
+      --radius: 4px;
+      --sidebar-primary-width: 68px;
+      --sidebar-secondary-width: 176px;
+      --drawer-width: 580px;
+      font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button,
+    a,
+    select {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    button:focus-visible,
+    a:focus-visible,
+    input:focus-visible,
+    select:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+
+    .app-shell {
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      position: fixed;
+      inset: 0 auto 0 0;
+      z-index: 20;
+      display: flex;
+      width: calc(var(--sidebar-primary-width) + var(--sidebar-secondary-width));
+      border-right: 1px solid var(--line);
+      background: var(--surface);
+    }
+
+    .sidebar-primary {
+      width: var(--sidebar-primary-width);
+      color: #d8deea;
+      background: var(--sidebar);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 58px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .primary-nav {
+      padding: 8px 0;
+    }
+
+    .primary-link {
+      display: flex;
+      min-height: 54px;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      border-left: 3px solid transparent;
+      color: #c4cbd7;
+      text-decoration: none;
+      font-size: 11px;
+    }
+
+    .primary-link:hover,
+    .primary-link.active {
+      border-left-color: #ffffff;
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .primary-icon {
+      display: grid;
+      width: 24px;
+      height: 20px;
+      place-items: center;
+      border: 1px solid currentColor;
+      border-radius: 3px;
+      font-size: 10px;
+      line-height: 1;
+    }
+
+    .sidebar-secondary {
+      width: var(--sidebar-secondary-width);
+      background: var(--sidebar-sub);
+    }
+
+    .secondary-title {
+      height: 58px;
+      padding: 0 18px;
+      border-bottom: 1px solid var(--line);
+      font-size: 16px;
+      font-weight: 600;
+      line-height: 58px;
+    }
+
+    .secondary-nav {
+      padding: 12px 10px;
+    }
+
+    .secondary-group {
+      margin: 18px 10px 8px;
+      color: var(--subtle);
+      font-size: 12px;
+    }
+
+    .secondary-link {
+      display: block;
+      margin-bottom: 3px;
+      padding: 9px 12px;
+      border-left: 3px solid transparent;
+      border-radius: 2px;
+      color: #343a44;
+      text-decoration: none;
+    }
+
+    .secondary-link:hover {
+      background: #f2f4f7;
+    }
+
+    .secondary-link.active {
+      border-left-color: var(--primary);
+      color: var(--primary);
+      background: var(--primary-soft);
+      font-weight: 600;
+    }
+
+    .main-content {
+      min-height: 100vh;
+      margin-left: calc(var(--sidebar-primary-width) + var(--sidebar-secondary-width));
+    }
+
+    .topbar {
+      display: flex;
+      height: 58px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      border-bottom: 1px solid var(--line);
+      background: var(--surface);
+    }
+
+    .breadcrumb {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .breadcrumb strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .topbar-user {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .avatar {
+      display: grid;
+      width: 28px;
+      height: 28px;
+      place-items: center;
+      border: 1px solid var(--line-strong);
+      border-radius: 50%;
+      background: var(--surface-soft);
+      color: var(--text);
+      font-size: 12px;
+    }
+
+    .page {
+      padding: 20px 24px 30px;
+    }
+
+    .page-heading {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 16px;
+    }
+
+    .page-heading h1 {
+      margin: 0 0 6px;
+      font-size: 22px;
+      line-height: 1.3;
+    }
+
+    .page-heading p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .wireframe-label {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 0 9px;
+      border: 1px dashed var(--line-strong);
+      border-radius: var(--radius);
+      color: var(--muted);
+      background: var(--surface);
+      white-space: nowrap;
+      font-size: 12px;
+    }
+
+    .summary-strip {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(180px, 1fr));
+      margin-bottom: 14px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+    }
+
+    .summary-item {
+      position: relative;
+      display: flex;
+      min-height: 78px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 14px 18px;
+      border: 0;
+      border-right: 1px solid var(--line);
+      color: inherit;
+      background: transparent;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .summary-item:last-child {
+      border-right: 0;
+    }
+
+    .summary-item:hover,
+    .summary-item.active {
+      background: #f7f9fc;
+    }
+
+    .summary-item.active::after {
+      position: absolute;
+      right: 14px;
+      bottom: -1px;
+      left: 14px;
+      height: 3px;
+      background: var(--primary);
+      content: "";
+    }
+
+    .summary-label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .summary-note {
+      color: var(--subtle);
+      font-size: 12px;
+    }
+
+    .summary-number {
+      min-width: 42px;
+      text-align: right;
+      font-size: 28px;
+      font-weight: 650;
+      line-height: 1;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      background: var(--surface);
+    }
+
+    .filter-panel {
+      padding: 15px 16px 10px;
+      border-bottom: 1px solid var(--line);
+      background: var(--surface-soft);
+    }
+
+    .filter-grid {
+      display: grid;
+      grid-template-columns: 180px minmax(220px, 1.35fr) 150px 140px 140px auto;
+      gap: 10px;
+      align-items: end;
+    }
+
+    .field {
+      min-width: 0;
+    }
+
+    .field label {
+      display: block;
+      margin: 0 0 6px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .control {
+      width: 100%;
+      height: 34px;
+      padding: 0 10px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      color: var(--text);
+      background: var(--surface);
+    }
+
+    .control::placeholder {
+      color: var(--subtle);
+    }
+
+    .filter-actions {
+      display: flex;
+      gap: 8px;
+      padding-bottom: 0;
+    }
+
+    .btn {
+      min-height: 34px;
+      padding: 0 14px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      color: var(--text);
+      background: var(--surface);
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      border-color: #858d9a;
+      background: #f6f7f9;
+    }
+
+    .btn-primary {
+      border-color: var(--primary);
+      color: #ffffff;
+      background: var(--primary);
+    }
+
+    .btn-primary:hover {
+      border-color: #245bc7;
+      background: #245bc7;
+    }
+
+    .btn-link {
+      min-height: auto;
+      padding: 0;
+      border: 0;
+      color: var(--primary);
+      background: transparent;
+    }
+
+    .btn-link:hover {
+      color: #1f54bd;
+      background: transparent;
+      text-decoration: underline;
+    }
+
+    .list-toolbar {
+      display: flex;
+      min-height: 46px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 0 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .list-result {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .list-result strong {
+      color: var(--text);
+    }
+
+    .design-note {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .table-scroll {
+      overflow-x: auto;
+    }
+
+    .data-table {
+      width: 100%;
+      min-width: 1160px;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    .data-table th {
+      height: 42px;
+      padding: 0 12px;
+      border-bottom: 1px solid var(--line);
+      color: #4d5561;
+      background: #f6f7f9;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .data-table td {
+      padding: 13px 12px;
+      border-bottom: 1px solid #eceef2;
+      vertical-align: top;
+      line-height: 1.55;
+    }
+
+    .data-table tbody tr {
+      cursor: pointer;
+    }
+
+    .data-table tbody tr:hover {
+      background: #f8faff;
+    }
+
+    .data-table tbody tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .col-state { width: 86px; }
+    .col-event { width: 180px; }
+    .col-object { width: 160px; }
+    .col-summary { width: 300px; }
+    .col-time { width: 136px; }
+    .col-owner { width: 90px; }
+    .col-action { width: 68px; }
+
+    .status-chip {
+      display: inline-flex;
+      min-height: 24px;
+      align-items: center;
+      gap: 6px;
+      padding: 0 8px;
+      border: 1px solid currentColor;
+      border-radius: 12px;
+      white-space: nowrap;
+      font-size: 12px;
+    }
+
+    .status-chip::before {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+      content: "";
+    }
+
+    .status-ongoing {
+      color: var(--ongoing);
+      background: var(--ongoing-soft);
+    }
+
+    .status-recovered {
+      color: var(--recovered);
+      background: var(--recovered-soft);
+    }
+
+    .event-name {
+      display: flex;
+      align-items: flex-start;
+      gap: 7px;
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .unread-dot {
+      flex: 0 0 auto;
+      width: 7px;
+      height: 7px;
+      margin-top: 7px;
+      border-radius: 50%;
+      background: var(--primary);
+    }
+
+    .event-id,
+    .object-meta,
+    .time-sub {
+      margin-top: 3px;
+      color: var(--subtle);
+      font-size: 12px;
+    }
+
+    .object-code {
+      color: var(--text);
+      font-weight: 600;
+      word-break: break-all;
+    }
+
+    .summary-text {
+      display: -webkit-box;
+      overflow: hidden;
+      color: #373d47;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+    }
+
+    .empty-state {
+      display: none;
+      padding: 60px 20px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .pagination {
+      display: flex;
+      min-height: 50px;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 0 16px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .page-number {
+      display: grid;
+      width: 30px;
+      height: 30px;
+      place-items: center;
+      border: 1px solid var(--primary);
+      border-radius: var(--radius);
+      color: var(--primary);
+      background: var(--primary-soft);
+    }
+
+    .drawer-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      visibility: hidden;
+      background: rgba(20, 25, 34, 0.32);
+      opacity: 0;
+      transition: opacity 160ms ease, visibility 160ms ease;
+    }
+
+    .drawer-backdrop.open {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    .drawer {
+      position: fixed;
+      inset: 0 0 0 auto;
+      z-index: 41;
+      display: flex;
+      width: min(var(--drawer-width), calc(100vw - 36px));
+      flex-direction: column;
+      border-left: 1px solid var(--line-strong);
+      background: var(--surface);
+      transform: translateX(100%);
+      transition: transform 180ms ease;
+    }
+
+    .drawer.open {
+      transform: translateX(0);
+    }
+
+    .drawer-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .drawer-heading {
+      min-width: 0;
+    }
+
+    .drawer-heading h2 {
+      margin: 8px 0 4px;
+      font-size: 18px;
+      line-height: 1.45;
+    }
+
+    .drawer-heading p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .drawer-close {
+      display: grid;
+      width: 34px;
+      height: 34px;
+      flex: 0 0 auto;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      color: var(--muted);
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 20px;
+    }
+
+    .drawer-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 18px 20px 28px;
+    }
+
+    .drawer-section {
+      margin-bottom: 22px;
+    }
+
+    .drawer-section h3 {
+      margin: 0 0 11px;
+      padding-left: 9px;
+      border-left: 3px solid var(--line-strong);
+      font-size: 14px;
+      line-height: 1.2;
+    }
+
+    .alert-summary-box {
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-left: 4px solid var(--ongoing);
+      background: var(--surface-soft);
+      line-height: 1.7;
+    }
+
+    .alert-summary-box.recovered {
+      border-left-color: var(--recovered);
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border-top: 1px solid var(--line);
+      border-left: 1px solid var(--line);
+    }
+
+    .detail-item {
+      min-height: 62px;
+      padding: 10px 12px;
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .detail-label {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .detail-value {
+      color: var(--text);
+      word-break: break-word;
+    }
+
+    .metric-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid var(--line);
+    }
+
+    .metric-table th,
+    .metric-table td {
+      padding: 9px 10px;
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      font-size: 12px;
+    }
+
+    .metric-table th:last-child,
+    .metric-table td:last-child {
+      border-right: 0;
+    }
+
+    .metric-table tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .metric-table th {
+      color: var(--muted);
+      background: #f6f7f9;
+      font-weight: 600;
+    }
+
+    .metric-abnormal {
+      color: var(--ongoing);
+      font-weight: 650;
+    }
+
+    .timeline {
+      position: relative;
+      margin: 0;
+      padding: 0 0 0 18px;
+      list-style: none;
+    }
+
+    .timeline::before {
+      position: absolute;
+      top: 8px;
+      bottom: 8px;
+      left: 4px;
+      width: 1px;
+      background: var(--line-strong);
+      content: "";
+    }
+
+    .timeline-item {
+      position: relative;
+      padding: 0 0 16px 12px;
+      line-height: 1.55;
+    }
+
+    .timeline-item:last-child {
+      padding-bottom: 0;
+    }
+
+    .timeline-item::before {
+      position: absolute;
+      top: 6px;
+      left: -18px;
+      width: 7px;
+      height: 7px;
+      border: 2px solid var(--surface);
+      border-radius: 50%;
+      background: var(--line-strong);
+      content: "";
+    }
+
+    .timeline-time {
+      display: block;
+      margin-top: 2px;
+      color: var(--subtle);
+      font-size: 12px;
+    }
+
+    .drawer-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 20px;
+      border-top: 1px solid var(--line);
+      background: var(--surface-soft);
+    }
+
+    .footer-note {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .drawer-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    @media (max-width: 1180px) {
+      :root {
+        --sidebar-secondary-width: 150px;
+      }
+
+      .filter-grid {
+        grid-template-columns: repeat(3, minmax(160px, 1fr));
+      }
+
+      .filter-actions {
+        grid-column: 1 / -1;
+      }
+    }
+
+    @media (max-width: 800px) {
+      :root {
+        --sidebar-primary-width: 0px;
+        --sidebar-secondary-width: 0px;
+      }
+
+      .sidebar {
+        display: none;
+      }
+
+      .topbar,
+      .page {
+        padding-right: 14px;
+        padding-left: 14px;
+      }
+
+      .page-heading {
+        flex-direction: column;
+      }
+
+      .summary-strip,
+      .filter-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .summary-item {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .summary-item:last-child {
+        border-bottom: 0;
+      }
+
+      .filter-actions {
+        grid-column: auto;
+      }
+
+      .design-note {
+        display: none;
+      }
+
+      .detail-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="主导航">
+      <div class="sidebar-primary">
+        <div class="brand">OMS</div>
+        <nav class="primary-nav">
+          <a class="primary-link" href="./index.html"><span class="primary-icon">首</span><span>首页</span></a>
+          <a class="primary-link" href="#"><span class="primary-icon">数</span><span>数据</span></a>
+          <a class="primary-link" href="#"><span class="primary-icon">营</span><span>运营</span></a>
+          <a class="primary-link" href="#"><span class="primary-icon">目</span><span>目标</span></a>
+          <a class="primary-link active" href="#"><span class="primary-icon">补</span><span>补货</span></a>
+          <a class="primary-link" href="#"><span class="primary-icon">配</span><span>配置</span></a>
+        </nav>
+      </div>
+      <div class="sidebar-secondary">
+        <div class="secondary-title">补货</div>
+        <nav class="secondary-nav">
+          <a class="secondary-link" href="./补货列表.html">补货列表</a>
+          <a class="secondary-link" href="./备货建议.html">备货建议</a>
+          <a class="secondary-link active" href="./预警中心线框图.html">预警中心</a>
+          <div class="secondary-group">补货规则配置</div>
+          <a class="secondary-link" href="./基础参数配置.html">基础参数配置</a>
+          <a class="secondary-link" href="./销量预测规则.html">销量预测规则</a>
+          <a class="secondary-link" href="./备货规则配置.html">备货规则</a>
+          <a class="secondary-link" href="./预警规则配置.html">预警规则配置</a>
+        </nav>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <div class="breadcrumb">补货 / <strong>预警中心</strong></div>
+        <div class="topbar-user"><span>当前用户：运营专员</span><span class="avatar">运</span></div>
+      </header>
+
+      <div class="page">
+        <div class="page-heading">
+          <div>
+            <h1>预警中心</h1>
+            <p>集中查看已经触发的预警事件。持续异常合并为一个事件，避免定时计算产生重复记录。</p>
+          </div>
+          <span class="wireframe-label">线框示意 · 模拟数据</span>
+        </div>
+
+        <section class="summary-strip" aria-label="预警状态概览">
+          <button class="summary-item active" type="button" data-status="ongoing">
+            <span><span class="summary-label">持续中</span><span class="summary-note">当前仍满足触发条件</span></span>
+            <span class="summary-number" id="count-ongoing">0</span>
+          </button>
+          <button class="summary-item" type="button" data-status="recovered">
+            <span><span class="summary-label">已恢复</span><span class="summary-note">最近计算已不再异常</span></span>
+            <span class="summary-number" id="count-recovered">0</span>
+          </button>
+          <button class="summary-item" type="button" data-status="all">
+            <span><span class="summary-label">全部事件</span><span class="summary-note">包含持续中和已恢复</span></span>
+            <span class="summary-number" id="count-all">0</span>
+          </button>
+        </section>
+
+        <section class="panel" aria-label="预警事件列表">
+          <div class="filter-panel">
+            <div class="filter-grid">
+              <div class="field">
+                <label for="filter-model">预警模型</label>
+                <select class="control" id="filter-model">
+                  <option value="">全部预警模型</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="filter-keyword">风险对象</label>
+                <input class="control" id="filter-keyword" type="text" placeholder="父体 / SPU / ASIN / SKC / SKU" />
+              </div>
+              <div class="field">
+                <label for="filter-owner">负责人</label>
+                <select class="control" id="filter-owner">
+                  <option value="">全部负责人</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="filter-start">首次触发开始</label>
+                <input class="control" id="filter-start" type="date" />
+              </div>
+              <div class="field">
+                <label for="filter-end">首次触发结束</label>
+                <input class="control" id="filter-end" type="date" />
+              </div>
+              <div class="filter-actions">
+                <button class="btn btn-primary" id="btn-search" type="button">查询</button>
+                <button class="btn" id="btn-reset" type="button">重置</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="list-toolbar">
+            <div class="list-result">共 <strong id="result-count">0</strong> 条事件</div>
+            <div class="design-note">状态与已读分离：蓝点仅表示当前用户尚未查看</div>
+          </div>
+
+          <div class="table-scroll">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th class="col-state">状态</th>
+                  <th class="col-event">预警事件</th>
+                  <th class="col-object">风险对象</th>
+                  <th class="col-summary">异常摘要</th>
+                  <th class="col-time">首次触发</th>
+                  <th class="col-time">最近触发</th>
+                  <th class="col-owner">负责人</th>
+                  <th class="col-action">操作</th>
+                </tr>
+              </thead>
+              <tbody id="alert-tbody"></tbody>
+            </table>
+            <div class="empty-state" id="empty-state">没有符合当前条件的预警事件</div>
+          </div>
+
+          <div class="pagination">
+            <span>20 条/页</span>
+            <span class="page-number">1</span>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div class="drawer-backdrop" id="drawer-backdrop" aria-hidden="true"></div>
+  <aside class="drawer" id="alert-drawer" aria-hidden="true" aria-labelledby="drawer-title">
+    <div class="drawer-header">
+      <div class="drawer-heading">
+        <span class="status-chip status-ongoing" id="drawer-status">持续中</span>
+        <h2 id="drawer-title">预警详情</h2>
+        <p id="drawer-event-id">事件编号</p>
+      </div>
+      <button class="drawer-close" id="drawer-close" type="button" aria-label="关闭详情">×</button>
+    </div>
+    <div class="drawer-body" id="drawer-body"></div>
+    <div class="drawer-footer">
+      <span class="footer-note">钉钉“查看详情”可直接打开本抽屉</span>
+      <div class="drawer-actions">
+        <button class="btn" id="drawer-cancel" type="button">关闭</button>
+        <button class="btn btn-primary" id="btn-open-parent" type="button">打开关联父体</button>
+      </div>
+    </div>
+  </aside>
+
+  <script>
+    const alertRecords = [
+      {
+        id: "ALT20260618001",
+        status: "ongoing",
+        unread: true,
+        model: "本地库龄预警",
+        category: "库龄预警",
+        rule: "本地仓高库龄预警",
+        parent: "LFT00002261",
+        objectCode: "ST18106",
+        objectMeta: "SPU · CN仓",
+        related: "SKU：ST18106DENIMBLUE095",
+        market: "美国",
+        summary: "ST18106 在 CN 仓库龄≥90天库存 146 件，超过规则阈值 120 件。",
+        firstAt: "2026-06-18 14:10",
+        lastAt: "2026-06-21 09:00",
+        owner: "张三",
+        recipients: "张三、李四、运营组",
+        metrics: [
+          ["库龄≥90天库存", "146 件", "120 件", "超出 26 件"],
+          ["库龄≥180天库存", "88 件", "60 件", "超出 28 件"]
+        ],
+        timeline: [
+          ["首次触发预警，已生成系统事件", "2026-06-18 14:10"],
+          ["钉钉通知发送成功：张三、李四、运营组", "2026-06-18 14:11"],
+          ["最近一次计算仍满足触发条件", "2026-06-21 09:00"]
+        ]
+      },
+      {
+        id: "ALT20260618002",
+        status: "ongoing",
+        unread: false,
+        model: "FBA库龄预警",
+        category: "库龄预警",
+        rule: "美国站FBA高库龄预警",
+        parent: "LFT00002260",
+        objectCode: "B09K799DH7",
+        objectMeta: "ASIN · 美国站",
+        related: "SPU：ST210808",
+        market: "美国",
+        summary: "ASIN B09K799DH7 库龄≥180天库存 96 件，超过阈值 80 件。",
+        firstAt: "2026-06-18 10:20",
+        lastAt: "2026-06-21 09:00",
+        owner: "李四",
+        recipients: "李四、美国站运营组",
+        metrics: [
+          ["库龄≥90天库存", "210 件", "150 件", "超出 60 件"],
+          ["库龄≥180天库存", "96 件", "80 件", "超出 16 件"]
+        ],
+        timeline: [
+          ["首次触发预警，已生成系统事件", "2026-06-18 10:20"],
+          ["钉钉通知发送成功：李四、美国站运营组", "2026-06-18 10:21"],
+          ["最近一次计算仍满足触发条件", "2026-06-21 09:00"]
+        ]
+      },
+      {
+        id: "ALT20260618003",
+        status: "ongoing",
+        unread: true,
+        model: "FBA长期仓储费预警",
+        category: "仓储费预警",
+        rule: "英国站长期仓储费预警",
+        parent: "LFT00000783",
+        objectCode: "B0F8GGJ7LK",
+        objectMeta: "ASIN · 英国站",
+        related: "SPU：STK2527157",
+        market: "英国",
+        summary: "距长期仓储费收费节点剩余 12 天，受影响库存 356 件，超过阈值 100 件。",
+        firstAt: "2026-06-18 09:00",
+        lastAt: "2026-06-21 09:00",
+        owner: "王五",
+        recipients: "王五、英国站运营组",
+        metrics: [
+          ["距收费节点", "12 天", "提前 15 天", "已进入预警期"],
+          ["受影响库存", "356 件", "100 件", "超出 256 件"]
+        ],
+        timeline: [
+          ["首次进入收费节点提前预警期", "2026-06-18 09:00"],
+          ["钉钉通知发送成功：王五、英国站运营组", "2026-06-18 09:01"],
+          ["最近一次计算：距收费节点剩余 12 天", "2026-06-21 09:00"]
+        ]
+      },
+      {
+        id: "ALT20260619001",
+        status: "ongoing",
+        unread: false,
+        model: "销售偏差预警",
+        category: "销售预警",
+        rule: "周度销售预测偏差预警",
+        parent: "LFT00001125",
+        objectCode: "WT82527258",
+        objectMeta: "SPU · 美国站",
+        related: "店铺：noorkie Inc-US",
+        market: "美国",
+        summary: "近 7 天实际销量 1,224 件，预测销量 999 件，预测偏差 +22.5%。",
+        firstAt: "2026-06-19 08:30",
+        lastAt: "2026-06-21 08:30",
+        owner: "赵六",
+        recipients: "赵六、销售计划组",
+        metrics: [
+          ["近7天实际销量", "1,224 件", "—", "—"],
+          ["近7天预测销量", "999 件", "—", "—"],
+          ["预测偏差", "+22.5%", "±15%", "超出 7.5 个百分点"]
+        ],
+        timeline: [
+          ["销售偏差首次超过阈值", "2026-06-19 08:30"],
+          ["钉钉通知发送成功：赵六、销售计划组", "2026-06-19 08:31"],
+          ["最近一次计算偏差仍为 +22.5%", "2026-06-21 08:30"]
+        ]
+      },
+      {
+        id: "ALT20260619002",
+        status: "ongoing",
+        unread: true,
+        model: "供应商生产延期预警",
+        category: "生产预警",
+        rule: "核心SPU交期延期预警",
+        parent: "LFT00001890",
+        objectCode: "ST223501",
+        objectMeta: "SPU · 供应商生产单",
+        related: "生产单：PO20260508031",
+        market: "中国",
+        summary: "供应商承诺交期为 2026-06-09，当前预计完成日为 2026-06-21，已延后 12 天。",
+        firstAt: "2026-06-19 08:00",
+        lastAt: "2026-06-21 08:00",
+        owner: "陈晨",
+        recipients: "陈晨、采购组",
+        metrics: [
+          ["承诺交期", "2026-06-09", "—", "—"],
+          ["预计完成日", "2026-06-21", "—", "—"],
+          ["延期天数", "12 天", "5 天", "超出 7 天"]
+        ],
+        timeline: [
+          ["延期天数首次超过规则阈值", "2026-06-19 08:00"],
+          ["钉钉通知发送成功：陈晨、采购组", "2026-06-19 08:01"],
+          ["最近一次同步预计完成日未变化", "2026-06-21 08:00"]
+        ]
+      },
+      {
+        id: "ALT20260620001",
+        status: "ongoing",
+        unread: false,
+        model: "SKC销售偏差预警",
+        category: "库存预警",
+        rule: "SKC颜色销售偏差预警",
+        parent: "LFT00000784",
+        objectCode: "HK1839-BLK",
+        objectMeta: "SKC · 英国站",
+        related: "SPU：HK1839",
+        market: "英国",
+        summary: "黑色 SKC 销量占比 38.2%，FBA库存占比 15.7%，占比差 22.5%。",
+        firstAt: "2026-06-20 15:10",
+        lastAt: "2026-06-21 09:10",
+        owner: "王五",
+        recipients: "王五、英国站运营组",
+        metrics: [
+          ["销量占比", "38.2%", "—", "—"],
+          ["FBA库存占比", "15.7%", "—", "—"],
+          ["占比差", "22.5%", "10%", "超出 12.5 个百分点"]
+        ],
+        timeline: [
+          ["SKC销量与库存占比差首次超过阈值", "2026-06-20 15:10"],
+          ["钉钉通知发送成功：王五、英国站运营组", "2026-06-20 15:11"],
+          ["最近一次计算仍存在缺货风险", "2026-06-21 09:10"]
+        ]
+      },
+      {
+        id: "ALT20260615001",
+        status: "recovered",
+        unread: false,
+        model: "达成偏差预警",
+        category: "库存预警",
+        rule: "月度备货达成偏差预警",
+        parent: "LFT00001308",
+        objectCode: "HKA19",
+        objectMeta: "SPU · 德国站",
+        related: "店铺：STQWALKING-DE",
+        market: "德国",
+        summary: "备货达成率曾降至 82.3%，最近一次计算已恢复至 96.1%，不再满足预警条件。",
+        firstAt: "2026-06-15 09:00",
+        lastAt: "2026-06-20 09:00",
+        owner: "周敏",
+        recipients: "周敏、德国站运营组",
+        metrics: [
+          ["触发时达成率", "82.3%", "90%", "低于 7.7 个百分点"],
+          ["当前达成率", "96.1%", "90%", "已恢复"]
+        ],
+        timeline: [
+          ["备货达成率首次低于阈值", "2026-06-15 09:00"],
+          ["钉钉通知发送成功：周敏、德国站运营组", "2026-06-15 09:01"],
+          ["达成率恢复至 96.1%，事件自动恢复", "2026-06-20 09:00"]
+        ]
+      },
+      {
+        id: "ALT20260612001",
+        status: "recovered",
+        unread: false,
+        model: "FBA库龄预警",
+        category: "库龄预警",
+        rule: "加拿大站FBA库龄预警",
+        parent: "LFT00001952",
+        objectCode: "B08D9N3M6Q",
+        objectMeta: "ASIN · 加拿大站",
+        related: "SPU：ST200918",
+        market: "加拿大",
+        summary: "库龄≥90天库存已由 168 件降至 92 件，低于阈值 100 件，事件自动恢复。",
+        firstAt: "2026-06-12 10:00",
+        lastAt: "2026-06-19 10:00",
+        owner: "刘洋",
+        recipients: "刘洋、加拿大站运营组",
+        metrics: [
+          ["触发时库存", "168 件", "100 件", "超出 68 件"],
+          ["当前库存", "92 件", "100 件", "已恢复"]
+        ],
+        timeline: [
+          ["FBA库龄库存首次超过阈值", "2026-06-12 10:00"],
+          ["钉钉通知发送成功：刘洋、加拿大站运营组", "2026-06-12 10:01"],
+          ["库存降至 92 件，事件自动恢复", "2026-06-19 10:00"]
+        ]
+      }
+    ];
+
+    const state = {
+      status: "ongoing",
+      filters: {
+        model: "",
+        keyword: "",
+        owner: "",
+        start: "",
+        end: ""
+      },
+      activeId: null
+    };
+
+    const elements = {
+      tbody: document.getElementById("alert-tbody"),
+      empty: document.getElementById("empty-state"),
+      resultCount: document.getElementById("result-count"),
+      model: document.getElementById("filter-model"),
+      keyword: document.getElementById("filter-keyword"),
+      owner: document.getElementById("filter-owner"),
+      start: document.getElementById("filter-start"),
+      end: document.getElementById("filter-end"),
+      drawer: document.getElementById("alert-drawer"),
+      backdrop: document.getElementById("drawer-backdrop"),
+      drawerStatus: document.getElementById("drawer-status"),
+      drawerTitle: document.getElementById("drawer-title"),
+      drawerEventId: document.getElementById("drawer-event-id"),
+      drawerBody: document.getElementById("drawer-body")
+    };
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function uniqueValues(key) {
+      return [...new Set(alertRecords.map(item => item[key]))].sort((a, b) => a.localeCompare(b, "zh-CN"));
+    }
+
+    function fillSelect(select, values) {
+      values.forEach(value => {
+        const option = document.createElement("option");
+        option.value = value;
+        option.textContent = value;
+        select.appendChild(option);
+      });
+    }
+
+    function statusLabel(status) {
+      return status === "ongoing" ? "持续中" : "已恢复";
+    }
+
+    function formatTime(value) {
+      const parts = value.split(" ");
+      return `<div>${escapeHtml(parts[0])}</div><div class="time-sub">${escapeHtml(parts[1] || "")}</div>`;
+    }
+
+    function recordMatches(record) {
+      const filters = state.filters;
+      if (state.status !== "all" && record.status !== state.status) return false;
+      if (filters.model && record.model !== filters.model) return false;
+      if (filters.owner && record.owner !== filters.owner) return false;
+
+      const keyword = filters.keyword.trim().toLowerCase();
+      if (keyword) {
+        const searchable = [
+          record.id,
+          record.parent,
+          record.objectCode,
+          record.objectMeta,
+          record.related,
+          record.summary,
+          record.rule
+        ].join(" ").toLowerCase();
+        if (!searchable.includes(keyword)) return false;
+      }
+
+      const date = record.firstAt.slice(0, 10);
+      if (filters.start && date < filters.start) return false;
+      if (filters.end && date > filters.end) return false;
+      return true;
+    }
+
+    function renderCounts() {
+      const ongoing = alertRecords.filter(item => item.status === "ongoing").length;
+      const recovered = alertRecords.filter(item => item.status === "recovered").length;
+      document.getElementById("count-ongoing").textContent = ongoing;
+      document.getElementById("count-recovered").textContent = recovered;
+      document.getElementById("count-all").textContent = alertRecords.length;
+    }
+
+    function renderTable() {
+      const records = alertRecords.filter(recordMatches);
+      elements.resultCount.textContent = records.length;
+      elements.empty.style.display = records.length ? "none" : "block";
+      elements.tbody.style.display = records.length ? "table-row-group" : "none";
+
+      elements.tbody.innerHTML = records.map(record => `
+        <tr data-id="${escapeHtml(record.id)}" tabindex="0" aria-label="查看 ${escapeHtml(record.model)} ${escapeHtml(record.objectCode)}">
+          <td><span class="status-chip status-${record.status}">${statusLabel(record.status)}</span></td>
+          <td>
+            <div class="event-name">${record.unread ? '<span class="unread-dot" title="未查看"></span>' : ''}<span>${escapeHtml(record.model)}</span></div>
+            <div class="event-id">${escapeHtml(record.id)}</div>
+          </td>
+          <td>
+            <div class="object-code">${escapeHtml(record.objectCode)}</div>
+            <div class="object-meta">${escapeHtml(record.objectMeta)}</div>
+          </td>
+          <td><div class="summary-text">${escapeHtml(record.summary)}</div></td>
+          <td>${formatTime(record.firstAt)}</td>
+          <td>${formatTime(record.lastAt)}</td>
+          <td>${escapeHtml(record.owner)}</td>
+          <td><button class="btn btn-link" type="button" data-view-id="${escapeHtml(record.id)}">查看</button></td>
+        </tr>
+      `).join("");
+
+      elements.tbody.querySelectorAll("tr").forEach(row => {
+        row.addEventListener("click", event => {
+          if (event.target.closest("button")) return;
+          openDrawer(row.dataset.id);
+        });
+        row.addEventListener("keydown", event => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            openDrawer(row.dataset.id);
+          }
+        });
+      });
+
+      elements.tbody.querySelectorAll("[data-view-id]").forEach(button => {
+        button.addEventListener("click", () => openDrawer(button.dataset.viewId));
+      });
+    }
+
+    function renderDrawer(record) {
+      elements.drawerStatus.className = `status-chip status-${record.status}`;
+      elements.drawerStatus.textContent = statusLabel(record.status);
+      elements.drawerTitle.textContent = record.model;
+      elements.drawerEventId.textContent = `事件编号：${record.id}`;
+
+      const metrics = record.metrics.map(metric => `
+        <tr>
+          <td>${escapeHtml(metric[0])}</td>
+          <td class="${record.status === "ongoing" && metric[3] !== "—" ? "metric-abnormal" : ""}">${escapeHtml(metric[1])}</td>
+          <td>${escapeHtml(metric[2])}</td>
+          <td>${escapeHtml(metric[3])}</td>
+        </tr>
+      `).join("");
+
+      const timeline = record.timeline.map(item => `
+        <li class="timeline-item">${escapeHtml(item[0])}<span class="timeline-time">${escapeHtml(item[1])}</span></li>
+      `).join("");
+
+      elements.drawerBody.innerHTML = `
+        <section class="drawer-section">
+          <h3>异常摘要</h3>
+          <div class="alert-summary-box ${record.status === "recovered" ? "recovered" : ""}">${escapeHtml(record.summary)}</div>
+        </section>
+
+        <section class="drawer-section">
+          <h3>基本信息</h3>
+          <div class="detail-grid">
+            <div class="detail-item"><span class="detail-label">预警规则</span><span class="detail-value">${escapeHtml(record.rule)}</span></div>
+            <div class="detail-item"><span class="detail-label">预警分类</span><span class="detail-value">${escapeHtml(record.category)}</span></div>
+            <div class="detail-item"><span class="detail-label">父体</span><span class="detail-value">${escapeHtml(record.parent)}</span></div>
+            <div class="detail-item"><span class="detail-label">风险对象</span><span class="detail-value">${escapeHtml(record.objectCode)}</span></div>
+            <div class="detail-item"><span class="detail-label">关联信息</span><span class="detail-value">${escapeHtml(record.related)}</span></div>
+            <div class="detail-item"><span class="detail-label">国家/站点</span><span class="detail-value">${escapeHtml(record.market)}</span></div>
+            <div class="detail-item"><span class="detail-label">运营负责人</span><span class="detail-value">${escapeHtml(record.owner)}</span></div>
+            <div class="detail-item"><span class="detail-label">通知接收人</span><span class="detail-value">${escapeHtml(record.recipients)}</span></div>
+          </div>
+        </section>
+
+        <section class="drawer-section">
+          <h3>触发指标</h3>
+          <table class="metric-table">
+            <thead><tr><th>指标</th><th>当前/触发值</th><th>规则阈值</th><th>判断结果</th></tr></thead>
+            <tbody>${metrics}</tbody>
+          </table>
+        </section>
+
+        <section class="drawer-section">
+          <h3>触发与通知记录</h3>
+          <ol class="timeline">${timeline}</ol>
+        </section>
+      `;
+    }
+
+    function openDrawer(id) {
+      const record = alertRecords.find(item => item.id === id);
+      if (!record) return;
+      record.unread = false;
+      state.activeId = id;
+      renderDrawer(record);
+      renderTable();
+      elements.drawer.classList.add("open");
+      elements.backdrop.classList.add("open");
+      elements.drawer.setAttribute("aria-hidden", "false");
+      elements.backdrop.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+      document.getElementById("drawer-close").focus();
+    }
+
+    function closeDrawer() {
+      elements.drawer.classList.remove("open");
+      elements.backdrop.classList.remove("open");
+      elements.drawer.setAttribute("aria-hidden", "true");
+      elements.backdrop.setAttribute("aria-hidden", "true");
+      document.body.style.overflow = "";
+      state.activeId = null;
+    }
+
+    function collectFilters() {
+      state.filters = {
+        model: elements.model.value,
+        keyword: elements.keyword.value,
+        owner: elements.owner.value,
+        start: elements.start.value,
+        end: elements.end.value
+      };
+      renderTable();
+    }
+
+    function resetFilters() {
+      elements.model.value = "";
+      elements.keyword.value = "";
+      elements.owner.value = "";
+      elements.start.value = "";
+      elements.end.value = "";
+      state.filters = { model: "", keyword: "", owner: "", start: "", end: "" };
+      renderTable();
+    }
+
+    document.querySelectorAll(".summary-item").forEach(button => {
+      button.addEventListener("click", () => {
+        state.status = button.dataset.status;
+        document.querySelectorAll(".summary-item").forEach(item => item.classList.toggle("active", item === button));
+        renderTable();
+      });
+    });
+
+    document.getElementById("btn-search").addEventListener("click", collectFilters);
+    document.getElementById("btn-reset").addEventListener("click", resetFilters);
+    elements.keyword.addEventListener("keydown", event => {
+      if (event.key === "Enter") collectFilters();
+    });
+    document.getElementById("drawer-close").addEventListener("click", closeDrawer);
+    document.getElementById("drawer-cancel").addEventListener("click", closeDrawer);
+    elements.backdrop.addEventListener("click", closeDrawer);
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape" && elements.drawer.classList.contains("open")) closeDrawer();
+    });
+    document.getElementById("btn-open-parent").addEventListener("click", () => {
+      const record = alertRecords.find(item => item.id === state.activeId);
+      if (!record) return;
+      window.alert(`线框交互：跳转到父体详情 ${record.parent}`);
+    });
+
+    fillSelect(elements.model, uniqueValues("model"));
+    fillSelect(elements.owner, uniqueValues("owner"));
+    renderCounts();
+    renderTable();
+  </script>
+</body>
+</html>
