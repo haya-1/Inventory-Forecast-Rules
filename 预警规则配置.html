@@ -1659,6 +1659,20 @@
 
     /* 操作栏新增按钮对齐备货按钮尺寸 */
     .action-bar .btn-primary { height: 32px; padding: 0 14px; font-size: 14px; }
+    .action-bar-left { display: flex; align-items: center; gap: 8px; }
+    .btn-batch-delete {
+      height: 32px;
+      padding: 0 16px;
+      font-size: 14px;
+      background: #fff;
+      color: #606266;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-batch-delete:hover:not(:disabled) { color: #f56c6c; border-color: #fbc4c4; background: #fef0f0; }
+    .btn-batch-delete:disabled { color: #c0c4cc; cursor: not-allowed; background: #f5f7fa; border-color: #e4e7ed; }
 
     /* 数据表格：左对齐 + 表头字重 600 + 紧凑内边距 + 横向滚动 */
     .data-table { min-width: 1480px; table-layout: fixed; color: #606266; }
@@ -1811,10 +1825,8 @@
                 <option value="">全部</option>
                 <option>本地库龄预警</option>
                 <option>FBA库龄预警</option>
-                <option>FBA长期仓储费预警</option>
                 <option>销售偏差预警</option>
                 <option>供应商生产延期预警</option>
-                <option>达成偏差预警</option>
                 <option>SKC销售偏差预警</option>
               </select>
             </div>
@@ -1824,7 +1836,6 @@
                 <option value="">全部</option>
                 <option>库龄预警</option>
                 <option>库存预警</option>
-                <option>仓储费预警</option>
                 <option>销售预警</option>
                 <option>生产预警</option>
               </select>
@@ -1857,7 +1868,10 @@
 
           <!-- 操作栏 -->
           <div class="action-bar">
-            <button class="btn btn-primary" onclick="createRule()">＋ 新建规则</button>
+            <div class="action-bar-left">
+              <button class="btn btn-primary" onclick="createRule()">＋ 新建规则</button>
+              <button class="btn btn-batch-delete" id="btn-batch-delete" onclick="batchDeleteRules()" disabled>删除</button>
+            </div>
             <div class="table-toolbar">
               <span class="toolbar-icon" title="刷新" onclick="refreshTable()">🔄</span>
               <span class="toolbar-icon" title="列设置">⚙️</span>
@@ -1869,6 +1883,7 @@
             <table class="data-table" id="rule-table">
               <thead>
                 <tr>
+                  <th style="width: 44px; text-align: center;"><input type="checkbox" id="rule-select-all" onclick="toggleSelectAllRules(this)" /></th>
                   <th style="width: 150px;">规则编号</th>
                   <th style="width: 160px;">规则名称</th>
                   <th style="width: 150px;">预警模型</th>
@@ -1879,7 +1894,6 @@
                   <th style="width: 150px;">创建时间</th>
                   <th style="width: 90px;">更新人</th>
                   <th style="width: 150px;">更新时间</th>
-                  <th style="width: 110px;">操作</th>
                 </tr>
               </thead>
               <tbody id="rule-tbody">
@@ -1929,7 +1943,6 @@
                     <div class="th-filter-item is-selected" data-value="" onclick="selectCreateModalCategory('', event)"><span>全部</span><span class="tick">✓</span></div>
                     <div class="th-filter-item" data-value="库龄预警" onclick="selectCreateModalCategory('库龄预警', event)"><span>库龄预警</span><span class="tick">✓</span></div>
                     <div class="th-filter-item" data-value="库存预警" onclick="selectCreateModalCategory('库存预警', event)"><span>库存预警</span><span class="tick">✓</span></div>
-                    <div class="th-filter-item" data-value="仓储费预警" onclick="selectCreateModalCategory('仓储费预警', event)"><span>仓储费预警</span><span class="tick">✓</span></div>
                     <div class="th-filter-item" data-value="销售预警" onclick="selectCreateModalCategory('销售预警', event)"><span>销售预警</span><span class="tick">✓</span></div>
                     <div class="th-filter-item" data-value="生产预警" onclick="selectCreateModalCategory('生产预警', event)"><span>生产预警</span><span class="tick">✓</span></div>
                   </div>
@@ -1952,12 +1965,6 @@
               <td class="col-desc">当指定父体下的子体在 FBA 仓存在高库龄库存时，触发预警提醒，提高周转、降低仓储费。</td>
               <td class="col-action"><button class="modal-add-link" onclick="addRule('FBA库龄预警')">添加</button></td>
             </tr>
-            <tr data-category="仓储费预警">
-              <td class="col-name">FBA长期仓储费预警</td>
-              <td class="col-type"><span class="tag tag-storage">仓储费预警</span></td>
-              <td class="col-desc">在亚马逊收取长期仓储费盘点日之前，提前预警即将被收费的库存。</td>
-              <td class="col-action"><button class="modal-add-link" onclick="addRule('FBA长期仓储费预警')">添加</button></td>
-            </tr>
             <tr data-category="销售预警">
               <td class="col-name">销售偏差预警</td>
               <td class="col-type"><span class="tag tag-deviation">销售预警</span></td>
@@ -1971,15 +1978,9 @@
               <td class="col-action"><button class="modal-add-link" onclick="addRule('供应商生产延期预警')">添加</button></td>
             </tr>
             <tr data-category="库存预警">
-              <td class="col-name">达成偏差预警</td>
-              <td class="col-type"><span class="tag tag-stock">库存预警</span></td>
-              <td class="col-desc">对于销售达成过快或过慢进行预警，当实际销量相对年规的达成偏差超过阈值时触发。</td>
-              <td class="col-action"><button class="modal-add-link" onclick="addRule('达成偏差预警')">添加</button></td>
-            </tr>
-            <tr data-category="库存预警">
               <td class="col-name">SKC销售偏差预警</td>
               <td class="col-type"><span class="tag tag-stock">库存预警</span></td>
-              <td class="col-desc">当单个颜色（SKC）销量占比明显高于其 FBA 库存占比时存在缺货风险，触发预警。</td>
+              <td class="col-desc">单个颜色（SKC）销量占比明显高于其 FBA 库存占比时存在缺货风险，触发预警。</td>
               <td class="col-action"><button class="modal-add-link" onclick="addRule('SKC销售偏差预警')">添加</button></td>
             </tr>
           </tbody>
@@ -2178,18 +2179,8 @@
         formulaDesc: '显示对应父体在 FBA 仓库中每个库龄阶段的数量',
         unit: '天'
       },
-      'FBA长期仓储费预警': {
-        conditionDesc: '在库龄接近亚马逊长期仓储费收费节点（例如90天、180天）前 N 天，库存数量仍大于 K 时触发预警。',
-        formulaType: 'storage_fee',
-        nodeOptions: [30, 60, 90, 180],
-        defaultNode: 180,
-        defaultAheadDays: 15,
-        defaultQty: 100,
-        formulaDesc: '当库龄距收费节点剩余天数 ≤ N 天，且库存数量 ≥ K 个时触发。',
-        unit: '天'
-      },
       '销售偏差预警': {
-        conditionDesc: '当窗口内的销售预测值与年度规划（年规）对应窗口目标偏差超过 ±Y% 时触发。',
+        conditionDesc: '当窗口内的实际销量与年度规划（年规）对应窗口目标偏差超过阈值时触发。',
         formulaType: 'sales_deviation',
         defaultWindowDays: 30,
         defaultThreshold: 30,
@@ -2197,20 +2188,12 @@
         unit: '%'
       },
       '供应商生产延期预警': {
-        conditionDesc: '当采购单的预计交货时间（目标交期）已超期，且超期天数大于 X 天时触发，即「当前日期 − 预计交货时间 > X 天」。',
+        conditionDesc: '已确认未完成的采购单超过预计交货时间 X 天仍未交货时触发。',
         formulaType: 'threshold',
         thresholdLabel: '延期预警天数',
         defaultThreshold: 7,
         formulaDesc: '当前日期 − 预计交货时间（目标交期） > X 天',
         unit: '天'
-      },
-      '达成偏差预警': {
-        conditionDesc: '对于销售达成过快或过慢进行预警，当实际销量相对年度规划（年规）的达成偏差超过 ±X% 时触发。',
-        formulaType: 'threshold',
-        thresholdLabel: '达成偏差阈值',
-        defaultThreshold: 20,
-        formulaDesc: '|实际销量 ÷ 年规 − 1| × 100% > X%',
-        unit: '%'
       },
       'SKC销售偏差预警': {
         conditionDesc: '当单个颜色（SKC）的销售占比明显高于其 FBA 库存占比时，存在缺货风险，触发预警。',
@@ -2235,10 +2218,8 @@
     var MODEL_CATEGORY_MAP = {
       '本地库龄预警': '库龄预警',
       'FBA库龄预警': '库龄预警',
-      'FBA长期仓储费预警': '仓储费预警',
       '销售偏差预警': '销售预警',
       '供应商生产延期预警': '生产预警',
-      '达成偏差预警': '库存预警',
       'SKC销售偏差预警': '库存预警'
     };
 
@@ -2301,6 +2282,7 @@
       if (rules.length === 0) {
         empty.style.display = '';
         pagi.style.display = 'none';
+        updateBatchDeleteState();
         return;
       }
       empty.style.display = 'none';
@@ -2310,6 +2292,7 @@
       rules.forEach(function(r) {
         var tr = document.createElement('tr');
         tr.innerHTML =
+          '<td style="text-align: center;"><input type="checkbox" class="rule-row-cb" value="' + r.id + '" onclick="onRuleRowCheck()" /></td>' +
           '<td><button type="button" class="rule-id-link mono-cell" onclick="editRule(' + r.id + ')">' + (r.code || '-') + '</button></td>' +
           '<td>' + r.name + '</td>' +
           '<td>' + r.model + '</td>' +
@@ -2319,12 +2302,10 @@
           '<td>' + r.creator + '</td>' +
           '<td>' + r.createTime + '</td>' +
           '<td>' + r.updater + '</td>' +
-          '<td>' + r.updateTime + '</td>' +
-          '<td><div class="table-actions">' +
-            '<button class="op-link op-link-danger" onclick="deleteRule(' + r.id + ')">删除</button>' +
-          '</div></td>';
+          '<td>' + r.updateTime + '</td>';
         tbody.appendChild(tr);
       });
+      updateBatchDeleteState();
     }
 
     /* 适用父体悬浮弹层 */
@@ -2458,8 +2439,38 @@
 
     function refreshTable() { renderRuleTable(); }
 
-    function toggleSelectAll(masterCb) {
-      document.querySelectorAll('#rule-tbody input[type="checkbox"]').forEach(cb => cb.checked = masterCb.checked);
+    function toggleSelectAllRules(master) {
+      document.querySelectorAll('.rule-row-cb').forEach(function(cb) { cb.checked = master.checked; });
+      updateBatchDeleteState();
+    }
+
+    function onRuleRowCheck() {
+      updateBatchDeleteState();
+    }
+
+    function getSelectedRuleIds() {
+      return [].map.call(document.querySelectorAll('.rule-row-cb:checked'), function(cb) { return parseInt(cb.value); });
+    }
+
+    function updateBatchDeleteState() {
+      var all = document.querySelectorAll('.rule-row-cb');
+      var checked = document.querySelectorAll('.rule-row-cb:checked');
+      var btn = document.getElementById('btn-batch-delete');
+      if (btn) btn.disabled = checked.length === 0;
+      var master = document.getElementById('rule-select-all');
+      if (master) {
+        master.checked = all.length > 0 && checked.length === all.length;
+        master.indeterminate = checked.length > 0 && checked.length < all.length;
+      }
+    }
+
+    function batchDeleteRules() {
+      var ids = getSelectedRuleIds();
+      if (ids.length === 0) return;
+      if (!confirm('确定要删除选中的 ' + ids.length + ' 条规则吗？')) return;
+      savedRules = savedRules.filter(function(r) { return ids.indexOf(r.id) === -1; });
+      persistRules();
+      renderRuleTable();
     }
 
     /* ===== 第一步：选择模型弹窗 ===== */
@@ -3156,7 +3167,7 @@
     })();
 
     /* 模拟数据：首次进入或示例数据版本更新时，注入/刷新示例规则 */
-    var SEED_VERSION = 'p1-2026-06-18-v7';
+    var SEED_VERSION = 'p1-2026-06-18-v9';
     function seedMockRules() {
       if (savedRules.length > 0 && localStorage.getItem('alertRulesSeedVer') === SEED_VERSION) return;
       var byCodes = function(codes) {
@@ -3172,18 +3183,12 @@
         { code:'YJ20260618002', name:'本地仓高库龄预警', model:'本地库龄预警', status:true,
           parents:['LFT00000778','LFT00000777'],
           creator:'黄国阳', createTime:'2026-06-18 09:05:41', updater:'黄国阳', updateTime:'2026-06-18 09:05:41' },
-        { code:'YJ20260617001', name:'FBA长期仓储费预警', model:'FBA长期仓储费预警', status:false,
-          parents:['LFT00000784','LFT00000783','LFT00000782'], storageFee:{ node:180, aheadDays:15, qty:100 },
-          creator:'余滢', createTime:'2026-06-17 16:48:30', updater:'黄利萍', updateTime:'2026-06-18 08:12:09' },
         { code:'YJ20260615001', name:'周度销售预测偏差预警', model:'销售偏差预警', status:true,
           parents:['LFT00000755'], salesDeviation:{ windowDays:30, threshold:30 },
           creator:'黄利萍', createTime:'2026-06-15 14:30:00', updater:'黄利萍', updateTime:'2026-06-16 11:02:55' },
         { code:'YJ20260521001', name:'核心SKU供应商交期延期预警', model:'供应商生产延期预警', status:true,
           parents:['LFT00000776','LFT00000775','LFT00000774','LFT00000773','LFT00000755'],
           creator:'黄利萍', createTime:'2026-05-21 11:18:20', updater:'余滢', updateTime:'2026-06-10 17:40:12' },
-        { code:'YJ20260521002', name:'年规达成偏差预警', model:'达成偏差预警', status:false,
-          parents:['LFT00000780','LFT00000779','LFT00000778','LFT00000777'],
-          creator:'黄利萍', createTime:'2026-05-21 11:25:03', updater:'黄利萍', updateTime:'2026-05-21 11:25:03' },
         { code:'YJ20260520001', name:'SKC颜色销售偏差预警', model:'SKC销售偏差预警', status:true,
           parents:['LFT00000784','LFT00000783'],
           creator:'陈柏宏', createTime:'2026-05-20 15:10:48', updater:'陈柏宏', updateTime:'2026-05-20 15:10:48' }
