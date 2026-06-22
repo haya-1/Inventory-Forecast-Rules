@@ -2184,7 +2184,7 @@
         formulaType: 'sales_deviation',
         defaultWindowDays: 30,
         defaultThreshold: 30,
-        formulaDesc: '|窗口内实际销量 − 年规对应窗口目标| / 年规目标 × 100% > Y%',
+        formulaDesc: '(窗口内实际销量 /窗口内年规目标-1) × 100% > Y%',
         unit: '%'
       },
       '供应商生产延期预警': {
@@ -2704,7 +2704,7 @@
         currentAgeConditions = [];
         area.innerHTML =
           '<div class="age-condition-row" style="flex-wrap:wrap;">' +
-            '<span class="acr-text">短期窗口</span>' +
+            '<span class="acr-text">过去</span>' +
             '<input type="number" class="acr-input" id="cfg-sd-window" value="' + (model.defaultWindowDays || 30) + '" placeholder="天数" />' +
             '<span class="acr-text">天，偏差 ±</span>' +
             '<input type="number" class="acr-input" id="cfg-sd-threshold" value="' + (model.defaultThreshold || 30) + '" placeholder="Y" />' +
@@ -2835,9 +2835,9 @@
       } else if (model && model.formulaType === 'sales_deviation') {
         var sdWindow = document.getElementById('cfg-sd-window').value;
         var sdY = document.getElementById('cfg-sd-threshold').value;
-        if (!sdWindow) { alert('请输入短期窗口天数'); return; }
+        if (!sdWindow) { alert('请输入窗口天数'); return; }
         if (!sdY) { alert('请输入偏差阈值'); return; }
-        ruleInfo = '短期窗口 ' + sdWindow + ' 天，偏差 ±' + sdY + '%';
+        ruleInfo = '过去 ' + sdWindow + ' 天，偏差 ±' + sdY + '%';
       } else {
         var thEl = document.getElementById('cfg-trigger-threshold');
         if (thEl && !thEl.value) { alert('请输入触发阈值'); return; }
