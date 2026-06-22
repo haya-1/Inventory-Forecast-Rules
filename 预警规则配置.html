@@ -2180,11 +2180,11 @@
         unit: '天'
       },
       '销售偏差预警': {
-        conditionDesc: '当窗口内的实际销量与年度规划（年规）对应窗口目标偏差超过阈值时触发。',
+        conditionDesc: '当过去一段时间窗口内的实际销量与同期年规目标的偏差超过阈值时触发；窗口天数可自定义。',
         formulaType: 'sales_deviation',
         defaultWindowDays: 30,
         defaultThreshold: 30,
-        formulaDesc: '|窗口内实际销量 − 窗口内年规目标| / 窗口内年规目标 × 100% > Y%',
+        formulaDesc: '|过去 N 天实际销量 − 同期年规目标| / 同期年规目标 × 100% > Y%',
         unit: '%'
       },
       '供应商生产延期预警': {
@@ -2196,11 +2196,12 @@
         unit: '天'
       },
       'SKC销售偏差预警': {
-        conditionDesc: '当单个颜色（SKC）的销售占比明显高于其 FBA 库存占比时，存在缺货风险，触发预警。',
-        formulaType: 'threshold',
-        thresholdLabel: '占比差阈值',
+        conditionDesc: '当单个颜色（SKC）在过去一段时间窗口内的销售占比明显高于其 FBA 库存占比时，存在缺货风险，触发预警；窗口天数可自定义。',
+        formulaType: 'sales_deviation',
+        defaultWindowDays: 30,
         defaultThreshold: 10,
-        formulaDesc: '销售占比 − FBA库存占比 > X%',
+        windowOpLabel: '占比差 >',
+        formulaDesc: '过去 N 天：销售占比 − FBA库存占比 > X%',
         unit: '%'
       }
     };
@@ -2706,9 +2707,9 @@
           '<div class="age-condition-row" style="flex-wrap:wrap;">' +
             '<span class="acr-text">过去</span>' +
             '<input type="number" class="acr-input" id="cfg-sd-window" value="' + (model.defaultWindowDays || 30) + '" placeholder="天数" />' +
-            '<span class="acr-text">天，偏差 ±</span>' +
+            '<span class="acr-text">天，' + (model.windowOpLabel || '偏差 ±') + '</span>' +
             '<input type="number" class="acr-input" id="cfg-sd-threshold" value="' + (model.defaultThreshold || 30) + '" placeholder="Y" />' +
-            '<span class="acr-text">%</span>' +
+            '<span class="acr-text">' + (model.unit || '%') + '</span>' +
           '</div>' +
           '<div class="formula-desc">' + (model.formulaDesc || '') + '</div>';
       } else {
@@ -2836,8 +2837,8 @@
         var sdWindow = document.getElementById('cfg-sd-window').value;
         var sdY = document.getElementById('cfg-sd-threshold').value;
         if (!sdWindow) { alert('请输入窗口天数'); return; }
-        if (!sdY) { alert('请输入偏差阈值'); return; }
-        ruleInfo = '过去 ' + sdWindow + ' 天，偏差 ±' + sdY + '%';
+        if (!sdY) { alert('请输入阈值'); return; }
+        ruleInfo = '过去 ' + sdWindow + ' 天，' + (model.windowOpLabel || '偏差 ±') + sdY + (model.unit || '%');
       } else {
         var thEl = document.getElementById('cfg-trigger-threshold');
         if (thEl && !thEl.value) { alert('请输入触发阈值'); return; }
@@ -3167,7 +3168,7 @@
     })();
 
     /* 模拟数据：首次进入或示例数据版本更新时，注入/刷新示例规则 */
-    var SEED_VERSION = 'p1-2026-06-18-v9';
+    var SEED_VERSION = 'p1-2026-06-18-v10';
     function seedMockRules() {
       if (savedRules.length > 0 && localStorage.getItem('alertRulesSeedVer') === SEED_VERSION) return;
       var byCodes = function(codes) {
@@ -3190,7 +3191,7 @@
           parents:['LFT00000776','LFT00000775','LFT00000774','LFT00000773','LFT00000755'],
           creator:'黄利萍', createTime:'2026-05-21 11:18:20', updater:'余滢', updateTime:'2026-06-10 17:40:12' },
         { code:'YJ20260520001', name:'SKC颜色销售偏差预警', model:'SKC销售偏差预警', status:true,
-          parents:['LFT00000784','LFT00000783'],
+          parents:['LFT00000784','LFT00000783'], salesDeviation:{ windowDays:30, threshold:10 },
           creator:'陈柏宏', createTime:'2026-05-20 15:10:48', updater:'陈柏宏', updateTime:'2026-05-20 15:10:48' }
       ];
       savedRules = defs.map(function(d, i) {
