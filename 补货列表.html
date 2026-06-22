@@ -359,25 +359,34 @@
     /* ===== 内嵌预警 原型数据（按父体聚合，仅统计待处理） ===== */
     var RL_ALERTS_BY_PARENT = {
       'LFT00002261': [
-        { id:'a1', category:'库龄预警', model:'FBA库龄预警', rule:'美国站FBA库龄预警', conclusion:'库龄超阈值', indicator:'库龄≥180天 96件（阈值 80）', time:'2026-06-18 10:20', advice:'降价清货 / 创建移除订单' }
+        { id:'a1', category:'库龄预警', model:'FBA库龄预警', title:'FBA库龄预警 | ST18106', conclusion:'库龄超阈值', time:'2026-06-18 10:20',
+          fields:[['预警规则','美国站FBA库龄预警'],['父体','LFT00002261'],['站点','美国'],['店铺','noorkie Inc-US'],['ASIN','B083J69DSQ'],['库龄≥90天','180 件（阈值 150）'],['库龄≥180天','96 件（阈值 80）']] }
       ],
       'LFT00002260': [
-        { id:'a2', category:'库龄预警', model:'FBA库龄预警', rule:'美国站FBA库龄预警', conclusion:'库龄超阈值', indicator:'库龄≥90天 210件（阈值 150）', time:'2026-06-18 10:20', advice:'降价 / 移除' }
+        { id:'a2', category:'库龄预警', model:'FBA库龄预警', title:'FBA库龄预警 | ST210808', conclusion:'库龄超阈值', time:'2026-06-18 10:20',
+          fields:[['预警规则','美国站FBA库龄预警'],['父体','LFT00002260'],['站点','美国'],['店铺','STQWALKING_sandbox-US'],['ASIN','B09K799DH7'],['库龄≥90天','210 件（阈值 150）']] }
       ],
       'LFT00000784': [
-        { id:'a3', category:'库龄预警', model:'FBA库龄预警', rule:'美国站FBA库龄预警', conclusion:'库龄超阈值', indicator:'库龄≥180天 120件（阈值 80）', time:'2026-06-18 10:20', advice:'降价 / 移除' },
-        { id:'a4', category:'库存预警', model:'SKC销售偏差预警', rule:'SKC颜色销售偏差预警', conclusion:'占比差 22.5%（缺货风险）', indicator:'销量占比 38.2% − 库存占比 15.7%（阈值 10%）', time:'2026-06-18 15:10', advice:'单色补货 / 库存调配' }
+        { id:'a3', category:'库龄预警', model:'FBA库龄预警', title:'FBA库龄预警 | HK1839', conclusion:'库龄超阈值', time:'2026-06-18 10:20',
+          fields:[['预警规则','美国站FBA库龄预警'],['父体','LFT00000784'],['站点','英国'],['店铺','STEP QUEEN INC-UK'],['ASIN','B07NV7QK7H'],['库龄≥180天','120 件（阈值 80）']] },
+        { id:'a4', category:'库存预警', model:'SKC销售偏差预警', title:'SKC销售偏差预警 | HK1839-BLK', conclusion:'占比差 22.5%（缺货风险）', time:'2026-06-18 15:10',
+          fields:[['预警规则','SKC颜色销售偏差预警'],['父体','LFT00000784'],['SKC','HK1839-BLK（黑色）'],['销量占比','38.2%'],['库存占比','15.7%'],['占比差','22.5%（缺货风险，阈值 10%）']] }
       ],
       'LFT00000783': [
-        { id:'a5', category:'库龄预警', model:'FBA库龄预警', rule:'美国站FBA库龄预警', conclusion:'库龄超阈值', indicator:'库龄≥90天 180件（阈值 150）', time:'2026-06-18 10:20', advice:'降价 / 移除' },
-        { id:'a6', category:'库存预警', model:'SKC销售偏差预警', rule:'SKC颜色销售偏差预警', conclusion:'占比差 13%（缺货风险）', indicator:'销量占比 31% − 库存占比 18%（阈值 10%）', time:'2026-06-18 15:10', advice:'单色补货 / 库存调配' }
+        { id:'a5', category:'库龄预警', model:'FBA库龄预警', title:'FBA库龄预警 | STK2527157', conclusion:'库龄超阈值', time:'2026-06-18 10:20',
+          fields:[['预警规则','美国站FBA库龄预警'],['父体','LFT00000783'],['站点','英国'],['店铺','STEP QUEEN INC-UK'],['ASIN','B0F8GGJ7LK'],['库龄≥90天','180 件（阈值 150）']] },
+        { id:'a6', category:'库存预警', model:'SKC销售偏差预警', title:'SKC销售偏差预警 | STK2527157-GRY', conclusion:'占比差 13%（缺货风险）', time:'2026-06-18 15:10',
+          fields:[['预警规则','SKC颜色销售偏差预警'],['父体','LFT00000783'],['SKC','STK2527157-GRY（灰色）'],['销量占比','31%'],['库存占比','18%'],['占比差','13%（缺货风险，阈值 10%）']] }
       ],
       'LFT00000778': [
-        { id:'a7', category:'库龄预警', model:'本地库龄预警', rule:'本地仓高库龄预警', conclusion:'库龄超阈值', indicator:'库龄≥90天 146件（阈值 120）', time:'2026-06-18 14:10', advice:'促销 / 调拨 / 清仓' }
+        { id:'a7', category:'库龄预警', model:'本地库龄预警', title:'本地库龄预警 | STK2527157', conclusion:'库龄超阈值', time:'2026-06-18 14:10',
+          fields:[['预警规则','本地仓高库龄预警'],['父体','LFT00000778'],['仓库','CN仓'],['库龄≥90天','146 件（阈值 120）'],['库龄≥180天','88 件（阈值 60）']] }
       ],
       'LFT00000755': [
-        { id:'a8', category:'销售预警', model:'销售偏差预警', rule:'周度销售偏差预警', conclusion:'近7天实际销量偏差 +34%（偏高）', indicator:'实际 430 / 年规 320（阈值 ±30%）', time:'2026-06-16 14:30', advice:'复核预测 / 调年规' },
-        { id:'a9', category:'生产预警', model:'供应商生产延期预警', rule:'核心SKU供应商交期延期预警', conclusion:'已超期 12 天', indicator:'当前日期 − 预计交货 2026-06-06 = 12 天（阈值 7 天）', time:'2026-06-18 11:15', advice:'跟单 / 加急 / 改派' }
+        { id:'a8', category:'销售预警', model:'销售偏差预警', title:'销售偏差预警 | WT82527258', conclusion:'近7天实际销量偏差 +34%（偏高）', time:'2026-06-16 14:30',
+          fields:[['预警规则','周度销售偏差预警'],['父体','LFT00000755'],['统计窗口','近 7 天'],['实际销量','430 件'],['年规目标','320 件'],['偏差幅度','+34.4%（偏高，阈值 ±30%）']] },
+        { id:'a9', category:'生产预警', model:'供应商生产延期预警', title:'供应商生产延期预警 | WT82527258', conclusion:'已超期 12 天', time:'2026-06-18 11:15',
+          fields:[['预警规则','核心SKU供应商交期延期预警'],['采购单号','SQ20260605003'],['供应商','东莞鞋业有限公司'],['父体','LFT00000755'],['预计交货时间','2026-06-06（目标交期）'],['已超期','12 天（阈值 7 天）']] }
       ]
     };
     var rlAlertState = JSON.parse(JSON.stringify(RL_ALERTS_BY_PARENT));
@@ -474,18 +483,16 @@
         return;
       }
       body.innerHTML = alerts.map(function(a) {
+        var rows = (a.fields || []).map(function(f) {
+          return '<div class="rl-field"><span class="k">' + rlEsc(f[0]) + '</span><span class="v">' + rlEsc(f[1]) + '</span></div>';
+        }).join('');
         return '<div class="rl-alert-card">' +
           '<div class="rl-alert-card-head"><span class="rl-alert-tag">' + rlEsc(a.category) + '</span>' +
-            '<span class="rl-alert-card-title">' + rlEsc(a.model) + '</span></div>' +
-          '<div class="rl-field"><span class="k">预警规则</span><span class="v">' + rlEsc(a.rule) + '</span></div>' +
+            '<span class="rl-alert-card-title">' + rlEsc(a.title || a.model) + '</span></div>' +
           '<div class="rl-field"><span class="k">预警内容</span><span class="v bold">' + rlEsc(a.conclusion) + '</span></div>' +
-          '<div class="rl-field"><span class="k">触发指标</span><span class="v">' + rlEsc(a.indicator) + '</span></div>' +
+          rows +
           '<div class="rl-field"><span class="k">触发时间</span><span class="v">' + rlEsc(a.time) + '</span></div>' +
-          '<div class="rl-field"><span class="k">建议处理</span><span class="v">' + rlEsc(a.advice) + '</span></div>' +
-          '<div class="rl-card-actions">' +
-            '<button class="rl-mini-btn primary" data-act="done" data-id="' + a.id + '">标记已处理</button>' +
-            '<button class="rl-mini-btn danger" data-act="ignore" data-id="' + a.id + '">忽略</button>' +
-          '</div></div>';
+          '</div>';
       }).join('');
     }
     function rlOpenDrawer(code) {
