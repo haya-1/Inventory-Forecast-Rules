@@ -3533,7 +3533,7 @@
 
       function docTableHeadHtml(qtyColName, withGap) {
         return '<th>SKU</th><th>seller-sku</th><th>条码</th><th class="num">' + escapeHtml(qtyColName) + '</th>' +
-          (withGap ? '<th class="num">缺口数量<span class="header-help" tabindex="0" title="缺口数量 = 发货建议量 − 本地仓可用库存" data-tip="缺口数量 = 发货建议量 − 本地仓可用库存">!</span></th>' : '');
+          (withGap ? '<th class="num">本地仓可用</th><th class="num">缺口数量<span class="header-help" tabindex="0" title="缺口数量 = 发货建议量 − 本地仓可用库存" data-tip="缺口数量 = 发货建议量 − 本地仓可用库存">!</span></th>' : '');
       }
 
       function docLineRowHtml(line, withGap) {
@@ -3547,6 +3547,7 @@
           '<td>' + escapeHtml(line.sellerSku || line.sku || '-') + '</td>' +
           '<td>' + escapeHtml(line.barcode || '-') + '</td>' +
           '<td class="num strong-num">' + formatNum(line.qty || 0) + ' 双</td>' +
+          (withGap ? '<td class="num">' + formatNum(line.cnAvailable || 0) + ' 双</td>' : '') +
           gapCell +
         '</tr>';
       }
