@@ -71,7 +71,7 @@
     notice.innerHTML =
       '<div class="prototype-update-message">' +
         '<strong>发现新版本</strong>' +
-        '<span>页面已更新，刷新后可查看最新内容。</span>' +
+        '<span>原型已更新，刷新后可查看最新内容。</span>' +
       '</div>' +
       '<button type="button">立即刷新</button>';
     notice.querySelector('button').addEventListener('click', reloadLatestVersion);
