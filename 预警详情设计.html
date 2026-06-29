@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>补货列表抽屉预警详情设计</title>
+  <title>补货列表预警显示设计</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Microsoft YaHei", sans-serif; }
     body { background: #f0f2f5; color: #303133; }
@@ -143,8 +143,8 @@
 
     <div class="main-content">
       <div class="page-header">
-        <h1>补货列表 · 抽屉预警详情设计</h1>
-        <p>用于补货列表点击预警计数后展示父体下的预警明细。抽屉卡片按最小触发维度展示，列表计数、悬停浮窗与抽屉顶部概览按规则聚合。</p>
+        <h1>补货列表预警显示设计</h1>
+        <p>用于补货列表点击预警计数后展示父体下的预警明细。抽屉卡片按最小触发维度展示，列表计数、悬停浮窗与抽屉顶部概览按预警模型聚合。</p>
       </div>
 
       <div class="content-body">
@@ -153,7 +153,7 @@
         <div class="section">
           <h2 class="section-title">抽屉卡片展示约束</h2>
           <div class="info-box">
-            <strong>展示边界：</strong>抽屉展示当前父体下的预警明细，卡片不做规则维度聚合；规则聚合用于补货列表计数、计数悬停浮窗、抽屉顶部概览和钉钉通知。<br><br>
+            <strong>展示边界：</strong>抽屉展示当前父体下的预警明细，卡片不做预警模型维度聚合；预警模型聚合用于补货列表计数、计数悬停浮窗和抽屉顶部概览。<br><br>
             <strong>卡片标题：</strong>由「预警分类标签 + 预警模型」组成，不拼接 SPU / SKU / SKC / 采购单号；分类标签颜色与预警规则配置新增弹窗保持一致。<br>
             <strong>卡片正文：</strong>预警内容为概括性短句并加粗；具体对象、当前值和阈值通过字段展示。<br>
             <strong>最小维度：</strong>库龄、销售偏差按 SKU；供应商生产延期按父体 + 采购单；SKC 销售偏差按 SKC。
@@ -231,7 +231,7 @@
         <div class="section">
           <h2 class="section-title">补货列表预警列</h2>
           <div class="info-box">
-            <strong>聚合维度：</strong>补货列表预警列与计数悬停浮窗先使用「父体 + 预警模型」维度聚合；钉钉通知与抽屉顶部概览可继续按规则口径聚合。<br>
+            <strong>聚合维度：</strong>补货列表预警列、计数悬停浮窗与抽屉顶部概览使用「父体 + 预警模型」维度聚合。<br>
             <strong>计数口径：</strong>预警列数字按当前父体下触发的预警模型去重计数；例如 5 个 SKU 命中 3 类预警模型，预警列显示 <strong>3</strong>。<br>
             <strong>悬停内容：</strong>每行展示一个预警模型，不展示规则名称和预警内容；改为展示该模型下的触发个数，触发个数下方展示触发时间。<br>
             <strong>触发时间：</strong>同一预警模型下有多个触发对象时，取该模型下最新触发时间。
