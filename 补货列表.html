@@ -116,31 +116,35 @@
     .rl-pop-item:first-of-type { border-top:none; }
     .rl-pop-dot { width:6px; height:6px; border-radius:50%; background:#e6a23c; margin-top:6px; flex-shrink:0; }
     .rl-pop-main { flex:1; min-width:0; }
-    .rl-pop-model { font-size:13px; color:#303133; font-weight:500; }
-    .rl-pop-sub { font-size:12px; color:#909399; margin-top:2px; }
+    .rl-pop-model { font-size:13px; color:#303133; font-weight:600; }
+    .rl-pop-sub { font-size:12px; color:#909399; margin-top:4px; line-height:1.6; }
 
     .rl-alert-drawer-mask { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.35); z-index:1250; }
     .rl-alert-drawer-mask.show { display:block; }
-    .rl-drawer { position:fixed; top:0; right:-520px; width:520px; max-width:92vw; height:100vh; background:#fff; z-index:1260; display:flex; flex-direction:column; box-shadow:-4px 0 24px rgba(0,0,0,0.12); transition:right .28s cubic-bezier(.4,0,.2,1); }
+    .rl-drawer { position:fixed; top:0; right:-560px; width:560px; max-width:92vw; height:100vh; background:#fff; z-index:1260; display:flex; flex-direction:column; box-shadow:-4px 0 24px rgba(0,0,0,0.12); transition:right .28s cubic-bezier(.4,0,.2,1); }
     .rl-drawer.open { right:0; }
     .rl-drawer-head { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid #ebeef5; }
     .rl-drawer-head h3 { font-size:16px; font-weight:600; color:#303133; }
     .rl-drawer-head .sub { font-size:12px; color:#909399; margin-top:2px; }
     .rl-drawer-close { border:none; background:none; font-size:20px; color:#909399; cursor:pointer; line-height:1; }
     .rl-drawer-body { flex:1; overflow-y:auto; padding:16px 20px; background:#f7f8fa; }
-    .rl-alert-card { background:#fff; border:1px solid #ebeef5; border-radius:8px; padding:14px 16px; margin-bottom:12px; }
-    .rl-alert-card-head { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
-    .rl-alert-tag { display:inline-flex; height:22px; align-items:center; padding:0 8px; border-radius:4px; font-size:12px; background:#ecf5ff; color:#409eff; }
-    .rl-alert-card-title { font-size:14px; font-weight:600; color:#303133; }
-    .rl-field { display:flex; font-size:13px; padding:3px 0; }
-    .rl-field .k { width:84px; color:#909399; flex-shrink:0; }
+    .rl-drawer-summary { background:#fff; border:1px solid #ebeef5; border-radius:8px; padding:12px 14px; margin-bottom:12px; }
+    .rl-drawer-summary-title { font-size:12px; color:#909399; margin-bottom:8px; }
+    .rl-drawer-summary-chips { display:flex; flex-wrap:wrap; gap:8px; }
+    .rl-summary-chip { display:inline-flex; align-items:center; gap:8px; min-height:28px; padding:4px 8px; border-radius:6px; background:#f7f8fa; font-size:12px; color:#303133; }
+    .rl-summary-chip strong { color:#1f2329; font-weight:600; }
+    .rl-alert-card { background:#fff; border:1px solid #ebeef5; border-radius:8px; padding:16px 20px; margin-bottom:12px; }
+    .rl-alert-card-head { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+    .rl-alert-tag { display:inline-flex; height:26px; align-items:center; padding:0 10px; border-radius:6px; font-size:13px; font-weight:500; white-space:nowrap; }
+    .rl-alert-tag.age { color:#409eff; background:#ecf5ff; }
+    .rl-alert-tag.sales { color:#f56c6c; background:#fef0f0; }
+    .rl-alert-tag.production { color:#e6a23c; background:#fdf6ec; }
+    .rl-alert-tag.stock { color:#5b6ee6; background:#f0f5ff; }
+    .rl-alert-card-title { font-size:15px; font-weight:600; color:#1f2329; }
+    .rl-field { display:flex; font-size:14px; padding:4px 0; line-height:1.55; }
+    .rl-field .k { width:112px; color:#909399; flex-shrink:0; }
     .rl-field .v { color:#303133; flex:1; }
     .rl-field .v.bold { font-weight:600; }
-    .rl-card-actions { margin-top:10px; display:flex; gap:8px; }
-    .rl-mini-btn { height:28px; padding:0 12px; border-radius:4px; font-size:12px; cursor:pointer; border:1px solid #dcdfe6; background:#fff; color:#606266; }
-    .rl-mini-btn.primary { background:#409eff; border-color:#409eff; color:#fff; }
-    .rl-mini-btn.danger:hover { color:#f56c6c; border-color:#fbc4c4; background:#fef0f0; }
-    .rl-drawer-foot { padding:12px 20px; border-top:1px solid #ebeef5; font-size:13px; color:#409eff; }
     .rl-drawer-empty { text-align:center; color:#909399; padding:40px 0; font-size:13px; }
   </style>
 </head>
@@ -308,7 +312,6 @@
           <button class="rl-drawer-close" id="rl-alert-drawer-close">×</button>
         </div>
         <div class="rl-drawer-body" id="rl-alert-drawer-body"></div>
-        <div class="rl-drawer-foot"><span style="cursor:pointer;">在预警中心查看该父体全部预警 ›</span></div>
       </aside>
     </main>
   </div>
@@ -316,6 +319,24 @@
   <script>
     /** 与「销量预测规则」选择父体弹窗共用同一数据源（本页为权威存储，首次访问写入默认种子） */
     var SF_REPLENISH_PARENT_LIST_KEY = 'sf_replenish_parent_list_v1';
+    var RL_ALL_MODEL_DEMO_PARENT = { code: 'LFT00009999', asin: 'B0DEMO999', album: '无', platform: 'Amazon', site: '美国', store: 'Demo Store-US', spu: 'DMO242795', owner: '预警样例', days: '0/12' };
+    function rlSaveReplenishParentList(list) {
+      try {
+        localStorage.setItem(SF_REPLENISH_PARENT_LIST_KEY, JSON.stringify(list));
+      } catch (e) {}
+    }
+    function rlCloneDemoParent() {
+      return JSON.parse(JSON.stringify(RL_ALL_MODEL_DEMO_PARENT));
+    }
+    function rlEnsureDemoParent(list) {
+      var source = Array.isArray(list) ? list : [];
+      for (var i = 0; i < source.length; i++) {
+        if (source[i] && source[i].code === RL_ALL_MODEL_DEMO_PARENT.code) return source;
+      }
+      var next = [rlCloneDemoParent()].concat(source);
+      rlSaveReplenishParentList(next);
+      return next;
+    }
     function rlDefaultParentList() {
       return [
         { code: 'LFT00002261', asin: 'B083J69DSQ', album: '无', platform: 'Amazon', site: '美国', store: 'noorkie Inc-US', spu: 'ST18106', owner: '陈柏宏', days: '0/0' },
@@ -331,13 +352,11 @@
         var raw = localStorage.getItem(SF_REPLENISH_PARENT_LIST_KEY);
         if (raw) {
           var parsed = JSON.parse(raw);
-          if (Array.isArray(parsed) && parsed.length) return parsed;
+          if (Array.isArray(parsed) && parsed.length) return rlEnsureDemoParent(parsed);
         }
       } catch (e) {}
-      var def = rlDefaultParentList();
-      try {
-        localStorage.setItem(SF_REPLENISH_PARENT_LIST_KEY, JSON.stringify(def));
-      } catch (e2) {}
+      var def = rlEnsureDemoParent(rlDefaultParentList());
+      rlSaveReplenishParentList(def);
       return def;
     }
 
@@ -358,43 +377,124 @@
 
     /* ===== 内嵌预警 原型数据（按父体聚合，仅统计待处理） ===== */
     var RL_ALERTS_BY_PARENT = {
+      'LFT00009999': [
+        { id:'demo-fba-1', category:'库龄预警', model:'FBA库龄预警', title:'FBA库龄预警 | DMO242795-BLK-37', conclusion:'FBA库存库龄超过预警阈值', time:'2026-06-29 09:20',
+          fields:[['规则名称','美国站FBA库龄预警'],['父体','LFT00009999'],['SKU','DMO242795-BLK-37'],['站点','美国'],['店铺','Demo Store-US'],['ASIN','B0DEMO999'],['库龄≥90天','186 件（阈值 150）'],['库龄≥180天','92 件（阈值 80）']] },
+        { id:'demo-fba-2', category:'库龄预警', model:'FBA库龄预警', title:'FBA库龄预警 | DMO242795-BRN-38', conclusion:'FBA库存库龄超过预警阈值', time:'2026-06-29 09:20',
+          fields:[['规则名称','美国站FBA库龄预警'],['父体','LFT00009999'],['SKU','DMO242795-BRN-38'],['站点','美国'],['店铺','Demo Store-US'],['ASIN','B0DEMO998'],['库龄≥90天','172 件（阈值 150）'],['库龄≥180天','87 件（阈值 80）']] },
+        { id:'demo-local-1', category:'库龄预警', model:'本地库龄预警', title:'本地库龄预警 | DMO242795-WHT-36', conclusion:'库存库龄超过预警阈值', time:'2026-06-29 10:05',
+          fields:[['规则名称','本地仓高库龄预警'],['父体','LFT00009999'],['SKU','DMO242795-WHT-36'],['库龄≥90天','158 件（阈值 120）'],['库龄≥180天','72 件（阈值 60）']] },
+        { id:'demo-local-2', category:'库龄预警', model:'本地库龄预警', title:'本地库龄预警 | DMO242795-BGE-39', conclusion:'库存库龄超过预警阈值', time:'2026-06-29 10:05',
+          fields:[['规则名称','本地仓高库龄预警'],['父体','LFT00009999'],['SKU','DMO242795-BGE-39'],['库龄≥90天','141 件（阈值 120）'],['库龄≥180天','66 件（阈值 60）']] },
+        { id:'demo-sales-1', category:'销售预警', model:'销售偏差预警', title:'销售偏差预警 | DMO242795-BLK-37', conclusion:'近7天实际销量偏差 +36.8%（偏高）', time:'2026-06-29 11:30',
+          fields:[['规则名称','周度销售偏差预警'],['父体','LFT00009999'],['SKU','DMO242795-BLK-37'],['统计窗口','近 7 天'],['实际销量','438 件'],['年规目标','320 件'],['偏差幅度','+36.8%（偏高，阈值 ±30%）']] },
+        { id:'demo-sales-2', category:'销售预警', model:'销售偏差预警', title:'销售偏差预警 | DMO242795-WHT-36', conclusion:'近7天实际销量偏差 -32.4%（偏低）', time:'2026-06-29 11:30',
+          fields:[['规则名称','周度销售偏差预警'],['父体','LFT00009999'],['SKU','DMO242795-WHT-36'],['统计窗口','近 7 天'],['实际销量','216 件'],['年规目标','320 件'],['偏差幅度','-32.4%（偏低，阈值 ±30%）']] },
+        { id:'demo-production-1', category:'生产预警', model:'供应商生产延期预警', title:'供应商生产延期预警 | ST20260604018', conclusion:'已超期 18 天', time:'2026-06-29 12:10',
+          fields:[['规则名称','美国-订单延期'],['采购单号','ST20260604018'],['供应商','东莞鞋业有限公司'],['父体','LFT00009999'],['SPU','DMO242795'],['预计交货时间','2026-06-11'],['已超期','18 天（阈值 7 天）']] },
+        { id:'demo-production-2', category:'生产预警', model:'供应商生产延期预警', title:'供应商生产延期预警 | ST20260608026', conclusion:'已超期 14 天', time:'2026-06-29 12:10',
+          fields:[['规则名称','美国-订单延期'],['采购单号','ST20260608026'],['供应商','福建鞋材有限公司'],['父体','LFT00009999'],['SPU','DMO242795'],['预计交货时间','2026-06-15'],['已超期','14 天（阈值 7 天）']] },
+        { id:'demo-skc-1', category:'库存预警', model:'SKC销售偏差预警', title:'SKC销售偏差预警 | DMO242795-BLK', conclusion:'占比差 19.5%（缺货风险）', time:'2026-06-29 14:40',
+          fields:[['规则名称','SKC颜色销售偏差预警'],['父体','LFT00009999'],['SKC','DMO242795-BLK（黑色）'],['统计窗口','近 30 天'],['销量占比','36.2%'],['库存占比','16.7%'],['占比差','19.5%（缺货风险，阈值 10%）']] },
+        { id:'demo-skc-2', category:'库存预警', model:'SKC销售偏差预警', title:'SKC销售偏差预警 | DMO242795-WHT', conclusion:'占比差 16.8%（缺货风险）', time:'2026-06-29 14:40',
+          fields:[['规则名称','SKC颜色销售偏差预警'],['父体','LFT00009999'],['SKC','DMO242795-WHT（白色）'],['统计窗口','近 30 天'],['销量占比','31.4%'],['库存占比','14.6%'],['占比差','16.8%（缺货风险，阈值 10%）']] }
+      ],
       'LFT00002261': [
-        { id:'a1', category:'库龄预警', model:'FBA库龄预警', title:'FBA库龄预警 | ST18106', conclusion:'库龄超阈值', time:'2026-06-18 10:20',
-          fields:[['预警规则','美国站FBA库龄预警'],['父体','LFT00002261'],['站点','美国'],['店铺','noorkie Inc-US'],['ASIN','B083J69DSQ'],['库龄≥90天','180 件（阈值 150）'],['库龄≥180天','96 件（阈值 80）']] }
+        { id:'a1', category:'库龄预警', model:'FBA库龄预警', title:'FBA库龄预警 | ST18106', conclusion:'FBA库存库龄超过预警阈值', time:'2026-06-18 10:20',
+          fields:[['规则名称','美国站FBA库龄预警'],['父体','LFT00002261'],['SKU','ST18106'],['站点','美国'],['店铺','noorkie Inc-US'],['ASIN','B083J69DSQ'],['库龄≥90天','180 件（阈值 150）'],['库龄≥180天','96 件（阈值 80）']] }
       ],
       'LFT00002260': [
-        { id:'a2', category:'库龄预警', model:'FBA库龄预警', title:'FBA库龄预警 | ST210808', conclusion:'库龄超阈值', time:'2026-06-18 10:20',
-          fields:[['预警规则','美国站FBA库龄预警'],['父体','LFT00002260'],['站点','美国'],['店铺','STQWALKING_sandbox-US'],['ASIN','B09K799DH7'],['库龄≥90天','210 件（阈值 150）']] }
+        { id:'a2', category:'库龄预警', model:'FBA库龄预警', title:'FBA库龄预警 | ST210808', conclusion:'FBA库存库龄超过预警阈值', time:'2026-06-18 10:20',
+          fields:[['规则名称','美国站FBA库龄预警'],['父体','LFT00002260'],['SKU','ST210808'],['站点','美国'],['店铺','STQWALKING_sandbox-US'],['ASIN','B09K799DH7'],['库龄≥90天','210 件（阈值 150）']] }
       ],
       'LFT00000784': [
-        { id:'a3', category:'库龄预警', model:'FBA库龄预警', title:'FBA库龄预警 | HK1839', conclusion:'库龄超阈值', time:'2026-06-18 10:20',
-          fields:[['预警规则','美国站FBA库龄预警'],['父体','LFT00000784'],['站点','英国'],['店铺','STEP QUEEN INC-UK'],['ASIN','B07NV7QK7H'],['库龄≥180天','120 件（阈值 80）']] },
+        { id:'a3', category:'库龄预警', model:'FBA库龄预警', title:'FBA库龄预警 | HK1839', conclusion:'FBA库存库龄超过预警阈值', time:'2026-06-18 10:20',
+          fields:[['规则名称','美国站FBA库龄预警'],['父体','LFT00000784'],['SKU','HK1839'],['站点','英国'],['店铺','STEP QUEEN INC-UK'],['ASIN','B07NV7QK7H'],['库龄≥180天','120 件（阈值 80）']] },
         { id:'a4', category:'库存预警', model:'SKC销售偏差预警', title:'SKC销售偏差预警 | HK1839-BLK', conclusion:'占比差 22.5%（缺货风险）', time:'2026-06-18 15:10',
-          fields:[['预警规则','SKC颜色销售偏差预警'],['父体','LFT00000784'],['SKC','HK1839-BLK（黑色）'],['统计窗口','近 30 天'],['销量占比','38.2%'],['库存占比','15.7%'],['占比差','22.5%（缺货风险，阈值 10%）']] },
+          fields:[['规则名称','SKC颜色销售偏差预警'],['父体','LFT00000784'],['SKC','HK1839-BLK（黑色）'],['统计窗口','近 30 天'],['销量占比','38.2%'],['库存占比','15.7%'],['占比差','22.5%（缺货风险，阈值 10%）']] },
         { id:'a4b', category:'库存预警', model:'SKC销售偏差预警', title:'SKC销售偏差预警 | HK1839-WHT', conclusion:'占比差 18.0%（缺货风险）', time:'2026-06-18 15:10',
-          fields:[['预警规则','SKC颜色销售偏差预警'],['父体','LFT00000784'],['SKC','HK1839-WHT（白色）'],['统计窗口','近 30 天'],['销量占比','33.0%'],['库存占比','15.0%'],['占比差','18.0%（缺货风险，阈值 10%）']] }
+          fields:[['规则名称','SKC颜色销售偏差预警'],['父体','LFT00000784'],['SKC','HK1839-WHT（白色）'],['统计窗口','近 30 天'],['销量占比','33.0%'],['库存占比','15.0%'],['占比差','18.0%（缺货风险，阈值 10%）']] }
       ],
       'LFT00000783': [
-        { id:'a5', category:'库龄预警', model:'FBA库龄预警', title:'FBA库龄预警 | STK2527157', conclusion:'库龄超阈值', time:'2026-06-18 10:20',
-          fields:[['预警规则','美国站FBA库龄预警'],['父体','LFT00000783'],['站点','英国'],['店铺','STEP QUEEN INC-UK'],['ASIN','B0F8GGJ7LK'],['库龄≥90天','180 件（阈值 150）']] },
+        { id:'a5', category:'库龄预警', model:'FBA库龄预警', title:'FBA库龄预警 | STK2527157', conclusion:'FBA库存库龄超过预警阈值', time:'2026-06-18 10:20',
+          fields:[['规则名称','美国站FBA库龄预警'],['父体','LFT00000783'],['SKU','STK2527157'],['站点','英国'],['店铺','STEP QUEEN INC-UK'],['ASIN','B0F8GGJ7LK'],['库龄≥90天','180 件（阈值 150）']] },
         { id:'a6', category:'库存预警', model:'SKC销售偏差预警', title:'SKC销售偏差预警 | STK2527157-GRY', conclusion:'占比差 13%（缺货风险）', time:'2026-06-18 15:10',
-          fields:[['预警规则','SKC颜色销售偏差预警'],['父体','LFT00000783'],['SKC','STK2527157-GRY（灰色）'],['销量占比','31%'],['库存占比','18%'],['占比差','13%（缺货风险，阈值 10%）']] }
+          fields:[['规则名称','SKC颜色销售偏差预警'],['父体','LFT00000783'],['SKC','STK2527157-GRY（灰色）'],['销量占比','31%'],['库存占比','18%'],['占比差','13%（缺货风险，阈值 10%）']] }
       ],
       'LFT00000778': [
-        { id:'a7', category:'库龄预警', model:'本地库龄预警', title:'本地库龄预警 | STK2527157', conclusion:'库龄超阈值', time:'2026-06-18 14:10',
-          fields:[['预警规则','本地仓高库龄预警'],['父体','LFT00000778'],['仓库','CN仓'],['库龄≥90天','146 件（阈值 120）'],['库龄≥180天','88 件（阈值 60）']] }
+        { id:'a7', category:'库龄预警', model:'本地库龄预警', title:'本地库龄预警 | STK2527157', conclusion:'库存库龄超过预警阈值', time:'2026-06-18 14:10',
+          fields:[['规则名称','本地仓高库龄预警'],['父体','LFT00000778'],['SKU','STK2527157'],['库龄≥90天','146 件（阈值 120）'],['库龄≥180天','88 件（阈值 60）']] }
       ],
       'LFT00000755': [
-        { id:'a8', category:'销售预警', model:'销售偏差预警', title:'销售偏差预警 | WT82527258', conclusion:'近7天实际销量偏差 +34%（偏高）', time:'2026-06-16 14:30',
-          fields:[['预警规则','周度销售偏差预警'],['父体','LFT00000755'],['统计窗口','近 7 天'],['实际销量','430 件'],['年规目标','320 件'],['偏差幅度','+34.4%（偏高，阈值 ±30%）']] },
-        { id:'a9', category:'生产预警', model:'供应商生产延期预警', title:'供应商生产延期预警 | WT82527258', conclusion:'采购单 ST…003 已超期 12 天', time:'2026-06-18 11:15',
-          fields:[['预警规则','核心SKU供应商交期延期预警'],['采购单号','ST20260605003'],['供应商','东莞鞋业有限公司'],['父体','LFT00000755'],['预计交货时间','2026-06-06 '],['已超期','12 天（阈值 7 天）']] },
-        { id:'a9b', category:'生产预警', model:'供应商生产延期预警', title:'供应商生产延期预警 | WT82527258', conclusion:'采购单 ST…011 已超期 9 天', time:'2026-06-18 11:15',
-          fields:[['预警规则','核心SKU供应商交期延期预警'],['采购单号','ST20260608011'],['供应商','福建鞋材有限公司'],['父体','LFT00000755'],['预计交货时间','2026-06-09 '],['已超期','9 天（阈值 7 天）']] }
+        { id:'a8', category:'销售预警', model:'销售偏差预警', title:'销售偏差预警 | WT82527258', conclusion:'近7天实际销量偏差 +34.4%（偏高）', time:'2026-06-16 14:30',
+          fields:[['规则名称','周度销售偏差预警'],['父体','LFT00000755'],['SKU','WT82527258'],['统计窗口','近 7 天'],['实际销量','430 件'],['年规目标','320 件'],['偏差幅度','+34.4%（偏高，阈值 ±30%）']] },
+        { id:'a9', category:'生产预警', model:'供应商生产延期预警', title:'供应商生产延期预警 | WT82527258', conclusion:'已超期 12 天', time:'2026-06-18 11:15',
+          fields:[['规则名称','核心SKU供应商交期延期预警'],['采购单号','ST20260605003'],['供应商','东莞鞋业有限公司'],['父体','LFT00000755'],['SPU','WT82527258'],['预计交货时间','2026-06-06'],['已超期','12 天（阈值 7 天）']] },
+        { id:'a9b', category:'生产预警', model:'供应商生产延期预警', title:'供应商生产延期预警 | WT82527258', conclusion:'已超期 9 天', time:'2026-06-18 11:15',
+          fields:[['规则名称','核心SKU供应商交期延期预警'],['采购单号','ST20260608011'],['供应商','福建鞋材有限公司'],['父体','LFT00000755'],['SPU','WT82527258'],['预计交货时间','2026-06-09'],['已超期','9 天（阈值 7 天）']] }
       ]
     };
     var rlAlertState = JSON.parse(JSON.stringify(RL_ALERTS_BY_PARENT));
     function rlAlertsFor(code) { return rlAlertState[code] || []; }
+    function rlFieldValue(alert, label) {
+      var rows = alert && alert.fields ? alert.fields : [];
+      for (var i = 0; i < rows.length; i++) {
+        if (rows[i][0] === label) return rows[i][1];
+      }
+      return '';
+    }
+    function rlTitleObjectCode(alert) {
+      var title = alert && alert.title ? String(alert.title) : '';
+      var parts = title.split('|');
+      return parts.length > 1 ? parts[parts.length - 1].trim() : '';
+    }
+    function rlTriggerUnit(model) {
+      if (model === '供应商生产延期预警') return '个采购单';
+      if (model === 'SKC销售偏差预警') return '个 SKC';
+      return '个 SKU';
+    }
+    function rlTriggerObjectKey(alert) {
+      if (!alert) return '';
+      if (alert.model === '供应商生产延期预警') return rlFieldValue(alert, '采购单号') || alert.id;
+      if (alert.model === 'SKC销售偏差预警') return rlFieldValue(alert, 'SKC') || rlTitleObjectCode(alert) || alert.id;
+      return rlFieldValue(alert, 'SKU') || rlTitleObjectCode(alert) || alert.id;
+    }
+    function rlCategoryClass(category) {
+      if (category === '库龄预警') return 'age';
+      if (category === '销售预警') return 'sales';
+      if (category === '生产预警') return 'production';
+      if (category === '库存预警') return 'stock';
+      return 'age';
+    }
+    function rlGroupedAlertsByModel(alerts) {
+      var order = [];
+      var map = {};
+      (alerts || []).forEach(function(alert) {
+        var key = alert.model || '其他预警';
+        if (!map[key]) {
+          map[key] = {
+            model: key,
+            category: alert.category || '',
+            count: 0,
+            latestTime: alert.time || '',
+            unit: rlTriggerUnit(key),
+            objectKeys: {}
+          };
+          order.push(key);
+        }
+        var group = map[key];
+        var objectKey = rlTriggerObjectKey(alert);
+        if (!group.objectKeys[objectKey]) {
+          group.objectKeys[objectKey] = true;
+          group.count += 1;
+        }
+        if ((alert.time || '') > (group.latestTime || '')) group.latestTime = alert.time || '';
+      });
+      return order.map(function(key) { return map[key]; });
+    }
+    function rlTotalGroupedTriggerCount(groups) {
+      return (groups || []).reduce(function(sum, group) { return sum + group.count; }, 0);
+    }
 
     function rlRenderTable() {
       var fullList = rlLoadReplenishParentList();
@@ -421,8 +521,9 @@
         var tr = document.createElement('tr');
         var daysCell = rlEsc(p.days || '');
         var alerts = rlAlertsFor(p.code);
-        var alertCell = alerts.length
-          ? '<span class="rl-alert-pill" data-code="' + rlEsc(p.code) + '">⚠ ' + alerts.length + '</span>'
+        var alertGroups = rlGroupedAlertsByModel(alerts);
+        var alertCell = alertGroups.length
+          ? '<span class="rl-alert-pill" data-code="' + rlEsc(p.code) + '">⚠ ' + alertGroups.length + '</span>'
           : '<span class="rl-alert-none">—</span>';
         tr.innerHTML =
           '<td><input type="checkbox" disabled /></td>' +
@@ -459,11 +560,12 @@
       var pop = document.getElementById('rl-alert-pop');
       var alerts = rlAlertsFor(pill.getAttribute('data-code'));
       if (!pop || !alerts.length) return;
-      pop.innerHTML = '<div class="rl-pop-title">该父体活跃预警（' + alerts.length + '）</div>' +
-        alerts.map(function(a) {
+      var groups = rlGroupedAlertsByModel(alerts);
+      pop.innerHTML = '<div class="rl-pop-title">该父体活跃预警（' + groups.length + '）</div>' +
+        groups.map(function(group) {
           return '<div class="rl-pop-item"><span class="rl-pop-dot"></span><div class="rl-pop-main">' +
-            '<div class="rl-pop-model">' + rlEsc(a.model) + '</div>' +
-            '<div class="rl-pop-sub">' + rlEsc(a.conclusion) + ' · ' + rlEsc(a.time) + '</div>' +
+            '<div class="rl-pop-model">' + rlEsc(group.model) + '</div>' +
+            '<div class="rl-pop-sub">触发个数：' + rlEsc(group.count + ' ' + group.unit) + '<br>触发时间：' + rlEsc(group.latestTime) + '</div>' +
             '</div></div>';
         }).join('');
       pop.classList.add('show');
@@ -479,11 +581,12 @@
 
     function rlRenderDrawer() {
       var alerts = rlAlertsFor(rlCurDrawerCode);
+      var groups = rlGroupedAlertsByModel(alerts);
       document.getElementById('rl-alert-drawer-title').textContent = '父体预警 · ' + rlCurDrawerCode;
-      document.getElementById('rl-alert-drawer-sub').textContent = '共 ' + alerts.length + ' 条待处理';
+      document.getElementById('rl-alert-drawer-sub').textContent = '共 ' + groups.length + ' 个预警模型 / ' + rlTotalGroupedTriggerCount(groups) + ' 个触发对象 / ' + alerts.length + ' 条预警明细';
       var body = document.getElementById('rl-alert-drawer-body');
       if (!alerts.length) {
-        body.innerHTML = '<div class="rl-drawer-empty">该父体预警已全部处理 🎉</div>';
+        body.innerHTML = '<div class="rl-drawer-empty">该父体预警已全部处理</div>';
         return;
       }
       body.innerHTML = alerts.map(function(a) {
@@ -491,8 +594,8 @@
           return '<div class="rl-field"><span class="k">' + rlEsc(f[0]) + '</span><span class="v">' + rlEsc(f[1]) + '</span></div>';
         }).join('');
         return '<div class="rl-alert-card">' +
-          '<div class="rl-alert-card-head"><span class="rl-alert-tag">' + rlEsc(a.category) + '</span>' +
-            '<span class="rl-alert-card-title">' + rlEsc(a.title || a.model) + '</span></div>' +
+          '<div class="rl-alert-card-head"><span class="rl-alert-tag ' + rlCategoryClass(a.category) + '">' + rlEsc(a.category) + '</span>' +
+            '<span class="rl-alert-card-title">' + rlEsc(a.model) + '</span></div>' +
           '<div class="rl-field"><span class="k">预警内容</span><span class="v bold">' + rlEsc(a.conclusion) + '</span></div>' +
           rows +
           '<div class="rl-field"><span class="k">触发时间</span><span class="v">' + rlEsc(a.time) + '</span></div>' +

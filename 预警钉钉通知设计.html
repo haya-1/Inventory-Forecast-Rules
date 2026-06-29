@@ -127,7 +127,7 @@
         <a class="submenu-item" href="./基础参数配置.html">基础参数配置</a>
         <a class="submenu-item" href="./销量预测规则.html">销量预测规则</a>
         <a class="submenu-item" href="./备货规则配置.html">备货规则</a>
-        <a class="submenu-item" href="./ 规则名称配置.html"> 规则名称配置</a>
+        <a class="submenu-item" href="./预警规则配置.html">预警规则配置</a>
       </div>
     </aside>
     <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
@@ -201,7 +201,7 @@
           <div class="info-box">
             <strong>发送 / 跳转规则：</strong><br>
             · <strong>一父体一规则一卡片</strong>：每张卡片描述一个父体在一条预警规则下的聚合命中情况；一条规则命中 N 个父体就发 <strong>N 张独立卡片</strong>。<br>
-            · <strong>触发总数按对象去重</strong>：SKU / SKC / 订单分别按唯一对象统计；库龄类分条件统计时，同一 SKU 命中多个条件可重复计入各条件。<br>
+            · <strong>触发总数按对象去重</strong>：SKU / SKC / 订单分别按唯一对象统计；库龄类分条件统计时，同一 SKU 命中多个阶段时只计入天数最小的阶段，不重复统计。<br>
             · <strong>不展示</strong>通知人、规则编号、子体编码、子体实际值、订单明细等信息（仅用于后台投递、定位与链接带参）。<br>
             · <strong>查看详情</strong>：跳转到对应<strong>父体详情页</strong>（<code>…/parent/detail?code={父体编号}</code>）。<br>
             · 钉钉自定义机器人限流 <strong>20 条/分钟</strong>，父体数量多时由后台按队列限速发送。
@@ -228,11 +228,11 @@
                         <div class="ac-eyebrow">OMS</div>
                         <div class="ac-title">本地库龄预警 | STK2527157</div>
                         <div class="ac-md">
-                          <div class="ac-line"><span class="ac-lbl">预警内容</span><span class="ac-val">3 个 SKU 库龄超过预警值</span></div>
+                          <div class="ac-line"><span class="ac-lbl">预警内容</span><span class="ac-val is-bold">2 个 SKU 库龄超过180天</span></div>
                           <div class="ac-line"><span class="ac-lbl">规则名称</span><span class="ac-val">本地仓高库龄预警</span></div>
                           <div class="ac-line"><span class="ac-lbl">父体</span><span class="ac-val">LFT00000778</span></div>
                           <div class="ac-line"><span class="ac-lbl">SPU</span><span class="ac-val">STK2527157</span></div>
-                          <div class="ac-line"><span class="ac-lbl">触发个数</span><span class="ac-val">库龄≥90天：3 个 SKU<br>库龄≥180天：2 个 SKU</span></div>
+                          <div class="ac-line"><span class="ac-lbl">触发个数</span><span class="ac-val">库龄≥180天：2 个 SKU</span></div>
                           <div class="ac-line"><span class="ac-lbl">触发时间</span><span class="ac-val">2026-06-18 14:10</span></div>
                         </div>
                       </div>
@@ -250,7 +250,7 @@
   <span class="jk">"msgtype"</span>: <span class="js">"actionCard"</span>,
   <span class="jk">"actionCard"</span>: {
     <span class="jk">"title"</span>: <span class="js">"本地库龄预警 | STK2527157"</span>,
-    <span class="jk">"text"</span>: <span class="js">"OMS\n\n### 本地库龄预警 | STK2527157\n\n- 预警内容：3 个 SKU 库龄超过预警值\n- **规则名称：** 本地仓高库龄预警\n- **父体：** LFT00000778\n- **SPU：** STK2527157\n- 触发个数：\n  - 库龄≥90天：3 个 SKU\n  - 库龄≥180天：2 个 SKU\n- **触发时间：** 2026-06-18 14:10"</span>,
+    <span class="jk">"text"</span>: <span class="js">"OMS\n\n### 本地库龄预警 | STK2527157\n\n- **预警内容：** **3 个 SKU 库龄超过预警值**\n- **规则名称：** 本地仓高库龄预警\n- **父体：** LFT00000778\n- **SPU：** STK2527157\n- 触发个数：\n  - 库龄≥90天：3 个 SKU\n  - 库龄≥180天：2 个 SKU\n- **触发时间：** 2026-06-18 14:10"</span>,
     <span class="jk">"btnOrientation"</span>: <span class="js">"1"</span>,
     <span class="jk">"btns"</span>: [
       {
@@ -278,13 +278,13 @@
                         <div class="ac-eyebrow">OMS</div>
                         <div class="ac-title">FBA库龄预警 | ST210808</div>
                         <div class="ac-md">
-                          <div class="ac-line"><span class="ac-lbl">预警内容</span><span class="ac-val">5 个 SKU 库龄超过预警值</span></div>
+                          <div class="ac-line"><span class="ac-lbl">预警内容</span><span class="ac-val is-bold">5 个 SKU 库龄超过预警值</span></div>
                           <div class="ac-line"><span class="ac-lbl">规则名称</span><span class="ac-val">FBA高库龄预警</span></div>
                           <div class="ac-line"><span class="ac-lbl">父体</span><span class="ac-val">LFT00002260</span></div>
                           <div class="ac-line"><span class="ac-lbl">SPU</span><span class="ac-val">ST210808</span></div>
                           <div class="ac-line"><span class="ac-lbl">站点</span><span class="ac-val">美国</span></div>
                           <div class="ac-line"><span class="ac-lbl">店铺</span><span class="ac-val">STQWALKING_sandbox-US</span></div>
-                          <div class="ac-line"><span class="ac-lbl">触发个数</span><span class="ac-val">库龄≥90天：5 个 SKU<br>库龄≥180天：2 个 SKU</span></div>
+                          <div class="ac-line"><span class="ac-lbl">触发个数</span><span class="ac-val">库龄≥90天：3 个 SKU<br>库龄≥180天：2 个 SKU</span></div>
                           <div class="ac-line"><span class="ac-lbl">触发时间</span><span class="ac-val">2026-06-18 10:20</span></div>
                         </div>
                       </div>
@@ -302,7 +302,7 @@
   <span class="jk">"msgtype"</span>: <span class="js">"actionCard"</span>,
   <span class="jk">"actionCard"</span>: {
     <span class="jk">"title"</span>: <span class="js">"FBA库龄预警 | ST210808"</span>,
-    <span class="jk">"text"</span>: <span class="js">"OMS\n\n### FBA库龄预警 | ST210808\n\n- 预警内容：5 个 SKU 库龄超过预警值\n- **规则名称：** FBA高库龄预警\n- **父体：** LFT00002260\n- **SPU：** ST210808\n- **站点：** 美国\n- **店铺：** STQWALKING_sandbox-US\n- 触发个数：\n  - 库龄≥90天：5 个 SKU\n  - 库龄≥180天：2 个 SKU\n- **触发时间：** 2026-06-18 10:20"</span>,
+    <span class="jk">"text"</span>: <span class="js">"OMS\n\n### FBA库龄预警 | ST210808\n\n- **预警内容：** **5 个 SKU 库龄超过预警值**\n- **规则名称：** FBA高库龄预警\n- **父体：** LFT00002260\n- **SPU：** ST210808\n- **站点：** 美国\n- **店铺：** STQWALKING_sandbox-US\n- 触发个数：\n  - 库龄≥90天：5 个 SKU\n  - 库龄≥180天：2 个 SKU\n- **触发时间：** 2026-06-18 10:20"</span>,
     <span class="jk">"btnOrientation"</span>: <span class="js">"1"</span>,
     <span class="jk">"btns"</span>: [
       {
@@ -330,7 +330,7 @@
                         <div class="ac-eyebrow">OMS</div>
                         <div class="ac-title">销售偏差预警 | WT82527258</div>
                         <div class="ac-md">
-                          <div class="ac-line"><span class="ac-lbl">预警内容</span><span class="ac-val">4 个 SKU 近 7 天销售偏差超过预警值</span></div>
+                          <div class="ac-line"><span class="ac-lbl">预警内容</span><span class="ac-val is-bold">4 个 SKU 近 7 天销售偏差超过预警值</span></div>
                           <div class="ac-line"><span class="ac-lbl">规则名称</span><span class="ac-val">周度销售偏差预警</span></div>
                           <div class="ac-line"><span class="ac-lbl">父体</span><span class="ac-val">LFT00000755</span></div>
                           <div class="ac-line"><span class="ac-lbl">SPU</span><span class="ac-val">WT82527258</span></div>
@@ -354,7 +354,7 @@
   <span class="jk">"msgtype"</span>: <span class="js">"actionCard"</span>,
   <span class="jk">"actionCard"</span>: {
     <span class="jk">"title"</span>: <span class="js">"销售偏差预警 | WT82527258"</span>,
-    <span class="jk">"text"</span>: <span class="js">"OMS\n\n### 销售偏差预警 | WT82527258\n\n- 预警内容：4 个 SKU 近 7 天销售偏差超过预警值\n- **规则名称：** 周度销售偏差预警\n- **父体：** LFT00000755\n- **SPU：** WT82527258\n- **统计窗口：** 近 7 天\n- **触发阈值：** 偏差 ±30%\n- 触发个数：4 个 SKU\n- **触发时间：** 2026-06-16 14:30"</span>,
+    <span class="jk">"text"</span>: <span class="js">"OMS\n\n### 销售偏差预警 | WT82527258\n\n- **预警内容：** **4 个 SKU 近 7 天销售偏差超过预警值**\n- **规则名称：** 周度销售偏差预警\n- **父体：** LFT00000755\n- **SPU：** WT82527258\n- **统计窗口：** 近 7 天\n- **触发阈值：** 偏差 ±30%\n- 触发个数：4 个 SKU\n- **触发时间：** 2026-06-16 14:30"</span>,
     <span class="jk">"btnOrientation"</span>: <span class="js">"1"</span>,
     <span class="jk">"btns"</span>: [
       {
@@ -382,7 +382,7 @@
                         <div class="ac-eyebrow">OMS</div>
                         <div class="ac-title">供应商生产延期预警 | ST223501</div>
                         <div class="ac-md">
-                          <div class="ac-line"><span class="ac-lbl">预警内容</span><span class="ac-val">3 个订单超过延期预警值</span></div>
+                          <div class="ac-line"><span class="ac-lbl">预警内容</span><span class="ac-val is-bold">3 个订单超过延期预警值</span></div>
                           <div class="ac-line"><span class="ac-lbl">规则名称</span><span class="ac-val">核心SKU供应商交期延期预警</span></div>
                           <div class="ac-line"><span class="ac-lbl">父体</span><span class="ac-val">LFT00000776</span></div>
                           <div class="ac-line"><span class="ac-lbl">SPU</span><span class="ac-val">ST223501</span></div>
@@ -406,7 +406,7 @@
   <span class="jk">"msgtype"</span>: <span class="js">"actionCard"</span>,
   <span class="jk">"actionCard"</span>: {
     <span class="jk">"title"</span>: <span class="js">"供应商生产延期预警 | ST223501"</span>,
-    <span class="jk">"text"</span>: <span class="js">"OMS\n\n### 供应商生产延期预警 | ST223501\n\n- 预警内容：3 个订单超过延期预警值\n- **规则名称：** 核心SKU供应商交期延期预警\n- **父体：** LFT00000776\n- **SPU：** ST223501\n- **延期阈值：** 7 天\n- 触发个数：3 个订单\n- **涉及SKU：** 2 个 SKU\n- **触发时间：** 2026-06-18 11:15"</span>,
+    <span class="jk">"text"</span>: <span class="js">"OMS\n\n### 供应商生产延期预警 | ST223501\n\n- **预警内容：** **3 个订单超过延期预警值**\n- **规则名称：** 核心SKU供应商交期延期预警\n- **父体：** LFT00000776\n- **SPU：** ST223501\n- **延期阈值：** 7 天\n- 触发个数：3 个订单\n- **涉及SKU：** 2 个 SKU\n- **触发时间：** 2026-06-18 11:15"</span>,
     <span class="jk">"btnOrientation"</span>: <span class="js">"1"</span>,
     <span class="jk">"btns"</span>: [
       {
@@ -434,7 +434,7 @@
                         <div class="ac-eyebrow">OMS</div>
                         <div class="ac-title">SKC销售偏差预警 | HK1839</div>
                         <div class="ac-md">
-                          <div class="ac-line"><span class="ac-lbl">预警内容</span><span class="ac-val">2 个 SKC 存在缺货风险</span></div>
+                          <div class="ac-line"><span class="ac-lbl">预警内容</span><span class="ac-val is-bold">2 个 SKC 存在缺货风险</span></div>
                           <div class="ac-line"><span class="ac-lbl">规则名称</span><span class="ac-val">SKC颜色销售偏差预警</span></div>
                           <div class="ac-line"><span class="ac-lbl">父体</span><span class="ac-val">LFT00000784</span></div>
                           <div class="ac-line"><span class="ac-lbl">SPU</span><span class="ac-val">HK1839</span></div>
@@ -458,7 +458,7 @@
   <span class="jk">"msgtype"</span>: <span class="js">"actionCard"</span>,
   <span class="jk">"actionCard"</span>: {
     <span class="jk">"title"</span>: <span class="js">"SKC销售偏差预警 | HK1839"</span>,
-    <span class="jk">"text"</span>: <span class="js">"OMS\n\n### SKC销售偏差预警 | HK1839\n\n- 预警内容：2 个 SKC 存在缺货风险\n- **规则名称：** SKC颜色销售偏差预警\n- **父体：** LFT00000784\n- **SPU：** HK1839\n- **统计窗口：** 近 30 天\n- **触发阈值：** 占比差 &gt; 10%\n- 触发个数：2 个 SKC\n- **触发时间：** 2026-06-18 15:10"</span>,
+    <span class="jk">"text"</span>: <span class="js">"OMS\n\n### SKC销售偏差预警 | HK1839\n\n- **预警内容：** **2 个 SKC 存在缺货风险**\n- **规则名称：** SKC颜色销售偏差预警\n- **父体：** LFT00000784\n- **SPU：** HK1839\n- **统计窗口：** 近 30 天\n- **触发阈值：** 占比差 &gt; 10%\n- 触发个数：2 个 SKC\n- **触发时间：** 2026-06-18 15:10"</span>,
     <span class="jk">"btnOrientation"</span>: <span class="js">"1"</span>,
     <span class="jk">"btns"</span>: [
       {
@@ -494,7 +494,7 @@
 
 ### 本地库龄预警 | {SPU}
 
-- 预警内容：{SKU去重数} 个 SKU 库龄超过预警值
+- **预警内容：** **{SKU去重数} 个 SKU 库龄超过预警值**
 - **规则名称：** {规则名称}
 - **父体：** {父体编号}
 - **SPU：** {SPU}
@@ -509,7 +509,7 @@
 
 ### FBA库龄预警 | {SPU}
 
-- 预警内容：{SKU去重数} 个 SKU 库龄超过预警值
+- **预警内容：** **{SKU去重数} 个 SKU 库龄超过预警值**
 - **规则名称：** {规则名称}
 - **父体：** {父体编号}
 - **SPU：** {SPU}
@@ -526,7 +526,7 @@
 
 ### 销售偏差预警 | {SPU}
 
-- 预警内容：{SKU去重数} 个 SKU 近 {N} 天销售偏差超过预警值
+- **预警内容：** **{SKU去重数} 个 SKU 近 {N} 天销售偏差超过预警值**
 - **规则名称：** {规则名称}
 - **父体：** {父体编号}
 - **SPU：** {SPU}
@@ -541,7 +541,7 @@
 
 ### 供应商生产延期预警 | {SPU}
 
-- 预警内容：{订单去重数} 个订单超过延期预警值
+- **预警内容：** **{订单去重数} 个订单超过延期预警值**
 - **规则名称：** {规则名称}
 - **父体：** {父体编号}
 - **SPU：** {SPU}
@@ -556,7 +556,7 @@
 
 ### SKC销售偏差预警 | {SPU}
 
-- 预警内容：{SKC去重数} 个 SKC 存在缺货风险
+- **预警内容：** **{SKC去重数} 个 SKC 存在缺货风险**
 - **规则名称：** {规则名称}
 - **父体：** {父体编号}
 - **SPU：** {SPU}
