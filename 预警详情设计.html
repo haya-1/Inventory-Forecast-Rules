@@ -335,7 +335,6 @@
                           <div class="ac-line"><span class="ac-lbl">父体</span><span class="ac-val">LFT00002261</span></div>
                           <div class="ac-line"><span class="ac-lbl">SKU</span><span class="ac-val is-bold">ST18106</span></div>
                           <div class="ac-line"><span class="ac-lbl">库龄≥90天</span><span class="ac-val is-bold">146 件（阈值 120）</span></div>
-                          <div class="ac-line"><span class="ac-lbl">库龄≥180天</span><span class="ac-val is-bold">88 件（阈值 60）</span></div>
                           <div class="ac-line"><span class="ac-lbl">触发时间</span><span class="ac-val">2026-06-18 14:10</span></div>
                         </div>
                       </div>
@@ -364,7 +363,6 @@
                           <div class="ac-line"><span class="ac-lbl">店铺</span><span class="ac-val">STQWALKING_sandbox-US</span></div>
                           <div class="ac-line"><span class="ac-lbl">ASIN</span><span class="ac-val">B09K799DH7</span></div>
                           <div class="ac-line"><span class="ac-lbl">库龄≥90天</span><span class="ac-val is-bold">210 件（阈值 150）</span></div>
-                          <div class="ac-line"><span class="ac-lbl">库龄≥180天</span><span class="ac-val is-bold">96 件（阈值 80）</span></div>
                           <div class="ac-line"><span class="ac-lbl">触发时间</span><span class="ac-val">2026-06-18 10:20</span></div>
                         </div>
                       </div>
@@ -484,7 +482,7 @@
 - **规则名称：** {规则名称}
 - **父体：** {父体编号}
 - **SKU：** {SKU}
-- **库龄≥{阶段}天：** **{当前} 件（阈值 {阈值}）**   ← 各命中阶段逐行（数量/占比口径单位 件 或 %）
+- **库龄≥{阶段}天：** **{当前} 件（阈值 {阈值}）**   ← 同一 SKU 命中多个库龄阶段时，仅展示天数最小的命中阶段
 - **触发时间：** {时间}</td>
               </tr>
               <tr>
@@ -501,7 +499,7 @@
 - **站点：** {站点}
 - **店铺：** {店铺}
 - **ASIN：** {ASIN}
-- **库龄≥{阶段}天：** **{当前} 件（阈值 {阈值}）**   ← 各命中阶段逐行
+- **库龄≥{阶段}天：** **{当前} 件（阈值 {阈值}）**   ← 同一 SKU 命中多个库龄阶段时，仅展示天数最小的命中阶段
 - **触发时间：** {时间}</td>
               </tr>
               <tr>
