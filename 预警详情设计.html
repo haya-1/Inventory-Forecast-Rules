@@ -310,6 +310,7 @@
             · 卡片标题展示「预警分类标签 + 预警模型」，不拼接 SPU / SKU / SKC，具体对象在正文中展示。<br>
             · 预警内容使用加粗样式，具体对象、当前值与阈值在下方字段中展示。<br>
             · 库龄、销售偏差按 SKU 维度展示；供应商生产延期按「父体 + 采购单」维度展示；SKC 销售偏差按 SKC 维度展示。<br>
+            · 库龄预警卡片需覆盖件数与百分比两种口径，当前值与阈值保持同一单位。<br>
           </div>
 
           <div class="card-selector" id="card-selector">
@@ -330,11 +331,12 @@
                       <div class="ac-body">
                         <div class="ac-title-row"><span class="ac-category-tag ac-category-age">库龄预警</span><span class="ac-title">本地库龄预警</span></div>
                         <div class="ac-md">
-                          <div class="ac-line"><span class="ac-lbl">预警内容</span><span class="ac-val is-bold">库存库龄超过预警阈值</span></div>
-                          <div class="ac-line"><span class="ac-lbl">规则名称</span><span class="ac-val">本地仓高库龄预警</span></div>
+                          <div class="ac-line"><span class="ac-lbl">预警内容</span><span class="ac-val is-bold">库存库龄占比超过预警阈值</span></div>
+                          <div class="ac-line"><span class="ac-lbl">规则名称</span><span class="ac-val">本地仓高库龄占比预警</span></div>
                           <div class="ac-line"><span class="ac-lbl">父体</span><span class="ac-val">LFT00002261</span></div>
-                          <div class="ac-line"><span class="ac-lbl">SKU</span><span class="ac-val is-bold">ST18106</span></div>
-                          <div class="ac-line"><span class="ac-lbl">库龄≥90天</span><span class="ac-val is-bold">146 件（阈值 120）</span></div>
+                          <div class="ac-line"><span class="ac-lbl">SKU</span><span class="ac-val is-bold">ST18106-BLK-37</span></div>
+                          <div class="ac-line"><span class="ac-lbl">统计口径</span><span class="ac-val">库存占比</span></div>
+                          <div class="ac-line"><span class="ac-lbl">库龄≥90天</span><span class="ac-val is-bold">18.6%（阈值 15%）</span></div>
                           <div class="ac-line"><span class="ac-lbl">触发时间</span><span class="ac-val">2026-06-18 14:10</span></div>
                         </div>
                       </div>
@@ -358,7 +360,7 @@
                           <div class="ac-line"><span class="ac-lbl">预警内容</span><span class="ac-val is-bold">FBA库存库龄超过预警阈值</span></div>
                           <div class="ac-line"><span class="ac-lbl">规则名称</span><span class="ac-val">FBA高库龄预警</span></div>
                           <div class="ac-line"><span class="ac-lbl">父体</span><span class="ac-val">LFT00002260</span></div>
-                          <div class="ac-line"><span class="ac-lbl">SKU</span><span class="ac-val is-bold">ST210808</span></div>
+                          <div class="ac-line"><span class="ac-lbl">SKU</span><span class="ac-val is-bold">ST210808-BRN-38</span></div>
                           <div class="ac-line"><span class="ac-lbl">站点</span><span class="ac-val">美国</span></div>
                           <div class="ac-line"><span class="ac-lbl">店铺</span><span class="ac-val">STQWALKING_sandbox-US</span></div>
                           <div class="ac-line"><span class="ac-lbl">ASIN</span><span class="ac-val">B09K799DH7</span></div>
@@ -386,7 +388,7 @@
                           <div class="ac-line"><span class="ac-lbl">预警内容</span><span class="ac-val is-bold">近7天实际销量偏差 +34.4%（偏高）</span></div>
                           <div class="ac-line"><span class="ac-lbl">规则名称</span><span class="ac-val">周度销售偏差预警</span></div>
                           <div class="ac-line"><span class="ac-lbl">父体</span><span class="ac-val">LFT00000755</span></div>
-                          <div class="ac-line"><span class="ac-lbl">SKU</span><span class="ac-val is-bold">WT82527258</span></div>
+                          <div class="ac-line"><span class="ac-lbl">SKU</span><span class="ac-val is-bold">WT82527258-WHT-37</span></div>
                           <div class="ac-line"><span class="ac-lbl">统计窗口</span><span class="ac-val">近 7 天</span></div>
                           <div class="ac-line"><span class="ac-lbl">实际销量</span><span class="ac-val is-bold">430 件</span></div>
                           <div class="ac-line"><span class="ac-lbl">年规目标</span><span class="ac-val">320 件</span></div>
@@ -482,7 +484,8 @@
 - **规则名称：** {规则名称}
 - **父体：** {父体编号}
 - **SKU：** {SKU}
-- **库龄≥{阶段}天：** **{当前} 件（阈值 {阈值}）**   ← 同一 SKU 命中多个库龄阶段时，仅展示天数最小的命中阶段
+- **统计口径：** {件数/库存占比}
+- **库龄≥{阶段}天：** **{当前值}（阈值 {阈值}）**   ← 当前值与阈值可为件数或百分比；同一 SKU 命中多个库龄阶段时，仅展示天数最小的命中阶段
 - **触发时间：** {时间}</td>
               </tr>
               <tr>
@@ -499,7 +502,8 @@
 - **站点：** {站点}
 - **店铺：** {店铺}
 - **ASIN：** {ASIN}
-- **库龄≥{阶段}天：** **{当前} 件（阈值 {阈值}）**   ← 同一 SKU 命中多个库龄阶段时，仅展示天数最小的命中阶段
+- **统计口径：** {件数/库存占比}
+- **库龄≥{阶段}天：** **{当前值}（阈值 {阈值}）**   ← 当前值与阈值可为件数或百分比；同一 SKU 命中多个库龄阶段时，仅展示天数最小的命中阶段
 - **触发时间：** {时间}</td>
               </tr>
               <tr>
